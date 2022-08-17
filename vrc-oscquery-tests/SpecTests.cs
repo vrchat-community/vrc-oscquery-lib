@@ -43,6 +43,37 @@ namespace VRC.OSCQuery.Tests
             service.Dispose();
         }
 
+        [Test]
+        public async Task Service_WithAddedProperty_ReturnsValueForThatProperty()
+        {
+            int tcpPort = 8080;
+            var service = new OSCQueryService()
+            {
+                httpPort = tcpPort
+            };
+            
+            int randomInt = new Random().Next();
+            
+            string name = Guid.NewGuid().ToString();
+            string path = $"/{name}";
+            service.AddObjectToContents<int>(
+                name, 
+                Attributes.AccessValues.ReadOnly, 
+                path, 
+                Attributes.OSCTypeFor(typeof(int)), 
+                null, 
+                () => randomInt
+                );
+            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            var responseObject = JObject.Parse(responseString);
+            
+            Assert.AreEqual(randomInt, responseObject[Attributes.VALUE].Value<int>());
+            
+            service.Dispose();
+        }
+
         private int GetRandomPort()
         {
             return new Random().Next(1024, 49151);

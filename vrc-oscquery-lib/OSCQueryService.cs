@@ -160,9 +160,13 @@ namespace VRC.OSCQuery
                 }
                 else
                 {
-                    var url = context.Request.Url;
-                    if (_oscPaths.TryGetValue(context.Request.Url.LocalPath, out JObject match))
+                    var path = context.Request.Url.LocalPath;
+                    if (_oscPaths.TryGetValue(path, out JObject match))
                     {
+                        if(match.ContainsKey(Attributes.VALUE) && _getters.ContainsKey(path))
+                        {
+                            match[Attributes.VALUE] = _getters[path].Invoke();
+                        }
                         var stringResponse = match.ToString();
                 
                         // Send Response
