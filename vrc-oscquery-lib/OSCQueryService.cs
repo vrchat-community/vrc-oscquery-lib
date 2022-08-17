@@ -194,11 +194,12 @@ namespace VRC.OSCQuery
             }
         }
 
-        public void AddObjectToContents<T>(string name, Attributes.AccessValues accessValues, string path, string oscType, string description = "", Func<dynamic> getter = null!, Action<dynamic> setter = null!)
+        public void AddEndpoint<T>(string name, Attributes.AccessValues accessValues, string path, Func<dynamic> getter = null!, string description = "")
         {
-            if (!Attributes.ValidOSCTypeStrings.Contains(oscType))
+            var oscType = Attributes.OSCTypeFor(typeof(T));
+            if (string.IsNullOrWhiteSpace(oscType))
             {
-                Console.Error.WriteLine($"Could not add {name} to OSCQueryService because type string {oscType} is not supported.");
+                Console.Error.WriteLine($"Could not add {name} to OSCQueryService because type {typeof(T)} is not supported.");
                 return;
             }
 

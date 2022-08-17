@@ -53,12 +53,10 @@ namespace VRC.OSCQuery.Tests
             
             string name = Guid.NewGuid().ToString();
             string path = $"/{name}";
-            service.AddObjectToContents<int>(
+            service.AddEndpoint<int>(
                 name, 
                 Attributes.AccessValues.ReadOnly, 
                 path, 
-                Attributes.OSCTypeFor(typeof(int)), 
-                null, 
                 () => randomInt
                 );
             var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
