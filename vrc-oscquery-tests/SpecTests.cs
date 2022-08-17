@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Makaretu.Dns;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

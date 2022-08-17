@@ -32,7 +32,6 @@ namespace VRC.OSCQuery
 
         // Track getters and setters to respond to incoming value queries / updates
         private Dictionary<string, Func<dynamic>> _getters = new();
-        private Dictionary<string, Action<dynamic>> _setters = new();
         private Dictionary<string, JObject> _oscPaths = new();
 
         private string _localOscUdpServiceName = $"{Attributes.SERVICE_OSC_UDP}.local";
@@ -163,9 +162,9 @@ namespace VRC.OSCQuery
                     var path = context.Request.Url.LocalPath;
                     if (_oscPaths.TryGetValue(path, out JObject match))
                     {
-                        if(match.ContainsKey(Attributes.VALUE) && _getters.ContainsKey(path))
+                        if(match.ContainsKey(Attributes.VALUE))
                         {
-                            match[Attributes.VALUE] = _getters[path].Invoke();
+                            match[Attributes.VALUE] = GetValueFor(path);
                         }
                         var stringResponse = match.ToString();
                 
@@ -221,11 +220,6 @@ namespace VRC.OSCQuery
             {
                 _getters.Add(path, getter);
             }
-
-            if (setter != null)
-            {
-                _setters.Add(path, setter);
-            }
         }
 
         public dynamic GetValueFor(string name)
@@ -236,18 +230,6 @@ namespace VRC.OSCQuery
             }
 
             return null;
-        }
-        
-        public void SetValueFor(string name, dynamic value)
-        {
-            if (_setters.TryGetValue(name, out var setter))
-            {
-                setter.Invoke(value);
-                if (_oscPaths.ContainsKey(name))
-                {
-                    _oscPaths[name][Attributes.VALUE] = value.ToString();
-                }
-            }
         }
 
         private JObject _rootObject;
