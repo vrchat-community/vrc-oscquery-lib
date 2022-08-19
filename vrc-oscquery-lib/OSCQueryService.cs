@@ -14,9 +14,9 @@ namespace VRC.OSCQuery
     public class OSCQueryService : IDisposable
     {
         // Constants
-        private const int DefaultPortHttp = 8080;
-        private const int DefaultPortOsc = 9000;
-        private const string DefaultServerName = "OSCQueryService";
+        public const int DefaultPortHttp = 8080;
+        public const int DefaultPortOsc = 9000;
+        public const string DefaultServerName = "OSCQueryService";
 
         // Services
         private readonly string _localOscUdpServiceName = $"{Attributes.SERVICE_OSC_UDP}.local";
@@ -158,6 +158,9 @@ namespace VRC.OSCQuery
                 _logger.LogInformation($"Could not parse answer from {eventArgs.RemoteEndPoint}: {e.Message}");
             }
         }
+
+        public HashSet<ServiceProfile> GetOSCQueryServices() => _oscQueryServices;
+        public HashSet<ServiceProfile> GetOSCServices() => _oscServices;
 
         /// <summary>
         /// Process and responds to incoming HTTP queries
