@@ -44,11 +44,7 @@ namespace VRC.OSCQuery.Tests
         public async Task Service_WithAddedProperty_ReturnsValueForThatProperty()
         {
             int tcpPort = 8080;
-            var service = new OSCQueryService()
-            {
-                httpPort = tcpPort
-            };
-            
+            var service = new OSCQueryService("TestService", tcpPort);
             int randomInt = new Random().Next();
             
             string name = Guid.NewGuid().ToString();
