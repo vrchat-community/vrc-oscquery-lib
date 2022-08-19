@@ -2,9 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vrc-oscquery-lib", "vrc-oscquery-lib\vrc-oscquery-lib.csproj", "{8E5E6E26-3714-4280-8CBB-CE413774E5BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vrc-oscquery-tests", "vrc-oscquery-tests\vrc-oscquery-tests.csproj", "{9A789B5A-0224-4049-9694-DB04956B5CF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vrc-oscquery-tests", "Tests\vrc-oscquery-tests\vrc-oscquery-tests.csproj", "{9A789B5A-0224-4049-9694-DB04956B5CF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "serviceTester", "serviceTester\serviceTester.csproj", "{4FCDB84E-109B-4F8E-AED7-0C3416A42813}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "serviceTester", "Examples\serviceTester\serviceTester.csproj", "{4FCDB84E-109B-4F8E-AED7-0C3416A42813}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

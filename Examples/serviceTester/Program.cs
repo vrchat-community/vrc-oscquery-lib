@@ -23,6 +23,8 @@ namespace Browser
 
             var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
             var q = new OSCQueryService(name, httpPort, oscPort, libLogger );
+
+            q.AddEndpoint<int>("test", Attributes.AccessValues.ReadOnly, "/test", () => 69);
             q.OnProfileAdded += OnProfileAdded;
             
             Console.ReadKey();
