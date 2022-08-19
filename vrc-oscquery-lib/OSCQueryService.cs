@@ -35,16 +35,17 @@ namespace VRC.OSCQuery
 
         // OSC Path Collections
         private Dictionary<string, Func<dynamic>> _getters = new();
-        private Dictionary<string, JObject> _oscPaths = new();
+        // private Dictionary<string, JObject> _oscPaths = new();
         
         // HTTP Server
         HttpListener _listener;
         private bool _shouldProcessHttp;
         
         // Misc
+        private OSCQueryRootNode _rootNode;
         private JObject _rootObject;
         private HostInfo _hostInfo;
-        private readonly ILogger _logger;
+        public static ILogger Logger;
         private readonly HashSet<string> _matchedNames;
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace VRC.OSCQuery
             };
             
             // Set up logging
-            _logger = logger ?? NullLogger.Instance;
+            OSCQueryService.Logger = logger ?? NullLogger.Instance;
             
             try
             {
@@ -104,7 +105,7 @@ namespace VRC.OSCQuery
             catch (Exception e)
             {
                 _shouldProcessHttp = false;
-                _logger.LogError($"Could not start OSCQuery service: {e.Message}");
+                OSCQueryService.Logger.LogError($"Could not start OSCQuery service: {e.Message}");
             }
 
             BuildRootResponse();
@@ -132,30 +133,30 @@ namespace VRC.OSCQuery
                 var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ips);
 
                 // If this is an OSC service, add it to the OSC collection
-                if (name.CompareTo(_localOscUdpServiceName) == 0)
+                if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
                 {
                     if (!_oscServices.Any(p => p.FullyQualifiedName == profile.FullyQualifiedName))
                     {
                         _oscServices.Add(profile);
                         OnProfileAdded?.Invoke(profile);
-                        _logger.LogInformation($"Found match {name} on port {port}");
+                        Logger.LogInformation($"Found match {name} on port {port}");
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
-                else if (name.CompareTo(_localOscJsonServiceName) == 0)
+                else if (name.CompareTo(_localOscJsonServiceName) == 0 && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName)
                 {
                     if (!_oscQueryServices.Any(p => p.FullyQualifiedName == profile.FullyQualifiedName))
                     {
                         _oscQueryServices.Add(profile);
                         OnProfileAdded?.Invoke(profile);
-                        _logger.LogInformation($"Found match {name} on port {port}");
+                        Logger.LogInformation($"Found match {name} on port {port}");
                     }
                 }
             }
             catch (Exception e)
             {
                 // Using a non-error log level because we may have just found a non-matching service
-                _logger.LogInformation($"Could not parse answer from {eventArgs.RemoteEndPoint}: {e.Message}");
+                Logger.LogInformation($"Could not parse answer from {eventArgs.RemoteEndPoint}: {e.Message}");
             }
         }
 
@@ -192,32 +193,14 @@ namespace VRC.OSCQuery
                     }
                     catch (Exception e)
                     {
-                        _logger.LogError($"Could not construct and send Host Info: {e.Message}");
+                        Logger.LogError($"Could not construct and send Host Info: {e.Message}");
                     }
                 }
                 else
                 {
                     var path = context.Request.Url.LocalPath;
-                    if (_oscPaths.TryGetValue(path, out JObject match))
-                    {
-                        if(match.ContainsKey(Attributes.VALUE))
-                        {
-                            match[Attributes.VALUE] = GetValueFor(path);
-                        }
-                        var stringResponse = match.ToString();
-                
-                        // Send Response
-                        context.Response.Headers.Add("pragma:no-cache");
-                
-                        context.Response.ContentType = "application/json";
-                        context.Response.ContentLength64 = stringResponse.Length;
-                        using (var sw = new StreamWriter(context.Response.OutputStream))
-                        {
-                            await sw.WriteAsync(stringResponse);
-                            await sw.FlushAsync();
-                        }
-                    }
-                    else
+                    var matchedNode = _rootNode.GetNodeWithPath(path);
+                    if (matchedNode == null)
                     {
                         context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                         string err = "OSC Path not found";
@@ -227,6 +210,22 @@ namespace VRC.OSCQuery
                             await sw.WriteAsync(err);
                             await sw.FlushAsync();
                         }
+                        return;
+                    }
+                    
+                    matchedNode.RefreshValue();
+                    
+                    var stringResponse = matchedNode.ToString();
+                    
+                    // Send Response
+                    context.Response.Headers.Add("pragma:no-cache");
+                
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength64 = stringResponse.Length;
+                    using (var sw = new StreamWriter(context.Response.OutputStream))
+                    {
+                        await sw.WriteAsync(stringResponse);
+                        await sw.FlushAsync();
                     }
                 }
             }
@@ -242,40 +241,23 @@ namespace VRC.OSCQuery
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
         /// <typeparam name="T">The System.Type for the entry, will be converted to OSCType</typeparam>
         /// <returns></returns>
-        public bool AddEndpoint<T>(string name, Attributes.AccessValues accessValues, string path, Func<dynamic> getter = null!, string description = "")
+        public bool AddEndpoint<T>(string name, Attributes.AccessValues accessValues, string path, Func<string>? getter = null!, string description = "")
         {
             var oscType = Attributes.OSCTypeFor(typeof(T));
             if (string.IsNullOrWhiteSpace(oscType))
             {
-                _logger.LogError($"Could not add {name} to OSCQueryService because type {typeof(T)} is not supported.");
+                Logger.LogError($"Could not add {name} to OSCQueryService because type {typeof(T)} is not supported.");
                 return false;
             }
-
-            if (_oscPaths.ContainsKey(path))
-            {
-                _logger.LogError($"Already have endpoint at {path}, remove it first");
-                return false;
-            }
-
-            var jObject = new JObject()
-            {
-                { Attributes.DESCRIPTION, string.IsNullOrWhiteSpace(description) ? name : description },
-                { Attributes.FULL_PATH, path },
-                { Attributes.ACCESS, (int)accessValues},
-                { Attributes.TYPE, oscType},
-                { Attributes.VALUE, 0},
-            };
             
-            _oscPaths.Add(path, jObject);
-            
-            // Add to root object so it can be returned for queries
-            ((JObject)_rootObject[Attributes.CONTENTS]).Add(name, jObject);
-
-            if (getter != null)
+            var node = _rootNode.AddNode(name, new OSCQueryNode(path)
             {
-                _getters.Add(path, getter);
-            }
-
+                Access = accessValues,
+                Description = description,
+                OscType = oscType,
+                valueGetter = getter
+            });
+            
             return true;
         }
 
@@ -286,12 +268,12 @@ namespace VRC.OSCQuery
         /// <returns></returns>
         public bool RemoveEndpoint(string path)
         {
-            // Exit early if no matching path is found
-            if (!_oscPaths.ContainsKey(path))
-            {
-                _logger.LogError($"No endpoint found for {path}");
-                return false;
-            }
+            // // Exit early if no matching path is found
+            // if (!_oscPaths.ContainsKey(path))
+            // {
+            //     _logger.LogError($"No endpoint found for {path}");
+            //     return false;
+            // }
 
             // Remove value getter if it exists
             if (_getters.ContainsKey(path))
@@ -300,7 +282,8 @@ namespace VRC.OSCQuery
             }
             
             // Remove endpoint and return result
-            return _oscPaths.Remove(path);
+            // return _oscPaths.Remove(path);
+            return true;
         }
 
         /// <summary>
@@ -323,14 +306,13 @@ namespace VRC.OSCQuery
         /// </summary>
         void BuildRootResponse()
         {
-            _rootObject = new JObject()
+            _rootNode = new OSCQueryRootNode()
             {
-                { Attributes.ACCESS, (int)Attributes.AccessValues.NoValue },
-                { Attributes.FULL_PATH, "/" },
-                { Attributes.CONTENTS, new JObject()}
+                Access = Attributes.AccessValues.NoValue,
+                Description = "root node"
             };
-            
-            _oscPaths.Add("/", _rootObject);
+
+            // _oscPaths.Add("/", _rootObject);
         }
 
         public void Dispose()

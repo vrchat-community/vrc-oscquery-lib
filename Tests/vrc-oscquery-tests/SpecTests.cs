@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -43,6 +44,9 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task Service_WithAddedProperty_ReturnsValueForThatProperty()
         {
+            var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
+            var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
+            
             int tcpPort = 8080;
             var service = new OSCQueryService("TestService", tcpPort);
             int randomInt = new Random().Next();
@@ -53,7 +57,7 @@ namespace VRC.OSCQuery.Tests
                 name, 
                 Attributes.AccessValues.ReadOnly, 
                 path, 
-                () => randomInt
+                () => randomInt.ToString()
                 );
             var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
 
@@ -62,6 +66,52 @@ namespace VRC.OSCQuery.Tests
             
             Assert.AreEqual(randomInt, responseObject[Attributes.VALUE].Value<int>());
             
+            service.Dispose();
+        }
+
+        [Test]
+        public async Task Service_WithMultiplePaths_ReturnsValuesForAllChildren()
+        {
+            var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
+            var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
+            
+            var r = new Random();
+            int tcpPort = r.Next(9000,9999);
+            var service = new OSCQueryService("TestService", tcpPort, OSCQueryService.DefaultPortOsc, libLogger);
+            
+            int randomInt1 = r.Next();
+            int randomInt2 = r.Next();
+            
+            string name1 = Guid.NewGuid().ToString();
+            string name2 = Guid.NewGuid().ToString();
+            
+            string path1 = $"/{name1}";
+            string path2 = $"/{name2}";
+            
+            service.AddEndpoint<int>(
+                name1, 
+                Attributes.AccessValues.ReadOnly, 
+                path1, 
+                () => randomInt1.ToString()
+            );
+            
+            service.AddEndpoint<int>(
+                name2, 
+                Attributes.AccessValues.ReadOnly, 
+                path2, 
+                () => randomInt2.ToString()
+            );
+            
+            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}/");
+
+            Assert.True(response.IsSuccessStatusCode);
+            
+            var responseString = await response.Content.ReadAsStringAsync();
+            var responseObject = JsonConvert.DeserializeObject<OSCQueryNode>(responseString);
+            
+            Assert.AreEqual(randomInt1, int.Parse(responseObject.Contents[name1].Value));
+            Assert.AreEqual(randomInt2, int.Parse(responseObject.Contents[name2].Value));
+
             service.Dispose();
         }
 
