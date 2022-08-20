@@ -23,7 +23,7 @@ namespace VRC.OSCQuery
         private readonly string _localOscJsonServiceName = $"{Attributes.SERVICE_OSCJSON_TCP}.local";
 
         // Zeroconf
-        private ServiceProfile _zeroconfService;
+        private ServiceProfile _oscQueryService;
         private ServiceProfile _oscService;
         private MulticastService _mdns;
         private ServiceDiscovery _discovery;
@@ -35,7 +35,6 @@ namespace VRC.OSCQuery
 
         // OSC Path Collections
         private Dictionary<string, Func<dynamic>> _getters = new();
-        // private Dictionary<string, JObject> _oscPaths = new();
         
         // HTTP Server
         HttpListener _listener;
@@ -76,13 +75,13 @@ namespace VRC.OSCQuery
                 
                 // Set up and Advertise OSC and ZeroConf profiles
                 _oscService = new ServiceProfile(serverName, Attributes.SERVICE_OSC_UDP, (ushort)oscPort);
-                _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort);
+                _oscQueryService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort);
 
                 _mdns = new MulticastService();
                 _discovery = new ServiceDiscovery(_mdns);
                 
                 _discovery.Advertise(_oscService);
-                _discovery.Advertise(_zeroconfService);
+                _discovery.Advertise(_oscQueryService);
                 
                 // Query for OSC and OSCQuery services on every network interface
                 _mdns.NetworkInterfaceDiscovered += (s, e) =>
@@ -143,7 +142,7 @@ namespace VRC.OSCQuery
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
-                else if (name.CompareTo(_localOscJsonServiceName) == 0 && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName)
+                else if (name.CompareTo(_localOscJsonServiceName) == 0 && profile.FullyQualifiedName != _oscQueryService.FullyQualifiedName)
                 {
                     if (!_oscQueryServices.Any(p => p.FullyQualifiedName == profile.FullyQualifiedName))
                     {
