@@ -23,7 +23,7 @@ namespace VRC.OSCQuery
         private readonly string _localOscJsonServiceName = $"{Attributes.SERVICE_OSCJSON_TCP}.local";
 
         // Zeroconf
-        private ServiceProfile _oscQueryService;
+        private ServiceProfile _zeroconfService;
         private ServiceProfile _oscService;
         private MulticastService _mdns;
         private ServiceDiscovery _discovery;
@@ -33,9 +33,6 @@ namespace VRC.OSCQuery
         private HashSet<ServiceProfile> _oscQueryServices = new();
         private HashSet<ServiceProfile> _oscServices = new();
 
-        // OSC Path Collections
-        private Dictionary<string, Func<dynamic>> _getters = new();
-        
         // HTTP Server
         HttpListener _listener;
         private bool _shouldProcessHttp;
@@ -75,13 +72,13 @@ namespace VRC.OSCQuery
                 
                 // Set up and Advertise OSC and ZeroConf profiles
                 _oscService = new ServiceProfile(serverName, Attributes.SERVICE_OSC_UDP, (ushort)oscPort);
-                _oscQueryService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort);
+                _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort);
 
                 _mdns = new MulticastService();
                 _discovery = new ServiceDiscovery(_mdns);
                 
                 _discovery.Advertise(_oscService);
-                _discovery.Advertise(_oscQueryService);
+                _discovery.Advertise(_zeroconfService);
                 
                 // Query for OSC and OSCQuery services on every network interface
                 _mdns.NetworkInterfaceDiscovered += (s, e) =>
@@ -142,7 +139,7 @@ namespace VRC.OSCQuery
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
-                else if (name.CompareTo(_localOscJsonServiceName) == 0 && profile.FullyQualifiedName != _oscQueryService.FullyQualifiedName)
+                else if (name.CompareTo(_localOscJsonServiceName) == 0 && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName)
                 {
                     if (!_oscQueryServices.Any(p => p.FullyQualifiedName == profile.FullyQualifiedName))
                     {
@@ -293,22 +290,7 @@ namespace VRC.OSCQuery
 
             return true;
         }
-
-        /// <summary>
-        /// Get the value for a given path if it is registered.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns>a dynamic value, or null if the path is not registered.</returns>
-        public dynamic GetValueFor(string path)
-        {
-            if (_getters.TryGetValue(path, out var getter))
-            {
-                return getter.Invoke();
-            }
-
-            return null;
-        }
-
+        
         /// <summary>
         /// Constructs the response the server will use for HOST_INFO queries
         /// </summary>
