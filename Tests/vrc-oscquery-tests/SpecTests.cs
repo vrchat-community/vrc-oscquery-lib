@@ -54,9 +54,8 @@ namespace VRC.OSCQuery.Tests
             string name = Guid.NewGuid().ToString();
             string path = $"/{name}";
             service.AddEndpoint<int>(
-                name, 
-                Attributes.AccessValues.ReadOnly, 
                 path, 
+                Attributes.AccessValues.ReadOnly, 
                 () => randomInt.ToString()
                 );
             var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
@@ -89,16 +88,14 @@ namespace VRC.OSCQuery.Tests
             string path2 = $"/{name2}";
             
             service.AddEndpoint<int>(
-                name1, 
-                Attributes.AccessValues.ReadOnly, 
                 path1, 
+                Attributes.AccessValues.ReadOnly, 
                 () => randomInt1.ToString()
             );
             
             service.AddEndpoint<int>(
-                name2, 
-                Attributes.AccessValues.ReadOnly, 
                 path2, 
+                Attributes.AccessValues.ReadOnly, 
                 () => randomInt2.ToString()
             );
             
@@ -113,6 +110,27 @@ namespace VRC.OSCQuery.Tests
             Assert.AreEqual(randomInt2, int.Parse(responseObject.Contents[name2].Value));
 
             service.Dispose();
+        }
+
+        [Test]
+        public async Task Service_AfterAddingGrandChildNode_HasNodesForEachAncestor()
+        {
+            var service = new OSCQueryService();
+
+            string fullPath = "/foo/bar/baz";
+
+            service.AddEndpoint<int>(fullPath, Attributes.AccessValues.ReadOnly);
+            
+            var response = await new HttpClient().GetAsync($"http://localhost:{OSCQueryService.DefaultPortHttp}/");
+
+            Assert.True(response.IsSuccessStatusCode);
+            
+            var responseString = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<OSCQueryNode>(responseString);
+            
+            Assert.NotNull(result.Contents["foo"].Contents["bar"].Contents["baz"]);
+            
+            Assert.Pass();
         }
 
         private int GetRandomPort()

@@ -29,25 +29,49 @@ namespace VRC.OSCQuery
             return null;
         }
         
-        public OSCQueryNode AddNode(string name, OSCQueryNode node)
+        public OSCQueryNode AddNode(OSCQueryNode node)
         {
-            if (Contents == null)
+            // Todo: parse path and figure out which sub-node to add it to
+            var parent = GetNodeWithPath(node.ParentPath);
+            if (parent == null)
             {
-                Contents = new Dictionary<string, OSCQueryNode>();
+                parent = AddNode(new OSCQueryNode(node.ParentPath));
             }
-            else if (Contents.ContainsKey(name))
+            if (parent.Contents == null)
             {
-                OSCQueryService.Logger.LogWarning($"Child node {name} already exists on {FullPath}, you need to remove the existing entry first");
+                parent.Contents = new Dictionary<string, OSCQueryNode>();
+            }
+            else if (parent.Contents.ContainsKey(node.Name))
+            {
+                OSCQueryService.Logger.LogWarning($"Child node {node.Name} already exists on {FullPath}, you need to remove the existing entry first");
                 return null;
             }
 
             // Add to contents
-            Contents.Add(name, node);
+            parent.Contents.Add(node.Name, node);
             
-            // Todo: handle case where this full path already exists
+            // Todo: handle case where this full path already exists, but I don't think it should ever happen
             _pathLookup.Add(node.FullPath, node);
             
             return node;
+        }
+
+        public bool RemoveNode(string path)
+        {
+            if(_pathLookup.TryGetValue(path, out OSCQueryNode node))
+            {
+                var parent = GetNodeWithPath(node.ParentPath);
+                if (parent != null && parent.Contents != null)
+                {
+                    if (parent.Contents.ContainsKey(node.Name))
+                    {
+                        parent.Contents.Remove(node.Name);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
     public class OSCQueryNode
@@ -79,6 +103,19 @@ namespace VRC.OSCQuery
 
         [JsonIgnore]
         public Func<string?>? valueGetter;
+
+        [JsonIgnore] 
+        public string ParentPath {
+            get
+            {
+                int length = Math.Max(1, FullPath.LastIndexOf("/"));
+                return FullPath.Substring(0, length);
+            }
+            
+        }
+
+        [JsonIgnore]
+        public string Name => FullPath.Substring(FullPath.LastIndexOf('/')+1);
 
         public void RefreshValue(HashSet<OSCQueryNode> visited = null)
         {

@@ -105,7 +105,7 @@ namespace VRC.OSCQuery
             catch (Exception e)
             {
                 _shouldProcessHttp = false;
-                OSCQueryService.Logger.LogError($"Could not start OSCQuery service: {e.Message}");
+                Logger.LogError($"Could not start OSCQuery service: {e.Message}");
             }
 
             BuildRootResponse();
@@ -241,16 +241,16 @@ namespace VRC.OSCQuery
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
         /// <typeparam name="T">The System.Type for the entry, will be converted to OSCType</typeparam>
         /// <returns></returns>
-        public bool AddEndpoint<T>(string name, Attributes.AccessValues accessValues, string path, Func<string>? getter = null!, string description = "")
+        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, Func<string>? getter = null!, string description = "")
         {
             var oscType = Attributes.OSCTypeFor(typeof(T));
             if (string.IsNullOrWhiteSpace(oscType))
             {
-                Logger.LogError($"Could not add {name} to OSCQueryService because type {typeof(T)} is not supported.");
+                Logger.LogError($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
                 return false;
             }
             
-            var node = _rootNode.AddNode(name, new OSCQueryNode(path)
+            _rootNode.AddNode(new OSCQueryNode(path)
             {
                 Access = accessValues,
                 Description = description,
@@ -268,21 +268,17 @@ namespace VRC.OSCQuery
         /// <returns></returns>
         public bool RemoveEndpoint(string path)
         {
-            // // Exit early if no matching path is found
-            // if (!_oscPaths.ContainsKey(path))
-            // {
-            //     _logger.LogError($"No endpoint found for {path}");
-            //     return false;
-            // }
 
-            // Remove value getter if it exists
-            if (_getters.ContainsKey(path))
+            var node = _rootNode.GetNodeWithPath(path);
+            // Exit early if no matching path is found
+            if (node == null)
             {
-                _getters.Remove(path);
+                Logger.LogError($"No endpoint found for {path}");
+                return false;
             }
-            
-            // Remove endpoint and return result
-            // return _oscPaths.Remove(path);
+
+            _rootNode.RemoveNode(path);
+
             return true;
         }
 
@@ -311,8 +307,6 @@ namespace VRC.OSCQuery
                 Access = Attributes.AccessValues.NoValue,
                 Description = "root node"
             };
-
-            // _oscPaths.Add("/", _rootObject);
         }
 
         public void Dispose()
