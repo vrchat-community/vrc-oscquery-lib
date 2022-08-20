@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,9 +16,9 @@ namespace VRC.OSCQuery.Examples.DataReceiver
         
         static void Main ()
         {
+            Console.SetWindowSize(50,15);
             Application.Init ();
             
-            // Add both menu and win in a single call
             Application.Top.Add (new FindServiceDialog(_service));
             
             Application.Run ();
@@ -39,8 +40,11 @@ namespace VRC.OSCQuery.Examples.DataReceiver
 
                 _textView = new TextView()
                 {
+                    X = 1,
+                    Y = 1,
                     Width = Dim.Fill(2),
-                    Height = Dim.Fill(2)
+                    Height = Dim.Fill(2),
+                    ReadOnly = true,
                 };
 
                 Title = $"{_profile.InstanceName} on {_srvRecord.Port}";

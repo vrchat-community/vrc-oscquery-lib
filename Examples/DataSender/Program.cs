@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using NStack;
+using System.Text.RegularExpressions;
 using Terminal.Gui;
 
 namespace VRC.OSCQuery.Examples
@@ -10,6 +8,7 @@ namespace VRC.OSCQuery.Examples
     {
         static void Main ()
         {
+            Console.SetWindowSize(50,20);
             Application.Init ();
 
             AddOscQueryService();
@@ -17,7 +16,7 @@ namespace VRC.OSCQuery.Examples
             Application.Run ();
             Application.Shutdown ();
         }
-
+        
         private static void AddOscQueryService()
         {
             var dialog = new Dialog("OSCQueryServiceCreator", 45, 8);
@@ -25,20 +24,23 @@ namespace VRC.OSCQuery.Examples
             dialog.Add(new Label(0,1, "Service Name", false){Width = 20});
             dialog.Add(new Label(0,2, "TCP Port", false){Width = 20});
             dialog.Add(new Label(0,3, "OSC Port", false){Width = 20});
+
+            var wordSet = new Bogus.DataSets.Internet();
+            var w = new Bogus.DataSets.Hacker();
             
             // Construct Input Fields
             int fieldWidth = 20;
-            var nameField = new TextField($"{OSCQueryService.DefaultServerName}")
+            var nameField = new TextField($"{w.Adjective().UpperCaseFirstChar()}-{w.Noun().UpperCaseFirstChar()}-{w.Abbreviation()}")
             {
                 X = fieldWidth, Y = 1, Width = fieldWidth
             };
             
-            var tcpPortField = new TextField($"{OSCQueryService.DefaultPortHttp}")
+            var tcpPortField = new TextField($"{wordSet.Port()}")
             { 
                 X = fieldWidth, Y = 2, Width = fieldWidth
                 
             };
-            var oscField = new TextField($"{OSCQueryService.DefaultPortOsc}"){
+            var oscField = new TextField($"{wordSet.Port()}"){
                 X = fieldWidth, Y = 3, Width = fieldWidth,
             };
             
@@ -67,27 +69,17 @@ namespace VRC.OSCQuery.Examples
             {
                 _service = new OSCQueryService(name, tcpPort, oscPort);
                 Title = $"{name} TCP: {tcpPort} OSC: {oscPort}";
-                // Border.BorderStyle = BorderStyle.None;
-
-                Add(MakeIntParams(5));
-                Add(MakeStringParams(5));
-
-                _service.OnProfileAdded += _ =>
-                {
-                    RefreshListings();
-                };
-
-                Enter += _ => RefreshListings();
+                Add(MakeIntParams(10));
             }
 
             public View MakeIntParams(int count)
             {
-                var result = new Window("Outgoing OSC Int Params")
+                var result = new FrameView("Params and Values - Press to Randomize")
                 {
-                    X = 0,
-                    Y = 1,
+                    X = 1,
+                    Y = 2,
                     Height = Dim.Fill(2),
-                    Width = Dim.Percent(50f),
+                    Width = Dim.Fill(2),
                 };
 
                 var r = new Random();
@@ -105,6 +97,7 @@ namespace VRC.OSCQuery.Examples
                     {
                         Width = Dim.Fill(),
                         Height = 1,
+                        X = 1,
                         Y = 1 + i,
                         AutoSize = false,
                         TextAlignment = TextAlignment.Left
@@ -144,58 +137,14 @@ namespace VRC.OSCQuery.Examples
             }
 
             private int[] _intParams;
-
-            public View MakeStringParams(int count)
-            {
-                var result = new Window("Outgoing OSC String Params")
-                {
-                    X = Pos.Percent(50f),
-                    Y = 1,
-                    Height = Dim.Fill(2),
-                    Width = Dim.Percent(50)
-                };
-                
-                var wordSet = new Bogus.DataSets.Hacker();
-                var GenerateStringProp = new Func<string, string>((propertyName) => $"/{propertyName} {wordSet.IngVerb()} {wordSet.Noun()}");
-                
-                for (int i = 0; i < count; i++)
-                {
-                    var name = $"{wordSet.Adjective()}-{wordSet.Noun()}";
-                    var b = new Button(GenerateStringProp(name))
-                    {
-                        Width = Dim.Fill(),
-                        Height = 1,
-                        X = 0,
-                        Y = 1 + i,
-                        AutoSize = false,
-                        TextAlignment = TextAlignment.Left
-                    };
-                    b.Clicked += () => b.Text = GenerateStringProp(name);
-                    result.Add(b);
-                }
-
-                return result;
-            }
-            
-            public void RefreshListings()
-            {
-                var oscqServices = _service.GetOSCQueryServices().Select(s => s.HostName.ToString()).ToList();
-                var oscServices = _service.GetOSCServices().Select(s => s.HostName.ToString()).ToList();
-
-                var items1 = new List<MenuItem>();
-                foreach (var oscqService in oscqServices)
-                {
-                    items1.Add(new MenuItem(oscqService, ustring.Empty, null));
-                }
-                    
-                var items2 = new List<MenuItem>();
-                foreach (var oscService in oscServices)
-                {
-                    items2.Add(new MenuItem(oscService, ustring.Empty, null));
-                }
-                    
-                SetNeedsDisplay();
-            }
         }
+        
+    }
+    public static class Extensions
+    {
+        public static string UpperCaseFirstChar(this string text) {
+            return Regex.Replace(text, "^[a-z]", m => m.Value.ToUpper());
+        }
+
     }
 }
