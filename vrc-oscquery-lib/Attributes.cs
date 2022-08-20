@@ -27,26 +27,7 @@ namespace VRC.OSCQuery
             {typeof(Boolean), "T"},
         };
 
-        public static HashSet<string> ValidOSCTypeStrings
-        {
-            get
-            {
-                if (_validOSCTypeStrings != null)
-                {
-                    return _validOSCTypeStrings;
-                }
-
-                // Construct valid strings from OSCType Lookup
-                _validOSCTypeStrings = new HashSet<string>();
-                foreach (var pair in _oscTypeLookup)
-                {
-                    _validOSCTypeStrings.Add(pair.Value);
-                }
-                return _validOSCTypeStrings;
-            }
-        }
-
-        private static HashSet<string> _validOSCTypeStrings;
+        // Todo: handle array types
         public static string OSCTypeFor(Type type)
         {
             if (_oscTypeLookup.TryGetValue(type, out string value))

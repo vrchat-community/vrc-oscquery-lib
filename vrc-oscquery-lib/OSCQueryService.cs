@@ -196,6 +196,19 @@ namespace VRC.OSCQuery
                         Logger.LogError($"Could not construct and send Host Info: {e.Message}");
                     }
                 }
+                else if (context.Request.RawUrl.Contains("favicon.ico"))
+                {
+                    // ignore for now, could send favicon if we want to be fancy
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    string err = "favicon not supported";
+                    context.Response.ContentLength64 = err.Length;
+                    using (var sw = new StreamWriter(context.Response.OutputStream))
+                    {
+                        await sw.WriteAsync(err);
+                        await sw.FlushAsync();
+                    }
+                    return;
+                }
                 else
                 {
                     var path = context.Request.Url.LocalPath;

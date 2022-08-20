@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -46,8 +47,9 @@ namespace VRC.OSCQuery.Tests
         {
             var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
             var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
-            
-            int tcpPort = 8080;
+
+            var random = new Random();
+            int tcpPort = random.Next(9000,9999);
             var service = new OSCQueryService("TestService", tcpPort);
             int randomInt = new Random().Next();
             
@@ -131,6 +133,19 @@ namespace VRC.OSCQuery.Tests
             Assert.NotNull(result.Contents["foo"].Contents["bar"].Contents["baz"]);
             
             Assert.Pass();
+        }
+
+        [Test]
+        public async Task Service_WithRequestForFavicon_NoCrash()
+        {
+            var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
+            var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
+
+            var port = GetRandomPort();
+            var service = new OSCQueryService("TestService", port);
+            
+            var response = await new HttpClient().GetAsync($"http://localhost:{port}/favicon.ico");
+            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         private int GetRandomPort()
