@@ -13,13 +13,13 @@ namespace VRC.OSCQuery
         public OSCQueryRootNode()
         {
             // Initialize path lookup with self reference
-            _pathLookup = new()
+            _pathLookup = new Dictionary<string, OSCQueryNode>()
             {
                 {"/", this}
             };
             
         }
-        public OSCQueryNode? GetNodeWithPath(string path)
+        public OSCQueryNode GetNodeWithPath(string path)
         {
             if (_pathLookup.TryGetValue(path, out OSCQueryNode node))
             {
@@ -99,10 +99,10 @@ namespace VRC.OSCQuery
         public string OscType;
 
         [JsonProperty(Attributes.VALUE)] 
-        public string? Value;
+        public string Value;
 
         [JsonIgnore]
-        public Func<string?>? valueGetter;
+        public Func<string> valueGetter;
 
         [JsonIgnore] 
         public string ParentPath {

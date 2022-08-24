@@ -11,7 +11,6 @@ namespace VRC.OSCQuery.Examples.DataReceiver
 {
     class DataReceiver
     {
-
         private static OSCQueryService _service;
         
         static void Main ()
@@ -57,21 +56,20 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             {
                 var response = await new HttpClient().GetAsync($"http://localhost:{_tcpPort}/");
 
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
                 {
-                    return;
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<OSCQueryRootNode>(responseString);
+
+                    var sb = new StringBuilder();
+                    foreach (var pair in result.Contents)
+                    {
+                        sb.AppendLine($"{pair.Key}: {pair.Value.Value}");
+                    }
+
+                    _textView.Text = sb.ToString();
                 }
                 
-                var responseString = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<OSCQueryRootNode>(responseString);
-
-                var sb = new StringBuilder();
-                foreach (var pair in result.Contents)
-                {
-                    sb.AppendLine($"{pair.Key}: {pair.Value.Value}");
-                }
-
-                _textView.Text = sb.ToString();
                 await Task.Delay(500); // poll every half second
                 RefreshData();
             } 

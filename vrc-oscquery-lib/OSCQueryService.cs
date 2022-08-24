@@ -30,8 +30,8 @@ namespace VRC.OSCQuery
         public event Action<ServiceProfile> OnProfileAdded;
 
         // Store discovered services
-        private HashSet<ServiceProfile> _oscQueryServices = new();
-        private HashSet<ServiceProfile> _oscServices = new();
+        private HashSet<ServiceProfile> _oscQueryServices = new HashSet<ServiceProfile>();
+        private HashSet<ServiceProfile> _oscServices = new HashSet<ServiceProfile>();
 
         // HTTP Server
         HttpListener _listener;
@@ -51,7 +51,7 @@ namespace VRC.OSCQuery
         /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
         /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
-        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger? logger = null)
+        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger logger = null)
         {
             // Construct hashset for services to track
             _matchedNames = new HashSet<string>() { 
@@ -112,7 +112,7 @@ namespace VRC.OSCQuery
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="eventArgs">Event Data with info from queried Service</param>
-        private void OnRemoteServiceInfo(object? sender, MessageEventArgs eventArgs)
+        private void OnRemoteServiceInfo(object sender, MessageEventArgs eventArgs)
         {
             var response = eventArgs.Message;
             
@@ -250,7 +250,7 @@ namespace VRC.OSCQuery
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
         /// <typeparam name="T">The System.Type for the entry, will be converted to OSCType</typeparam>
         /// <returns></returns>
-        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, Func<string>? getter = null!, string description = "")
+        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, Func<string> getter = null, string description = "")
         {
             var oscType = Attributes.OSCTypeFor(typeof(T));
             if (string.IsNullOrWhiteSpace(oscType))

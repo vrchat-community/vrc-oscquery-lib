@@ -8,7 +8,7 @@ namespace VRC.OSCQuery
         [JsonProperty(Keys.NAME)]
         public string name;
 
-        [JsonProperty(Keys.EXTENSIONS)] public Dictionary<string, bool> extensions = new()
+        [JsonProperty(Keys.EXTENSIONS)] public Dictionary<string, bool> extensions = new Dictionary<string, bool>()
         {
             { Attributes.ACCESS, true },
             { Attributes.CLIPMODE, false },
