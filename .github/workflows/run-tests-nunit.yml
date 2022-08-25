@@ -24,7 +24,7 @@ jobs:
 
       - name: Run NUnit Tests
         if: ${{ !cancelled() }}  
-        id: 
+        id: run-tests
         uses: zyborg/dotnet-tests-report@v1
         with:
           project_path: Tests/vrc-oscquery-tests
