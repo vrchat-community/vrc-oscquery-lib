@@ -1,0 +1,37 @@
+name: Run and Publish NUnit Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  run-tests:
+    strategy:
+      matrix:
+        os:
+          - 'windows-latest'
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+          
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+          
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: always()
+        with:
+          trx_files: "test-results/**/*.trx"
