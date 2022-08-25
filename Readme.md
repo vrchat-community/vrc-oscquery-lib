@@ -7,11 +7,11 @@
 We're developing this implementation of the protocol for OSC app creators integrate into their own projects as we integrate it into [VRChat](https://vrchat.com).
 We're building it in C# targeting .NET Standard 2.0 so it will work in Unity as well as cross-platform .NET projects.
 
-## Status
+## 📊 Status
 
 ![NUnit Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/vrchat-developer/4c1497eb43ee225c377c964b2e447a89/raw/test.json)
 
-## Functionality
+## 🔨 Functionality
 
 This library implements almost all of the [Core Functionality](https://github.com/Vidvox/OSCQueryProposal#core-functionality) as described in the proposal:
 * Advertises the service type "_oscjson._tcp" on the local network over Zeroconf.
@@ -23,7 +23,7 @@ This library implements almost all of the [Core Functionality](https://github.co
 
 This library does not yet return limited attributes based on query strings, like only returning the VALUE of an object for a url that ends in "?VALUE", and does not yet return all possible error strings.
 
-## Basic Use
+## ⚡️ Basic Use
 
 1. Build vrc-oscquery-lib into vrc-oscquery-lib.dll and add it to your project (will make this a NuGet package once it's ready for wider use).
 2. Construct a new OSCQuery service with `new OSCQueryService()`, optionally passing in the name, TCP port to use for serving HTTP, UDP port that you're using for OSC, and an ILogger if you want logs.
@@ -36,9 +36,9 @@ This library does not yet return limited attributes based on query strings, like
 
 ---
 
-## Things to Discuss
+## ❓ Things to Discuss
 
-### Tracking OSC Values
+### 🔍 Tracking OSC Values
 
 One very handy (optional) feature of OSCQuery is the ability to retrieve the _current value_ for a given OSC method. This lets clients do things like updating their UI elements without requesting the server to re-send each value.
 
@@ -50,7 +50,7 @@ There's other ways to handle this, for example a simple pub/sub system where end
 
 ---
 
-## Examples
+## ✨ Examples
 
 The solution includes two simple examples to demonstrate and test functionality. They are both .NET 6 Console apps and should work on Windows, Mac and Linux, but have only been tested on Windows 10 so far.
 
@@ -97,7 +97,7 @@ It regularly polls for updates and should show value changes soon after they occ
 
 ---
 
-## To-Dos:
+## 📝 To-Dos:
 * Figure out why HOST_INFO stopped working
 * Make zeroconf advertising optional
 * Support query strings for choosing attributes to return
@@ -105,7 +105,7 @@ It regularly polls for updates and should show value changes soon after they occ
 
 ---
 
-## Roadmap:
+## 🏞 Roadmap:
 1. Internal Discovery and Iteration
 2. Integrate into VRChat Client
 3. Closed Beta Release to OSC App Developers
