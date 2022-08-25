@@ -24,4 +24,9 @@
       <ProjectReference Include="..\..\vrc-oscquery-lib\vrc-oscquery-lib.csproj" />
     </ItemGroup>
 
+    <PropertyGroup>
+        <VSTestLogger>trx%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
+        <VSTestResultsDirectory>$(SolutionDir)/test-results/$(TargetFramework)</VSTestResultsDirectory>
+    </PropertyGroup>
+
 </Project>
