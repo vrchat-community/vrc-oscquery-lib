@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSender", "Examples\Data
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataReceiver", "Examples\DataReceiver\DataReceiver.csproj", "{DAC297A9-253B-4A9E-B602-21AD54521D17}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalGuiAddons", "Examples\TerminalGuiAddons\TerminalGuiAddons.csproj", "{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{DAC297A9-253B-4A9E-B602-21AD54521D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAC297A9-253B-4A9E-B602-21AD54521D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAC297A9-253B-4A9E-B602-21AD54521D17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -15,7 +15,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
 
         public FindServiceDialog(OSCQueryService service)
         {
-            _service = new OSCQueryService( OSCQueryService.DefaultServerName + "1", OSCQueryService.DefaultPortHttp + 10, OSCQueryService.DefaultPortOsc + 10);
+            _service = new OSCQueryService( OSCQueryService.DefaultServerName + "1", OSCQueryService.DefaultPortHttp + 10, OSCQueryService.DefaultPortOsc + 10, new StatusLogger<OSCQueryService>());
             
             Width = 45;
             Height = 10;
