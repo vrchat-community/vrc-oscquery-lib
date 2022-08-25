@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         os:
-          - 'ubuntu-latest'
           - 'windows-latest'
     runs-on: ${{ matrix.os }}
     steps:
@@ -31,7 +30,7 @@ jobs:
           report_name: tests_nunit-${{ matrix.os }}
           report_title: NUnit Tests (${{ matrix.os }})
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          gist_name: dotnet-tests-report_nunit-${{ matrix.os }}.md
+          gist_name: vrc-oscquery-lib-tests-nunit-${{ matrix.os }}.json
           gist_badge_label: 'NUnit Tests: %Counters_passed%/%Counters_total%'
           gist_token: ${{ secrets.GIST_TOKEN }}
       
