@@ -57,8 +57,13 @@ The solution includes two simple examples to demonstrate and test functionality.
 https://user-images.githubusercontent.com/737888/186757165-e47f766f-3bc2-46b2-8580-8fd99c6ce6b9.mp4
 
 
+<details>
+<summary>
+  
 ### DataSender
 
+</summary>
+  
 This program will advertise itself as an OSCQuery and OSC Service and provide 10 randomly-named int parameters with random values to test the remote reading of OSC methods and values.
 
 ![image](https://user-images.githubusercontent.com/737888/186544804-97c4b454-5a28-4538-9626-7a55a305a882.png)
@@ -68,8 +73,15 @@ When it starts, it generates a random name, TCP and OSC ports. It is possible th
 ![image](https://user-images.githubusercontent.com/737888/186544882-9808cf29-d75f-4908-b043-bebd7a6d959f.png)
 
 After you press ok, it will display the OSC addresses and values of 10 integer parameters. You can press the name of any address to change its value to a new random integer.
+  
+</details>
 
+<details>
+<summary>
+  
 ### DataReceiver
+  
+</summary>
 
 ![image](https://user-images.githubusercontent.com/737888/186545650-bf3698e8-9518-4f6b-9a20-981e39657b7a.png)
 
@@ -80,6 +92,8 @@ This program will start with a list of available OSCQuery services found on your
 Once connected, the program should display the target OSCQuery service's name and TCP port at the top of its window, and list the methods and their values below that.
 
 It regularly polls for updates and should show value changes soon after they occur on the target Service.
+
+</details>
 
 ---
 
