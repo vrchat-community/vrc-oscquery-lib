@@ -59,10 +59,13 @@ jobs:
           status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
           color: ${{ env.BADGE_COLOR }}
           path: badge.svg
-
+          
       - name: Upload badge to Gist
-        uses: andymckay/append-gist-action@1fbfbbce708a39bd45846f0955ed5521f2099c6d
+        uses: popsiclestick/gist-sync-action@v1.2.0
+        id: sync
         with:
-          token: ${{ secrets.GIST_TOKEN }}
-          gistURL: https://gist.githubusercontent.com/vrchat-developer/4c1497eb43ee225c377c964b2e447a89
-          file: badge.svg
+          auth: ${{ secrets.GIST_TOKEN }}
+          gist_url: https://gist.githubusercontent.com/vrchat-developer/4c1497eb43ee225c377c964b2e447a89
+          gist_title: vrc-oscquery-lib-nunit-test-badge
+          gist_description: VRC OSCQuery Lib NUnit Test Results Badget
+          github_file: badge.svg
