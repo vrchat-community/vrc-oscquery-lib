@@ -28,6 +28,8 @@ This library does not yet return limited attributes based on query strings, like
 7. To remove the endpoint, call the `RemoveEndpoint()` method on your OSCQueryService instance, passing in the OSC address as a string ("/foo/bar");
 8. When you are done with the service, call `Dispose` to clean it up
 
+---
+
 ## Things to Discuss
 
 ### Tracking OSC Values
@@ -39,6 +41,8 @@ The way this is currently implemented is through an optional `Func<string>` 'get
 When a client requests the value of a method, this `OSCQueryNode` Invoke the getter method if it exists, as well as the getter methods of each of its child nodes. Once all the methods resolve, the latest values are sent to the client. This can result in a bit of a delay, especially for nodes closer to root, and depends on the getter methods passed in during construction to still be valid.
 
 There's other ways to handle this, for example a simple pub/sub system where endpoints are expected to publish value updates directly to the OSCQueryService class itself. In the case of VRChat, we already require any class that wants to send OSC messages to do it through our central `VRCOSCHandler`, so a pub/sub system on the OSCQueryService could be used to route things to/from the rest of VRChat. 
+
+---
 
 ## Examples
 
@@ -67,6 +71,8 @@ This program will start with a list of available OSCQuery services found on your
 Once connected, the program should display the target OSCQuery service's name and TCP port at the top of its window, and list the methods and their values below that.
 
 It regularly polls for updates and should show value changes soon after they occur on the target Service.
+
+---
 
 ## To-Dos:
 * Figure out why HOST_INFO stopped working
