@@ -1,0 +1,49 @@
+name: Run NUnit Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  run-tests:
+    strategy:
+      matrix:
+        os:
+          - 'ubuntu-latest'
+          - 'windows-latest'
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v1
+      
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Run NUnit Tests
+        if: ${{ !cancelled() }}  
+        id: 
+        uses: zyborg/dotnet-tests-report@v1
+        with:
+          project_path: Tests/vrc-oscquery-tests
+          report_name: tests_nunit-${{ matrix.os }}
+          report_title: NUnit Tests (${{ matrix.os }})
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          gist_name: dotnet-tests-report_nunit-${{ matrix.os }}.md
+          gist_badge_label: 'NUnit Tests: %Counters_passed%/%Counters_total%'
+          gist_token: ${{ secrets.GIST_TOKEN }}
+      
+      - name: dump test results
+        shell: pwsh
+        run: |
+          Write-ActionInfo 'Testing on: ${{ matrix.os }}'
+          Write-ActionInfo '  NUnit:'
+          Write-ActionInfo '    * result_value    = ${{ steps.testAction3b.outputs.result_value }}'
+          Write-ActionInfo '    * total_count     = ${{ steps.testAction3b.outputs.total_count }}'
+          Write-ActionInfo '    * passed_count    = ${{ steps.testAction3b.outputs.passed_count }}'
+          Write-ActionInfo '    * failed_count    = ${{ steps.testAction3b.outputs.failed_count }}'
+          Write-ActionInfo '    * gist_report_url = ${{ steps.testAction3b.outputs.gist_report_url }}'
+          Write-ActionInfo '    * gist_badge_url  = ${{ steps.testAction3b.outputs.gist_badge_url }}'
+          Write-ActionInfo ''
