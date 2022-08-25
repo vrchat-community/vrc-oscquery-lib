@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\vrc-oscquery-lib\vrc-oscquery-lib.csproj" />
+      <ProjectReference Include="..\TerminalGuiAddons\TerminalGuiAddons.csproj" />
     </ItemGroup>
 
     <ItemGroup>
