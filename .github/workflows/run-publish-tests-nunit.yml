@@ -51,21 +51,13 @@ jobs:
               echo "BADGE_COLOR=696969" >> $GITHUB_ENV
               ;;
           esac
-
-      - name: Create badge
-        uses: emibcn/badge-action@d6f51ff11b5c3382b3b88689ae2d6db22d9737d1
-        with:
-          label: Tests
-          status: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
-          color: ${{ env.BADGE_COLOR }}
-          path: badge.svg
           
-      - name: Upload badge to Gist
-        uses: popsiclestick/gist-sync-action@v1.2.0
-        id: sync
+      - name: Create Awesome Badge
+        uses: schneegans/dynamic-badges-action@v1.4.0
         with:
-          auth: ${{ secrets.GIST_TOKEN }}
-          gist_url: https://gist.githubusercontent.com/vrchat-developer/4c1497eb43ee225c377c964b2e447a89
-          gist_title: vrc-oscquery-lib-nunit-test-badge
-          gist_description: VRC OSCQuery Lib NUnit Test Results Badget
-          github_file: badge.svg
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 4c1497eb43ee225c377c964b2e447a89
+          filename: test.json
+          label: Tests
+          message: '${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.tests }} tests, ${{ fromJSON( steps.test-results.outputs.json ).formatted.stats.runs }} runs: ${{ fromJSON( steps.test-results.outputs.json ).conclusion }}'
+          color: ${{ env.BADGE_COLOR }}
