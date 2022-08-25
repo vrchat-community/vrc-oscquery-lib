@@ -2,6 +2,8 @@
 
 [OSCQuery](https://github.com/Vidvox/OSCQueryProposal) is a protocol that makes it easier for OSC apps to find and communicate with each other.
 
+![VRC OSCQuery Routing](https://user-images.githubusercontent.com/737888/186757739-9ceb0334-f512-414b-8c5d-2aaec6d7d451.png)
+
 We're developing this implementation of the protocol for OSC app creators integrate into their own projects as we integrate it into [VRChat](https://vrchat.com).
 We're building it in C# targeting .NET Standard 2.0 so it will work in Unity as well as cross-platform .NET projects.
 
@@ -51,6 +53,9 @@ There's other ways to handle this, for example a simple pub/sub system where end
 ## Examples
 
 The solution includes two simple examples to demonstrate and test functionality. They are both .NET 6 Console apps and should work on Windows, Mac and Linux, but have only been tested on Windows 10 so far.
+
+https://user-images.githubusercontent.com/737888/186757165-e47f766f-3bc2-46b2-8580-8fd99c6ce6b9.mp4
+
 
 ### DataSender
 
