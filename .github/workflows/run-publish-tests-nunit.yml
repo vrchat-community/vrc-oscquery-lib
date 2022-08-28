@@ -29,6 +29,9 @@ jobs:
         with:
             dotnet-version: '6.0.x'
 
+      - name: Set latest tag as Environment Variable
+        run: echo "GIT_TAG= 'echo $(git describe --tags --abbrev=0)'" >> $GITHUB_ENV
+      
       - name: Build
         shell: bash
         run: |
@@ -53,6 +56,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: "App*"
-          tag_name: $(git describe --tags --abbrev=0)
+          tag_name: $ {{ env.GIT_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
