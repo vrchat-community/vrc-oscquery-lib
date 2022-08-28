@@ -8,17 +8,18 @@ jobs:
     name: Release
     strategy:
       matrix:
-        kind: ['linux', 'windows', 'macOS']
+#        kind: ['linux', 'windows', 'macOS']
+        kind: ['linux']
         include:
           - kind: linux
             os: ubuntu-latest
             target: linux-x64
-          - kind: windows
-            os: windows-latest
-            target: win-x64
-          - kind: macOS
-            os: macos-latest
-            target: osx-x64
+#          - kind: windows
+#            os: windows-latest
+#            target: win-x64
+#          - kind: macOS
+#            os: macos-latest
+#            target: osx-x64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -51,6 +52,9 @@ jobs:
 
           # Delete output directory
           rm -r "$release_name"
+          
+      - name: Echo tag
+        run: echo ${{ env.GIT_TAG }}
 
       - name: Publish
         uses: softprops/action-gh-release@v1
