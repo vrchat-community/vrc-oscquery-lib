@@ -56,6 +56,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: "App*"
-          tag_name: $ {{ env.GIT_TAG }}
+          tag_name: ${{ env.GIT_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
