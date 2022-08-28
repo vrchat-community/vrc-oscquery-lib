@@ -28,15 +28,13 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
             dotnet-version: '6.0.x'
-
-      - name: Set latest tag as Environment Variable
-        run: echo "GIT_TAG= '$(git describe --tags --abbrev=0)'" >> $GITHUB_ENV
       
       - name: Build
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
           release_name="App-$tag-${{ matrix.target }}"
+          echo "GIT_TAG= '$(git describe --tags --abbrev=0)'" >> $GITHUB_ENV
 
           # Build everything
           dotnet publish --runtime "${{ matrix.target }}" --self-contained -c Release -o "$release_name"
