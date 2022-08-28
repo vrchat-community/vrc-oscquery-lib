@@ -30,7 +30,7 @@ jobs:
             dotnet-version: '6.0.x'
 
       - name: Set latest tag as Environment Variable
-        run: echo "GIT_TAG= 'echo $(git describe --tags --abbrev=0)'" >> $GITHUB_ENV
+        run: GIT_TAG= 'echo $(git describe --tags --abbrev=0)' >> $GITHUB_ENV
       
       - name: Build
         shell: bash
