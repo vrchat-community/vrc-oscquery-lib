@@ -36,7 +36,7 @@ jobs:
           release_name="App-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish --framework net6.0 --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish --runtime "${{ matrix.target }}" -c Release -o "$release_name"
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
