@@ -33,6 +33,15 @@ jobs:
 
       - name: Test
         run: dotnet test --no-restore --verbosity normal
+        
+      - name: dotnet publish
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
           
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
