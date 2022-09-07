@@ -18,7 +18,7 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task OSCQueryService_OnRandomPort_ReturnsStatusCodeAtRoot()
         {
-            int targetPort = GetRandomPort();
+            int targetPort = Extensions.GetAvailableTcpPort();
             var service = new OSCQueryService("test-service", targetPort);
             var result = await new HttpClient().GetAsync($"http://localhost:{targetPort}");
             Assert.True(result.IsSuccessStatusCode);
@@ -29,8 +29,8 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task Service_WithRandomOSCPort_ReturnsPortInHostInfo()
         {
-            int tcpPort = GetRandomPort();
-            int oscPort = GetRandomPort(); // Could technically conflict with above
+            int tcpPort = Extensions.GetAvailableTcpPort();
+            int oscPort = Extensions.GetAvailableUdpPort();
             var service = new OSCQueryService("test-service", tcpPort, oscPort);
             var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}?{Attributes.HOST_INFO}");
 
@@ -77,8 +77,9 @@ namespace VRC.OSCQuery.Tests
             var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
             
             var r = new Random();
-            int tcpPort = r.Next(9000,9999);
-            var service = new OSCQueryService("TestService", tcpPort, OSCQueryService.DefaultPortOsc, libLogger);
+            int tcpPort = Extensions.GetAvailableTcpPort();
+            var udpPort = Extensions.GetAvailableUdpPort();
+            var service = new OSCQueryService("TestService", tcpPort, udpPort, libLogger);
             
             int randomInt1 = r.Next();
             int randomInt2 = r.Next();
@@ -141,16 +142,11 @@ namespace VRC.OSCQuery.Tests
             var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
             var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
 
-            var port = GetRandomPort();
+            var port = Extensions.GetAvailableTcpPort();
             var service = new OSCQueryService("TestService", port);
             
             var response = await new HttpClient().GetAsync($"http://localhost:{port}/favicon.ico");
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-        }
-
-        private int GetRandomPort()
-        {
-            return new Random().Next(1024, 49151);
         }
 
     }

@@ -36,12 +36,12 @@ namespace VRC.OSCQuery.Examples
                 X = fieldWidth, Y = 1, Width = fieldWidth
             };
             
-            var tcpPortField = new TextField($"{wordSet.Port()}")
+            var tcpPortField = new TextField($"{VRC.OSCQuery.Extensions.GetAvailableTcpPort()}")
             { 
                 X = fieldWidth, Y = 2, Width = fieldWidth
                 
             };
-            var oscField = new TextField($"{wordSet.Port()}"){
+            var oscField = new TextField($"{VRC.OSCQuery.Extensions.GetAvailableUdpPort()}"){
                 X = fieldWidth, Y = 3, Width = fieldWidth,
             };
             

@@ -186,6 +186,7 @@ namespace VRC.OSCQuery
                             await sw.WriteAsync(hostInfoString);
                             await sw.FlushAsync();
                         }
+                        // return;
                     }
                     catch (Exception e)
                     {
@@ -203,7 +204,7 @@ namespace VRC.OSCQuery
                         await sw.WriteAsync(err);
                         await sw.FlushAsync();
                     }
-                    return;
+                    // return;
                 }
                 else
                 {
@@ -219,7 +220,7 @@ namespace VRC.OSCQuery
                             await sw.WriteAsync(err);
                             await sw.FlushAsync();
                         }
-                        return;
+                        // return;
                     }
                     
                     matchedNode.RefreshValue();
@@ -236,6 +237,8 @@ namespace VRC.OSCQuery
                         await sw.WriteAsync(stringResponse);
                         await sw.FlushAsync();
                     }
+
+                    // return;
                 }
             }
         }
