@@ -39,7 +39,6 @@ namespace VRC.OSCQuery
         
         // Misc
         private OSCQueryRootNode _rootNode;
-        private JObject _rootObject;
         private HostInfo _hostInfo;
         public static ILogger Logger;
         private readonly HashSet<string> _matchedNames;

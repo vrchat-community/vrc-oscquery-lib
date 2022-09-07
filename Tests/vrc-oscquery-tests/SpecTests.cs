@@ -37,7 +37,7 @@ namespace VRC.OSCQuery.Tests
             // Get HostInfo Json
             var hostInfoString = await response.Content.ReadAsStringAsync();
             var hostInfo = JsonConvert.DeserializeObject<HostInfo>(hostInfoString);
-            Assert.AreEqual(oscPort, hostInfo.oscPort);
+            Assert.That(hostInfo.oscPort, Is.EqualTo(oscPort));
 
             service.Dispose();
         }
@@ -65,7 +65,7 @@ namespace VRC.OSCQuery.Tests
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
-            Assert.AreEqual(randomInt, responseObject[Attributes.VALUE].Value<int>());
+            Assert.That(responseObject[Attributes.VALUE]!.Value<int>(), Is.EqualTo(randomInt));
             
             service.Dispose();
         }
@@ -109,9 +109,9 @@ namespace VRC.OSCQuery.Tests
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JsonConvert.DeserializeObject<OSCQueryNode>(responseString);
             
-            Assert.AreEqual(randomInt1, int.Parse(responseObject.Contents[name1].Value));
-            Assert.AreEqual(randomInt2, int.Parse(responseObject.Contents[name2].Value));
-
+            Assert.That(int.Parse(responseObject.Contents[name1].Value), Is.EqualTo(randomInt1));
+            Assert.That(int.Parse(responseObject.Contents[name2].Value), Is.EqualTo(randomInt2));
+            
             service.Dispose();
         }
 
@@ -146,7 +146,7 @@ namespace VRC.OSCQuery.Tests
             var service = new OSCQueryService("TestService", port);
             
             var response = await new HttpClient().GetAsync($"http://localhost:{port}/favicon.ico");
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         }
 
     }

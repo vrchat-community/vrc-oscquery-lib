@@ -34,7 +34,7 @@ namespace VRC.OSCQuery
             
         }
 
-        public string ToString()
+        public override string ToString()
         {
             var result = JsonConvert.SerializeObject(this);
             return result;
