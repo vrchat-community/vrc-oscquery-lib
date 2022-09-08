@@ -11,14 +11,14 @@ namespace VRC.OSCQuery.Examples.DataReceiver
 {
     class DataReceiver
     {
-        private static OSCQueryService _service;
-        
         static void Main ()
         {
+#pragma warning disable CA1416
             Console.SetWindowSize(50,15);
+#pragma warning restore CA1416
             Application.Init ();
             
-            Application.Top.Add (new FindServiceDialog(_service));
+            Application.Top.Add (new FindServiceDialog());
             
             Application.Run ();
             Application.Shutdown ();
@@ -28,13 +28,13 @@ namespace VRC.OSCQuery.Examples.DataReceiver
         {
             private int _tcpPort;
             private TextView _textView;
-            private ServiceProfile _profile;
+            private ServiceProfile? _profile;
             private SRVRecord _srvRecord;
             
-            public ListServiceData(ServiceProfile profile)
+            public ListServiceData(ServiceProfile? profile)
             {
                 _profile = profile;
-                _srvRecord = profile.Resources.OfType<SRVRecord>().First();
+                _srvRecord = profile?.Resources.OfType<SRVRecord>().First()!;
                 _tcpPort = _srvRecord.Port;
 
                 _textView = new TextView()
@@ -46,10 +46,12 @@ namespace VRC.OSCQuery.Examples.DataReceiver
                     ReadOnly = true,
                 };
 
-                Title = $"{_profile.InstanceName} on {_srvRecord.Port}";
+                Title = $"{_profile?.InstanceName} on {_srvRecord.Port}";
                 
                 Add(_textView);
+#pragma warning disable 4014
                 RefreshData();
+#pragma warning restore 4014
             }
 
             private async Task RefreshData()
@@ -71,7 +73,9 @@ namespace VRC.OSCQuery.Examples.DataReceiver
                 }
                 
                 await Task.Delay(500); // poll every half second
+#pragma warning disable 4014
                 RefreshData();
+#pragma warning restore 4014
             } 
         }
     }

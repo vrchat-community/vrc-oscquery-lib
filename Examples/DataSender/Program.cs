@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
+using Common.Logging;
 using Terminal.Gui;
 
 namespace VRC.OSCQuery.Examples
@@ -12,13 +12,13 @@ namespace VRC.OSCQuery.Examples
             Console.SetWindowSize(50,20);
             Application.Init ();
 
-            AddOscQueryService(new StatusLogger<OSCQueryService>());
+            AddOscQueryService(new StatusLogger("StatusLogger", LogLevel.All, true, true, false, "H:mm:ss"));
 
             Application.Run ();
             Application.Shutdown ();
         }
 
-        private static void AddOscQueryService(ILogger logger)
+        private static void AddOscQueryService(ILog logger)
         {
             var dialog = new Dialog("OSCQueryServiceCreator", 45, 8);
 

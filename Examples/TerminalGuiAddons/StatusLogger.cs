@@ -1,16 +1,17 @@
 ﻿using System;
-using Microsoft.Extensions.Logging;
 using Terminal.Gui;
+using Common.Logging;
+using Common.Logging.Simple;
 
 namespace VRC.OSCQuery.Examples
 {
-     public class StatusLogger<T> : ILogger<T>
+     public class StatusLogger : AbstractSimpleLogger
         {
             private Window _logsView;
             private StatusItem _item;
             private TextView _textView;
-            
-            public StatusLogger()
+
+            public StatusLogger(string logName, LogLevel logLevel, bool showlevel, bool showDateTime, bool showLogName, string dateTimeFormat) : base(logName, logLevel, showlevel, showDateTime, showLogName, dateTimeFormat)
             {
                 // Add window with text view
                 _logsView = new Window("Logs")
@@ -34,39 +35,6 @@ namespace VRC.OSCQuery.Examples
                 Application.Top.Add(bar);
             }
             
-            /// <summary>
-            /// Logs to Status Bar and TextView
-            /// </summary>
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-            {
-                // Log to status bar
-                _item.Title = $"{state}";
-                
-                // Log to text view
-                _textView.Text += $"{state}{Environment.NewLine}";
-            }
-
-            /// <summary>
-            /// Show all logs for now
-            /// </summary>
-            /// <param name="logLevel"></param>
-            /// <returns></returns>
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                return true;
-            }
-
-            /// <summary>
-            /// Not implemented yet
-            /// </summary>
-            /// <param name="state"></param>
-            /// <typeparam name="TState"></typeparam>
-            /// <returns></returns>
-            public IDisposable BeginScope<TState>(TState state)
-            {
-                return null;
-            }
-            
             private void ShowLogs()
             {
                 _logsView.Visible = !_logsView.Visible;
@@ -74,6 +42,15 @@ namespace VRC.OSCQuery.Examples
                 {
                     _logsView.SetFocus();
                 }
+            }
+            
+            protected override void WriteInternal(LogLevel level, object message, Exception exception)
+            {
+                // Log to status bar
+                _item.Title = message.ToString();
+                
+                // Log to text view
+                _textView.Text += $"{message}{Environment.NewLine}";
             }
         }
 }

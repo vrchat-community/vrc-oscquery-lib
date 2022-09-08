@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Common.Logging;
 using Makaretu.Dns;
 using Terminal.Gui;
 
@@ -7,15 +8,15 @@ namespace VRC.OSCQuery.Examples.DataReceiver
 {
     public class FindServiceDialog : Dialog
     {
-        private TextField oscItemField;
         private ListView _listView;
-        private ServiceProfile _selectedProfile;
+        private ServiceProfile? _selectedProfile;
 
         private OSCQueryService _service;
 
-        public FindServiceDialog(OSCQueryService service)
+        public FindServiceDialog()
         {
-            _service = new OSCQueryService( OSCQueryService.DefaultServerName + "1", OSCQueryService.DefaultPortHttp + 10, OSCQueryService.DefaultPortOsc + 10, new StatusLogger<OSCQueryService>());
+            var logger = new StatusLogger("StatusLogger", LogLevel.All, true, true, false, "H:mm:ss");
+            _service = new OSCQueryService( OSCQueryService.DefaultServerName + "1", OSCQueryService.DefaultPortHttp + 10, OSCQueryService.DefaultPortOsc + 10, logger);
             
             Width = 45;
             Height = 10;
@@ -43,7 +44,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             };
             _listView.SelectedItemChanged += args =>
             {
-                _selectedProfile = _oscqServices[args.Item];
+                _selectedProfile = _oscqServices?[args.Item];
                 connectButton.Enabled = true;
             };
             Add(_listView);
@@ -56,7 +57,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             Enter += _ => RefreshListings();
         }
 
-        private List<ServiceProfile> _oscqServices;
+        private List<ServiceProfile>? _oscqServices;
 
         public void RefreshListings()
         {

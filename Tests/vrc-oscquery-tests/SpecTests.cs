@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -45,9 +44,6 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task Service_WithAddedProperty_ReturnsValueForThatProperty()
         {
-            var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
-            var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
-
             var random = new Random();
             int tcpPort = random.Next(9000,9999);
             var service = new OSCQueryService("TestService", tcpPort);
@@ -73,13 +69,10 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task Service_WithMultiplePaths_ReturnsValuesForAllChildren()
         {
-            var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
-            var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
-            
             var r = new Random();
             int tcpPort = Extensions.GetAvailableTcpPort();
             var udpPort = Extensions.GetAvailableUdpPort();
-            var service = new OSCQueryService("TestService", tcpPort, udpPort, libLogger);
+            var service = new OSCQueryService("TestService", tcpPort, udpPort);
             
             int randomInt1 = r.Next();
             int randomInt2 = r.Next();
@@ -139,9 +132,6 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task Service_WithRequestForFavicon_NoCrash()
         {
-            var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
-            var libLogger = loggerFactory.CreateLogger<OSCQueryService>();
-
             var port = Extensions.GetAvailableTcpPort();
             var service = new OSCQueryService("TestService", port);
             
