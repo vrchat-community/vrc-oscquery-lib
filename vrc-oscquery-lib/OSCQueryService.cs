@@ -77,8 +77,7 @@ namespace VRC.OSCQuery
                 // Query for OSC and OSCQuery services on every network interface
                 _mdns.NetworkInterfaceDiscovered += (s, e) =>
                 {
-                    _mdns.SendQuery(_localOscUdpServiceName);
-                    _mdns.SendQuery(_localOscJsonServiceName);
+                    RefreshServices();
                 };
                 // Callback invoked when the above query is answered
                 _mdns.AnswerReceived += OnRemoteServiceInfo;
@@ -99,6 +98,12 @@ namespace VRC.OSCQuery
             }
 
             BuildRootResponse();
+        }
+
+        public void RefreshServices()
+        {
+            _mdns.SendQuery(_localOscUdpServiceName);
+            _mdns.SendQuery(_localOscJsonServiceName);
         }
 
         /// <summary>
@@ -152,6 +157,11 @@ namespace VRC.OSCQuery
 
         public HashSet<ServiceProfile> GetOSCQueryServices() => _oscQueryServices;
         public HashSet<ServiceProfile> GetOSCServices() => _oscServices;
+        
+        public void SetValue(string address, string value)
+        {
+            _rootNode.GetNodeWithPath(address).Value = value;
+        }
 
         /// <summary>
         /// Process and responds to incoming HTTP queries
@@ -217,8 +227,6 @@ namespace VRC.OSCQuery
                         // return;
                     }
                     
-                    matchedNode.RefreshValue();
-                    
                     var stringResponse = matchedNode.ToString();
                     
                     // Send Response
@@ -247,7 +255,7 @@ namespace VRC.OSCQuery
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
         /// <typeparam name="T">The System.Type for the entry, will be converted to OSCType</typeparam>
         /// <returns></returns>
-        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, Func<string> getter = null, string description = "")
+        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, string initialValue = null, string description = "")
         {
             var oscType = Attributes.OSCTypeFor(typeof(T));
             if (string.IsNullOrWhiteSpace(oscType))
@@ -261,7 +269,7 @@ namespace VRC.OSCQuery
                 Access = accessValues,
                 Description = description,
                 OscType = oscType,
-                valueGetter = getter
+                Value = initialValue
             });
             
             return true;
@@ -277,7 +285,7 @@ namespace VRC.OSCQuery
 
             var node = _rootNode.GetNodeWithPath(path);
             // Exit early if no matching path is found
-            if (node == null)
+            if (_rootNode == null || _rootNode.GetNodeWithPath(path) == null)
             {
                 Logger.Error($"No endpoint found for {path}");
                 return false;

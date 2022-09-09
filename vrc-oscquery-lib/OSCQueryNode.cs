@@ -100,9 +100,6 @@ namespace VRC.OSCQuery
         [JsonProperty(Attributes.VALUE)] 
         public string Value;
 
-        [JsonIgnore]
-        public Func<string> valueGetter;
-
         [JsonIgnore] 
         public string ParentPath {
             get
@@ -115,23 +112,6 @@ namespace VRC.OSCQuery
 
         [JsonIgnore]
         public string Name => FullPath.Substring(FullPath.LastIndexOf('/')+1);
-
-        public void RefreshValue(HashSet<OSCQueryNode> visited = null)
-        {
-            visited = visited ?? new HashSet<OSCQueryNode>();
-            if (Contents != null)
-            {
-                foreach (OSCQueryNode node in Contents.Values)
-                {
-                    if (!visited.Contains(node))
-                    {
-                        node.RefreshValue(visited);
-                        visited.Add(node);
-                    }
-                }
-            }
-            Value = valueGetter?.Invoke();
-        }
 
         public override string ToString()
         {

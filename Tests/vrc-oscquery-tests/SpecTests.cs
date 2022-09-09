@@ -53,9 +53,9 @@ namespace VRC.OSCQuery.Tests
             string path = $"/{name}";
             service.AddEndpoint<int>(
                 path, 
-                Attributes.AccessValues.ReadOnly, 
-                () => randomInt.ToString()
-                );
+                Attributes.AccessValues.ReadOnly,
+                randomInt.ToString()
+            );
             var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
 
             var responseString = await response.Content.ReadAsStringAsync();
@@ -86,13 +86,13 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path1, 
                 Attributes.AccessValues.ReadOnly, 
-                () => randomInt1.ToString()
+                randomInt1.ToString()
             );
-            
+
             service.AddEndpoint<int>(
                 path2, 
-                Attributes.AccessValues.ReadOnly, 
-                () => randomInt2.ToString()
+                Attributes.AccessValues.ReadOnly,
+                randomInt2.ToString()
             );
             
             var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}/");

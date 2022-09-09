@@ -30,9 +30,11 @@ namespace VRC.OSCQuery.Examples
                 var wordSet = new Bogus.DataSets.Hacker();
                 var GenerateIntProp = new Func<string, int, string>((propertyName, intValue) => $"/{propertyName} {intValue}");
                 _intParams = new int[count];
+                _paramNames = new string[count];
                 for (int i = 0; i < count; i++)
                 {
                     var name = $"{wordSet.Adjective()}-{wordSet.Noun()}";
+                    _paramNames[i] = name;
                     
                     var newValue = r.Next(0, 99);
                     SetIntParam(i, newValue);
@@ -54,7 +56,7 @@ namespace VRC.OSCQuery.Examples
                         b.Text = GenerateIntProp(name, value);
                     };
                     result.Add(b);
-                    _service.AddEndpoint<int>($"/{name}", Attributes.AccessValues.ReadOnly,  () => GetIntParam(localIndex).ToString());
+                    _service.AddEndpoint<int>($"/{name}", Attributes.AccessValues.ReadOnly);
                 }
 
                 return result;
@@ -77,9 +79,11 @@ namespace VRC.OSCQuery.Examples
                 if (_intParams.Length > i)
                 {
                     _intParams[i] = value;
+                    _service.SetValue($"/{_paramNames[i]}", value.ToString());
                 }
             }
 
             private int[] _intParams;
+            private string[] _paramNames;
         }
 }
