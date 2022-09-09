@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -83,7 +84,6 @@ namespace VRC.OSCQuery.Tests
             service.SetValue(path, "true");
             
             var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
-
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
@@ -163,6 +163,36 @@ namespace VRC.OSCQuery.Tests
             
             var response = await new HttpClient().GetAsync($"http://localhost:{port}/favicon.ico");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        }
+        
+        [Test]
+        public async Task Service_After404_CanReturnParameterValue()
+        {
+            var port = Extensions.GetAvailableTcpPort();
+            var service = new OSCQueryService("TestService", port);
+            
+            var response = await new HttpClient().GetAsync($"http://localhost:{port}/whatever");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+            
+            // Add random int param
+            string name = Guid.NewGuid().ToString();
+            string path = $"/{name}";
+            int value = new Random().Next();
+            service.AddEndpoint<int>(
+                path, 
+                Attributes.AccessValues.ReadOnly,
+                value.ToString()
+            );
+
+            var tokenSource = new CancellationTokenSource();
+            tokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+            response = await new HttpClient().GetAsync($"http://localhost:{port}{path}", tokenSource.Token);
+            var responseString = await response.Content.ReadAsStringAsync();
+            var responseObject = JObject.Parse(responseString);
+            
+            Assert.That(responseObject[Attributes.VALUE]!.Value<int>(), Is.EqualTo(value));
+            
+            service.Dispose();
         }
 
     }

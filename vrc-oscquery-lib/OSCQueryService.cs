@@ -200,7 +200,6 @@ namespace VRC.OSCQuery
                             await sw.WriteAsync(hostInfoString);
                             await sw.FlushAsync();
                         }
-                        // return;
                     }
                     catch (Exception e)
                     {
@@ -218,7 +217,6 @@ namespace VRC.OSCQuery
                         await sw.WriteAsync(err);
                         await sw.FlushAsync();
                     }
-                    // return;
                 }
                 else
                 {
@@ -234,23 +232,23 @@ namespace VRC.OSCQuery
                             await sw.WriteAsync(err);
                             await sw.FlushAsync();
                         }
-                        // return;
                     }
-                    
-                    var stringResponse = matchedNode.ToString();
-                    
-                    // Send Response
-                    context.Response.Headers.Add("pragma:no-cache");
-                
-                    context.Response.ContentType = "application/json";
-                    context.Response.ContentLength64 = stringResponse.Length;
-                    using (var sw = new StreamWriter(context.Response.OutputStream))
+                    else
                     {
-                        await sw.WriteAsync(stringResponse);
-                        await sw.FlushAsync();
-                    }
+                        var stringResponse = matchedNode.ToString();
+                    
+                        // Send Response
+                        context.Response.Headers.Add("pragma:no-cache");
+                
+                        context.Response.ContentType = "application/json";
+                        context.Response.ContentLength64 = stringResponse.Length;
+                        using (var sw = new StreamWriter(context.Response.OutputStream))
+                        {
+                            await sw.WriteAsync(stringResponse);
+                            await sw.FlushAsync();
+                        }
 
-                    // return;
+                    }
                 }
             }
         }
