@@ -42,7 +42,7 @@ namespace VRC.OSCQuery.Tests
         }
 
         [Test]
-        public async Task Service_WithAddedProperty_ReturnsValueForThatProperty()
+        public async Task Service_WithAddedIntProperty_ReturnsValueForThatProperty()
         {
             var random = new Random();
             int tcpPort = random.Next(9000,9999);
@@ -62,6 +62,32 @@ namespace VRC.OSCQuery.Tests
             var responseObject = JObject.Parse(responseString);
             
             Assert.That(responseObject[Attributes.VALUE]!.Value<int>(), Is.EqualTo(randomInt));
+            
+            service.Dispose();
+        }
+        
+        [Test]
+        public async Task Service_WithAddedBoolProperty_ReturnsValueForThatProperty()
+        {
+            var random = new Random();
+            int tcpPort = random.Next(9000,9999);
+            var service = new OSCQueryService("TestService", tcpPort);
+            
+            string name = Guid.NewGuid().ToString();
+            string path = $"/{name}";
+            service.AddEndpoint<bool>(
+                path, 
+                Attributes.AccessValues.ReadOnly,
+                false.ToString()
+            );
+            service.SetValue(path, "true");
+            
+            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            var responseObject = JObject.Parse(responseString);
+            
+            Assert.That(responseObject[Attributes.VALUE]!.Value<bool>(), Is.EqualTo(true));
             
             service.Dispose();
         }

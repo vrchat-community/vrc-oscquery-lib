@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Makaretu.Dns;
 using Common.Logging;
+using Common.Logging.Simple;
 
 namespace VRC.OSCQuery
 {
@@ -54,9 +55,13 @@ namespace VRC.OSCQuery
             _matchedNames = new HashSet<string>() { 
                 _localOscUdpServiceName, _localOscJsonServiceName
             };
-            
+
             try
             {
+                Logger = logger ?? new NoOpLogger();
+                
+                BuildRootResponse();
+                
                 // Create HostInfo object
                 _hostInfo = new HostInfo()
                 {
@@ -96,8 +101,6 @@ namespace VRC.OSCQuery
                 _shouldProcessHttp = false;
                 Logger.Error($"Could not start OSCQuery service: {e.Message}");
             }
-
-            BuildRootResponse();
         }
 
         public void RefreshServices()
@@ -160,7 +163,14 @@ namespace VRC.OSCQuery
         
         public void SetValue(string address, string value)
         {
-            _rootNode.GetNodeWithPath(address).Value = value;
+            var target = _rootNode.GetNodeWithPath(address);
+            if (target == null)
+            {
+                // add this node
+                target = _rootNode.AddNode(new OSCQueryNode(address));
+            }
+            
+            target.Value = value;
         }
 
         /// <summary>
@@ -282,8 +292,6 @@ namespace VRC.OSCQuery
         /// <returns></returns>
         public bool RemoveEndpoint(string path)
         {
-
-            var node = _rootNode.GetNodeWithPath(path);
             // Exit early if no matching path is found
             if (_rootNode == null || _rootNode.GetNodeWithPath(path) == null)
             {

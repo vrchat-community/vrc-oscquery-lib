@@ -36,6 +36,7 @@ namespace VRC.OSCQuery.Examples
                     var name = $"{wordSet.Adjective()}-{wordSet.Noun()}";
                     _paramNames[i] = name;
                     
+                    _service.AddEndpoint<int>($"/{name}", Attributes.AccessValues.ReadOnly);
                     var newValue = r.Next(0, 99);
                     SetIntParam(i, newValue);
                     
@@ -56,7 +57,6 @@ namespace VRC.OSCQuery.Examples
                         b.Text = GenerateIntProp(name, value);
                     };
                     result.Add(b);
-                    _service.AddEndpoint<int>($"/{name}", Attributes.AccessValues.ReadOnly);
                 }
 
                 return result;

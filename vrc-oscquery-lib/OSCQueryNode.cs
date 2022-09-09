@@ -115,10 +115,11 @@ namespace VRC.OSCQuery
 
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this, new JsonSerializerSettings()
+            var result = JsonConvert.SerializeObject(this, new JsonSerializerSettings()
             {
                 NullValueHandling = NullValueHandling.Ignore
             });
+            return result;
         }
     }
 }
