@@ -261,8 +261,27 @@ namespace VRC.OSCQuery
         /// <param name="path">Full OSC path to entry</param>
         /// <param name="getter">Function which can return the current value for the entry</param>
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
-        /// <typeparam name="T">The System.Type for the entry, will be converted to OSCType</typeparam>
         /// <returns></returns>
+        public bool AddEndpoint(string path, string oscTypeString, Attributes.AccessValues accessValues, string initialValue = null,
+            string description = "")
+        {
+            if (_rootNode.GetNodeWithPath(path) != null)
+            {
+                Logger.Warn($"Path already exists, skipping: {path}");
+                return false;
+            }
+            
+            _rootNode.AddNode(new OSCQueryNode(path)
+            {
+                Access = accessValues,
+                Description = description,
+                OscType = oscTypeString,
+                Value = initialValue
+            });
+            
+            return true;
+        }
+        
         public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, string initialValue = null, string description = "")
         {
             var oscType = Attributes.OSCTypeFor(typeof(T));
@@ -271,16 +290,8 @@ namespace VRC.OSCQuery
                 Logger.Error($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
                 return false;
             }
-            
-            _rootNode.AddNode(new OSCQueryNode(path)
-            {
-                Access = accessValues,
-                Description = description,
-                OscType = oscType,
-                Value = initialValue
-            });
-            
-            return true;
+
+            return AddEndpoint(path, oscType, accessValues, initialValue, description);
         }
 
         /// <summary>

@@ -65,6 +65,7 @@ namespace VRC.OSCQuery
                     if (parent.Contents.ContainsKey(node.Name))
                     {
                         parent.Contents.Remove(node.Name);
+                        _pathLookup.Remove(path);
                         return true;
                     }
                 }
