@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using Makaretu.Dns;
 using Common.Logging;
-using Common.Logging.Simple;
 
 namespace VRC.OSCQuery
 {
@@ -39,7 +39,7 @@ namespace VRC.OSCQuery
         // Misc
         private OSCQueryRootNode _rootNode;
         private HostInfo _hostInfo;
-        public static ILog Logger;
+        public static readonly ILog Logger = LogManager.GetLogger(typeof(OSCQueryService)); 
         private readonly HashSet<string> _matchedNames;
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace VRC.OSCQuery
         /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
         /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
-        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILog logger = null)
+        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc)
         {
             // Construct hashset for services to track
             _matchedNames = new HashSet<string>() { 
@@ -58,7 +58,7 @@ namespace VRC.OSCQuery
 
             try
             {
-                Logger = logger ?? new NoOpLogger();
+                Logger.Info($"It's a log!");
                 
                 BuildRootResponse();
                 
@@ -74,10 +74,16 @@ namespace VRC.OSCQuery
                 _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort);
 
                 _mdns = new MulticastService();
+                _mdns.UseIpv6 = false;
+                _mdns.IgnoreDuplicateMessages = true;
+
                 _discovery = new ServiceDiscovery(_mdns);
                 
                 _discovery.Advertise(_oscService);
+                Logger.Debug($"Advertising OSC Service {serverName} as {Attributes.SERVICE_OSC_UDP} on {oscPort}");
+                
                 _discovery.Advertise(_zeroconfService);
+                Logger.Debug($"Advertising TCP Service {serverName} as {Attributes.SERVICE_OSCJSON_TCP} on {httpPort}");
                 
                 // Query for OSC and OSCQuery services on every network interface
                 _mdns.NetworkInterfaceDiscovered += (s, e) =>
@@ -88,6 +94,7 @@ namespace VRC.OSCQuery
                 _mdns.AnswerReceived += OnRemoteServiceInfo;
 
                 _mdns.Start();
+                Logger.Debug($"Started Multicast service {_mdns}");
                 
                 // Create and start HTTPListener
                 _listener = new HttpListener();
@@ -95,12 +102,33 @@ namespace VRC.OSCQuery
                 _listener.Start();
                 Task.Run(() => HttpListenerLoop());
                 _shouldProcessHttp = true;
+                
+                Logger.Debug($"Refreshing Services manually Once.");
+                RefreshServices();
             }
             catch (Exception e)
             {
                 _shouldProcessHttp = false;
                 Logger.Error($"Could not start OSCQuery service: {e.Message}");
             }
+        }
+
+        private IEnumerable<NetworkInterface> Filter(IEnumerable<NetworkInterface> arg)
+        {
+            var result = new List<NetworkInterface>();
+            foreach (var networkInterface in arg)
+            {
+                if (networkInterface.SupportsMulticast && !networkInterface.Description.Contains("Virtual"))
+                {
+                    Logger.Info($"Allowing {networkInterface.Name} : {networkInterface.Description}");
+                    result.Add(networkInterface);
+                }
+                else
+                {
+                    Logger.Info($"Not adding {networkInterface.Name} : {networkInterface.Description}");
+                }
+            }
+            return result;
         }
 
         public void RefreshServices()

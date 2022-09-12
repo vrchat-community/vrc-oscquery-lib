@@ -12,13 +12,15 @@ namespace VRC.OSCQuery.Examples
             Console.SetWindowSize(50,20);
             Application.Init ();
 
-            AddOscQueryService(new StatusLogger("StatusLogger", LogLevel.All, true, true, false, "H:mm:ss"));
+            LogManager.Adapter = new StatusLoggerFactoryAdapter();
+            // LogManager.GetLogger<DataSender>().Info($"Starting DataSender");
+            AddOscQueryService();
 
             Application.Run ();
             Application.Shutdown ();
         }
 
-        private static void AddOscQueryService(ILog logger)
+        private static void AddOscQueryService()
         {
             var dialog = new Dialog("OSCQueryServiceCreator", 45, 8);
 
@@ -52,7 +54,7 @@ namespace VRC.OSCQuery.Examples
 
             buttonConfirm.Clicked += () =>
             {
-                var window = new OSCQueryServiceWindow(nameField.Text.ToString(), Int32.Parse(tcpPortField.Text.ToString()), Int32.Parse(oscField.Text.ToString()), logger);
+                var window = new OSCQueryServiceWindow(nameField.Text.ToString(), Int32.Parse(tcpPortField.Text.ToString()), Int32.Parse(oscField.Text.ToString()));
                 Application.Top.Add(window);
                 Application.Top.Remove(dialog);
             };

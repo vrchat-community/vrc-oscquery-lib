@@ -6,7 +6,7 @@ using Common.Logging.Simple;
 namespace VRC.OSCQuery.Examples
 {
      public class StatusLogger : AbstractSimpleLogger
-        {
+     {
             private Window _logsView;
             private StatusItem _item;
             private TextView _textView;
@@ -52,5 +52,5 @@ namespace VRC.OSCQuery.Examples
                 // Log to text view
                 _textView.Text += $"{message}{Environment.NewLine}";
             }
-        }
+     }
 }

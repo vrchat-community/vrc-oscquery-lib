@@ -16,6 +16,7 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
     [RequireComponent(typeof(Canvas))]
     public class OSQCanvas : MonoBehaviour
     {
+        public Button StartButton;
         public Button RefreshButton;
         public GameObject ServerButtonPrefab;
         public Transform ServerButtonContainer;
@@ -27,16 +28,21 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
     
         void Start()
         {
-            _oscQuery = new OSCQueryService(
-                "OSCQueryExplorer-Unity", 
-                Extensions.GetAvailableTcpPort(),
-                Extensions.GetAvailableUdpPort(),
-                new UnityLogger("OSQCanvasLogger", LogLevel.All, true, false, false, "")
-            );
-            
+            LogManager.Adapter = new UnityLoggerFactoryAdapter(LogLevel.All, true, true, true, "HH:mm:ss");
+
+            StartButton.onClick.AddListener(StartService);
             RefreshButton.onClick.AddListener(RefreshServices);
             
             _canvas = GetComponent<Canvas>();
+        }
+
+        private void StartService()
+        {
+            _oscQuery = new OSCQueryService(
+                "OSCQueryExplorer-Unity", 
+                Extensions.GetAvailableTcpPort(),
+                Extensions.GetAvailableUdpPort()
+            );
             _oscQuery.OnProfileAdded += profile => RefreshServices();
         }
 
@@ -50,11 +56,11 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
 
         private async void RefreshServices()
         {
-            // Don't allow edit-time refreshes
-            if (!Application.isPlaying) return;
-            
             // Wait for main thread
             await UniTask.SwitchToMainThread();
+            
+            // Don't allow edit-time refreshes
+            if (!Application.isPlaying) return;
 
             // Clear all existing buttons
             ClearServices();
@@ -126,6 +132,7 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
 
         private void OnDestroy()
         {
+            _oscQuery.Dispose();
             ClearServices();
         }
     }

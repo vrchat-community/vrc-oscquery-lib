@@ -1,0 +1,3 @@
+<assembly fullname="vrc-oscquery-lib" preserve="all" />
+<assembly fullname="Makaretu.Dns" preserve="all" />
+<assembly fullname="Makaretu.Dns.Multicast" preserve="all" />

@@ -1,5 +1,4 @@
 ﻿using System;
-using Common.Logging;
 using Terminal.Gui;
 
 namespace VRC.OSCQuery.Examples
@@ -9,9 +8,9 @@ namespace VRC.OSCQuery.Examples
             private OSCQueryService _service;
             private TextField oscItemField;
 
-            public OSCQueryServiceWindow(string name, int tcpPort, int oscPort, ILog logger)
+            public OSCQueryServiceWindow(string name, int tcpPort, int oscPort)
             {
-                _service = new OSCQueryService(name, tcpPort, oscPort, logger);
+                _service = new OSCQueryService(name, tcpPort, oscPort);
                 Title = $"{name} TCP: {tcpPort} OSC: {oscPort}";
                 Add(MakeIntParams(10));
             }

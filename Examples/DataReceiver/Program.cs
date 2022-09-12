@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Common.Logging;
 using Makaretu.Dns;
 using Newtonsoft.Json;
 using Terminal.Gui;
@@ -11,6 +12,9 @@ namespace VRC.OSCQuery.Examples.DataReceiver
 {
     class DataReceiver
     {
+        
+        private static ILog Logger;
+        
         static void Main ()
         {
 #pragma warning disable CA1416
@@ -18,6 +22,10 @@ namespace VRC.OSCQuery.Examples.DataReceiver
 #pragma warning restore CA1416
             Application.Init ();
             
+            LogManager.Adapter = new StatusLoggerFactoryAdapter();
+            // Logger = LogManager.GetLogger(typeof(DataReceiver));
+            // Logger.Info($"Hi from Main");
+
             Application.Top.Add (new FindServiceDialog());
             
             Application.Run ();
