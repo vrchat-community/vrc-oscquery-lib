@@ -4,7 +4,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Common.Logging;
-using Makaretu.Dns;
+using MeaMod.DNS.Model;
+using MeaMod.DNS.Multicast;
 using Newtonsoft.Json;
 using Terminal.Gui;
 
@@ -23,8 +24,6 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             Application.Init ();
             
             LogManager.Adapter = new StatusLoggerFactoryAdapter();
-            // Logger = LogManager.GetLogger(typeof(DataReceiver));
-            // Logger.Info($"Hi from Main");
 
             Application.Top.Add (new FindServiceDialog());
             

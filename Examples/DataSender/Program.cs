@@ -37,13 +37,14 @@ namespace VRC.OSCQuery.Examples
             {
                 X = fieldWidth, Y = 1, Width = fieldWidth
             };
-            
-            var tcpPortField = new TextField($"{VRC.OSCQuery.Extensions.GetAvailableTcpPort()}")
+
+            var startPort = VRC.OSCQuery.Extensions.GetAvailableTcpPort();
+            var tcpPortField = new TextField($"{startPort}")
             { 
                 X = fieldWidth, Y = 2, Width = fieldWidth
                 
             };
-            var oscField = new TextField($"{VRC.OSCQuery.Extensions.GetAvailableUdpPort()}"){
+            var oscField = new TextField($"{startPort}"){
                 X = fieldWidth, Y = 3, Width = fieldWidth,
             };
             

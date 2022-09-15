@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Threading.Tasks;
-using Makaretu.Dns;
 using Common.Logging;
+using MeaMod.DNS.Model;
+using MeaMod.DNS.Multicast;
 
 namespace VRC.OSCQuery
 {
@@ -27,6 +27,7 @@ namespace VRC.OSCQuery
         private MulticastService _mdns;
         private ServiceDiscovery _discovery;
         public event Action<ServiceProfile> OnProfileAdded;
+        public event Action<OSCServiceProfile> OnOscServiceAdded;
 
         // Store discovered services
         private HashSet<ServiceProfile> _oscQueryServices = new HashSet<ServiceProfile>();
@@ -49,7 +50,7 @@ namespace VRC.OSCQuery
         /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
         /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
-        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc)
+        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, bool advertiseOsc = true)
         {
             // Construct hashset for services to track
             _matchedNames = new HashSet<string>() { 
@@ -58,33 +59,36 @@ namespace VRC.OSCQuery
 
             try
             {
-                Logger.Info($"It's a log!");
-                
                 BuildRootResponse();
                 
                 // Create HostInfo object
                 _hostInfo = new HostInfo()
                 {
                     name = serverName,
-                    oscPort = oscPort,
                 };
-                
-                // Set up and Advertise OSC and ZeroConf profiles
-                _oscService = new ServiceProfile(serverName, Attributes.SERVICE_OSC_UDP, (ushort)oscPort);
-                _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort);
 
+                var advertisingIp = new[] { IPAddress.Loopback };
+                
                 _mdns = new MulticastService();
                 _mdns.UseIpv6 = false;
                 _mdns.IgnoreDuplicateMessages = true;
 
                 _discovery = new ServiceDiscovery(_mdns);
                 
-                _discovery.Advertise(_oscService);
-                Logger.Debug($"Advertising OSC Service {serverName} as {Attributes.SERVICE_OSC_UDP} on {oscPort}");
-                
+                // Advertise OSCJSON service
+                _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort, advertisingIp);
                 _discovery.Advertise(_zeroconfService);
                 Logger.Debug($"Advertising TCP Service {serverName} as {Attributes.SERVICE_OSCJSON_TCP} on {httpPort}");
-                
+
+                // Advertise OSC service
+                if (advertiseOsc)
+                {
+                    _hostInfo.oscPort = oscPort;
+                    _oscService = new ServiceProfile(serverName, Attributes.SERVICE_OSC_UDP, (ushort)oscPort, advertisingIp);
+                    _discovery.Advertise(_oscService);
+                    Logger.Debug($"Advertising OSC Service {serverName} as {Attributes.SERVICE_OSC_UDP} on {oscPort}");
+                }
+
                 // Query for OSC and OSCQuery services on every network interface
                 _mdns.NetworkInterfaceDiscovered += (s, e) =>
                 {
@@ -94,16 +98,15 @@ namespace VRC.OSCQuery
                 _mdns.AnswerReceived += OnRemoteServiceInfo;
 
                 _mdns.Start();
-                Logger.Debug($"Started Multicast service {_mdns}");
                 
                 // Create and start HTTPListener
                 _listener = new HttpListener();
                 _listener.Prefixes.Add($"http://localhost:{httpPort}/");
+                _listener.Prefixes.Add($"http://127.0.0.1:{httpPort}/");
                 _listener.Start();
                 Task.Run(() => HttpListenerLoop());
                 _shouldProcessHttp = true;
                 
-                Logger.Debug($"Refreshing Services manually Once.");
                 RefreshServices();
             }
             catch (Exception e)
@@ -111,24 +114,6 @@ namespace VRC.OSCQuery
                 _shouldProcessHttp = false;
                 Logger.Error($"Could not start OSCQuery service: {e.Message}");
             }
-        }
-
-        private IEnumerable<NetworkInterface> Filter(IEnumerable<NetworkInterface> arg)
-        {
-            var result = new List<NetworkInterface>();
-            foreach (var networkInterface in arg)
-            {
-                if (networkInterface.SupportsMulticast && !networkInterface.Description.Contains("Virtual"))
-                {
-                    Logger.Info($"Allowing {networkInterface.Name} : {networkInterface.Description}");
-                    result.Add(networkInterface);
-                }
-                else
-                {
-                    Logger.Info($"Not adding {networkInterface.Name} : {networkInterface.Description}");
-                }
-            }
-            return result;
         }
 
         public void RefreshServices()
@@ -148,9 +133,23 @@ namespace VRC.OSCQuery
             
             try
             {
-                // Doing lots of LINQ-y stuff here and catching exceptions below for unmatched services. Open to other ideas!
+                // Check whether this service matches OSCJSON or OSC services for which we're looking
+                bool hasMatch = response.Answers.Any(record => _matchedNames.Contains(record?.CanonicalName));
+                if (!hasMatch)
+                {
+                    return;
+                }
+                
+                // Get the name and SRV Record of the service
                 var name = response.Answers.First(r => _matchedNames.Contains(r?.CanonicalName)).CanonicalName;
-                var srvRecord = response.AdditionalRecords.OfType<SRVRecord>().First();
+                var srvRecord = response.AdditionalRecords.OfType<SRVRecord>().FirstOrDefault();
+                if (srvRecord == default)
+                {
+                    Logger.Warn($"Found the matching service {name}, but it doesn't have an SRVRecord, can't proceed.");
+                    return;
+                }
+                
+                // Get the rest of the items we need to track this service
                 var port = srvRecord.Port;
                 var domainName = srvRecord.Name.Labels;
                 var instanceName = domainName[0];
@@ -161,16 +160,19 @@ namespace VRC.OSCQuery
                 // If this is an OSC service, add it to the OSC collection
                 if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
                 {
+                    // Make sure there's not already a service with the same name
                     if (!_oscServices.Any(p => p.FullyQualifiedName == profile.FullyQualifiedName))
                     {
                         _oscServices.Add(profile);
                         OnProfileAdded?.Invoke(profile);
+                        OnOscServiceAdded?.Invoke(new OSCServiceProfile(instanceName, ips.First(), port));
                         Logger.Info($"Found match {name} on port {port}");
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
                 else if (name.CompareTo(_localOscJsonServiceName) == 0 && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName)
                 {
+                    // Make sure there's not already a service with the same name
                     if (!_oscQueryServices.Any(p => p.FullyQualifiedName == profile.FullyQualifiedName))
                     {
                         _oscQueryServices.Add(profile);

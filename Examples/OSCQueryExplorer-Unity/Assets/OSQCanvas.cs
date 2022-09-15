@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using Common.Logging;
-using Makaretu.Dns;
 using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using MeaMod.DNS.Model;
+using MeaMod.DNS.Multicast;
 using Newtonsoft.Json;
 #pragma warning disable 4014
 
@@ -16,7 +17,6 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
     [RequireComponent(typeof(Canvas))]
     public class OSQCanvas : MonoBehaviour
     {
-        public Button StartButton;
         public Button RefreshButton;
         public GameObject ServerButtonPrefab;
         public Transform ServerButtonContainer;
@@ -29,8 +29,8 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
         void Start()
         {
             LogManager.Adapter = new UnityLoggerFactoryAdapter(LogLevel.All, true, true, true, "HH:mm:ss");
-
-            StartButton.onClick.AddListener(StartService);
+            
+            StartService();
             RefreshButton.onClick.AddListener(RefreshServices);
             
             _canvas = GetComponent<Canvas>();
@@ -38,10 +38,11 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
 
         private void StartService()
         {
+            var port = VRC.OSCQuery.Extensions.GetAvailableTcpPort();
             _oscQuery = new OSCQueryService(
                 "OSCQueryExplorer-Unity", 
-                Extensions.GetAvailableTcpPort(),
-                Extensions.GetAvailableUdpPort()
+                port,
+                port
             );
             _oscQuery.OnProfileAdded += profile => RefreshServices();
         }

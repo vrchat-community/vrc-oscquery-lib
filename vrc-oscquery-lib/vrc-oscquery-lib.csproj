@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
         <RootNamespace>vrc_oscquery_lib</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Makaretu.Dns.Multicast" Version="0.27.0" />
+      <PackageReference Include="Common.Logging" Version="3.4.1" />
+      <PackageReference Include="MeaMod.DNS" Version="1.0.70" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     </ItemGroup>
 
