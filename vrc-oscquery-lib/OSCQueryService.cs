@@ -18,8 +18,8 @@ namespace VRC.OSCQuery
         public const string DefaultServerName = "OSCQueryService";
 
         // Services
-        private readonly string _localOscUdpServiceName = $"{Attributes.SERVICE_OSC_UDP}.local";
-        private readonly string _localOscJsonServiceName = $"{Attributes.SERVICE_OSCJSON_TCP}.local";
+        private static readonly string _localOscUdpServiceName = $"{Attributes.SERVICE_OSC_UDP}.local";
+        private static readonly string _localOscJsonServiceName = $"{Attributes.SERVICE_OSCJSON_TCP}.local";
 
         // Zeroconf
         private ServiceProfile _zeroconfService;
@@ -41,8 +41,15 @@ namespace VRC.OSCQuery
         private OSCQueryRootNode _rootNode;
         private HostInfo _hostInfo;
         public static readonly ILog Logger = LogManager.GetLogger(typeof(OSCQueryService)); 
-        private readonly HashSet<string> _matchedNames;
+        private readonly HashSet<string> _matchedNames = new HashSet<string>() { 
+            _localOscUdpServiceName, _localOscJsonServiceName
+        };
 
+        public OSCQueryService(string serverName)
+        {
+           Initialize(serverName);
+        }
+        
         /// <summary>
         /// Creates an OSCQueryService which can track OSC endpoints in the enclosing program as well as find other OSCQuery-compatible services on the link-local network
         /// </summary>
@@ -50,70 +57,67 @@ namespace VRC.OSCQuery
         /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
         /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
-        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, bool advertiseOsc = true)
+        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc)
         {
-            // Construct hashset for services to track
-            _matchedNames = new HashSet<string>() { 
-                _localOscUdpServiceName, _localOscJsonServiceName
+            Initialize(serverName);
+            BeAnOSCQueryServer(serverName, httpPort);
+            BeAnOscServer(serverName, oscPort);
+        }
+
+        public void Initialize(string serverName = DefaultServerName)
+        {
+            // Create HostInfo object
+            _hostInfo = new HostInfo()
+            {
+                name = serverName,
             };
+            
+            _mdns = new MulticastService();
+            _mdns.UseIpv6 = false;
+            _mdns.IgnoreDuplicateMessages = true;
 
-            try
+            _discovery = new ServiceDiscovery(_mdns);
+            
+            // Query for OSC and OSCQuery services on every network interface
+            _mdns.NetworkInterfaceDiscovered += (s, e) =>
             {
-                BuildRootResponse();
-                
-                // Create HostInfo object
-                _hostInfo = new HostInfo()
-                {
-                    name = serverName,
-                };
-
-                var advertisingIp = new[] { IPAddress.Loopback };
-                
-                _mdns = new MulticastService();
-                _mdns.UseIpv6 = false;
-                _mdns.IgnoreDuplicateMessages = true;
-
-                _discovery = new ServiceDiscovery(_mdns);
-                
-                // Advertise OSCJSON service
-                _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort, advertisingIp);
-                _discovery.Advertise(_zeroconfService);
-                Logger.Debug($"Advertising TCP Service {serverName} as {Attributes.SERVICE_OSCJSON_TCP} on {httpPort}");
-
-                // Advertise OSC service
-                if (advertiseOsc)
-                {
-                    _hostInfo.oscPort = oscPort;
-                    _oscService = new ServiceProfile(serverName, Attributes.SERVICE_OSC_UDP, (ushort)oscPort, advertisingIp);
-                    _discovery.Advertise(_oscService);
-                    Logger.Debug($"Advertising OSC Service {serverName} as {Attributes.SERVICE_OSC_UDP} on {oscPort}");
-                }
-
-                // Query for OSC and OSCQuery services on every network interface
-                _mdns.NetworkInterfaceDiscovered += (s, e) =>
-                {
-                    RefreshServices();
-                };
-                // Callback invoked when the above query is answered
-                _mdns.AnswerReceived += OnRemoteServiceInfo;
-
-                _mdns.Start();
-                
-                // Create and start HTTPListener
-                _listener = new HttpListener();
-                _listener.Prefixes.Add($"http://localhost:{httpPort}/");
-                _listener.Prefixes.Add($"http://127.0.0.1:{httpPort}/");
-                _listener.Start();
-                Task.Run(() => HttpListenerLoop());
-                _shouldProcessHttp = true;
-                
                 RefreshServices();
-            }
-            catch (Exception e)
-            {
-                _shouldProcessHttp = false;
-                Logger.Error($"Could not start OSCQuery service: {e.Message}");
-            }
+            };
+            
+            // Callback invoked when the above query is answered
+            _mdns.AnswerReceived += OnRemoteServiceInfo;
+            _mdns.Start();
+
+            RefreshServices();
+        }
+
+        public void BeAnOSCQueryServer(string serverName, int httpPort = -1)
+        {
+            BuildRootResponse();
+            
+            // Use the provided port or grab a new one
+            httpPort = httpPort == -1 ? Extensions.GetAvailableTcpPort() : httpPort;
+            
+            // Advertise OSCJSON service
+            _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort, new[] { IPAddress.Loopback });
+            _discovery.Advertise(_zeroconfService);
+            Logger.Debug($"Advertising TCP Service {serverName} as {Attributes.SERVICE_OSCJSON_TCP} on {httpPort}");
+            
+            // Create and start HTTPListener
+            _listener = new HttpListener();
+            _listener.Prefixes.Add($"http://localhost:{httpPort}/");
+            _listener.Prefixes.Add($"http://127.0.0.1:{httpPort}/");
+            _listener.Start();
+            Task.Run(() => HttpListenerLoop());
+            _shouldProcessHttp = true;
+        }
+
+        public void BeAnOscServer(string serverName, int oscPort = -1)
+        {
+            _hostInfo.oscPort = oscPort;
+            _oscService = new ServiceProfile(serverName, Attributes.SERVICE_OSC_UDP, (ushort)oscPort, new[] { IPAddress.Loopback });
+            _discovery.Advertise(_oscService);
+            Logger.Debug($"Advertising OSC Service {serverName} as {Attributes.SERVICE_OSC_UDP} on {oscPort}");
         }
 
         public void RefreshServices()
