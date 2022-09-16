@@ -11,4 +11,11 @@
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     </ItemGroup>
 
+    <Target Name="CopyUnityDLL" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net46'">
+        <Copy
+                SourceFiles="$(TargetDir)$(ProjectName).dll;"
+                DestinationFolder="$(SolutionDir)/Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Runtime/Plugins" />
+        <Message Text="Copied vrc-oscquery-lib.dll to Unity" Importance="High" />
+    </Target>
+
 </Project>
