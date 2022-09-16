@@ -68,17 +68,13 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             {
                 case TypeTag.Int32:
                     return values.ReadIntElement(i).ToString();
-                    break;
                 case TypeTag.String:
                     return values.ReadStringElement(i);
-                    break;
                 case TypeTag.True:
                 case TypeTag.False:
                     return values.ReadBooleanElement(i).ToString();
-                    break;
                 case TypeTag.Float32:
                     return values.ReadFloatElement(i).ToString();
-                    break;
                 default:
                     return "";
             }
