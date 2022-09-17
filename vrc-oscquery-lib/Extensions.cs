@@ -1,11 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
+using System.Threading.Tasks;
+using Common.Logging;
 
 namespace VRC.OSCQuery
 {
     public static class Extensions
     {
+        private static HttpClient _client = new HttpClient();
+        
             public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> source, int count)
             {
                 var queue = new Queue<T>();
@@ -48,6 +54,22 @@ namespace VRC.OSCQuery
                     socket.Bind(DefaultLoopbackEndpoint);
                     return ((IPEndPoint)socket.LocalEndPoint).Port;
                 }
+            }
+
+            public static async Task<OSCQueryRootNode> GetOSCTree(IPAddress ip, int port)
+            {
+                var Logger = LogManager.GetLogger(typeof(Extensions)); 
+                var response = await new HttpClient().GetAsync($"http://{ip}:{port}/");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Logger.Error($"Could not get OSC Tree from {ip}:{port} because {response.ReasonPhrase}");
+                    return null;
+                }
+
+                var oscTreeString = await response.Content.ReadAsStringAsync();
+                var oscTree = OSCQueryRootNode.FromString(oscTreeString);
+                
+                return oscTree;
             }
     }
 }

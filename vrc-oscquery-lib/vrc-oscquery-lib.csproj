@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
+        <TargetFrameworks>net46;net6.0</TargetFrameworks>
         <RootNamespace>vrc_oscquery_lib</RootNamespace>
     </PropertyGroup>
 
@@ -9,12 +9,11 @@
       <PackageReference Include="Common.Logging" Version="3.4.1" />
       <PackageReference Include="MeaMod.DNS" Version="1.0.70" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+      <PackageReference Include="System.Net.Http" Version="4.3.4" />
     </ItemGroup>
 
     <Target Name="CopyUnityDLL" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net46'">
-        <Copy
-                SourceFiles="$(TargetDir)$(ProjectName).dll;"
-                DestinationFolder="$(SolutionDir)/Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Runtime/Plugins" />
+        <Copy SourceFiles="$(TargetDir)$(ProjectName).dll;" DestinationFolder="$(SolutionDir)/Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Runtime/Plugins" />
         <Message Text="Copied vrc-oscquery-lib.dll to Unity" Importance="High" />
     </Target>
 

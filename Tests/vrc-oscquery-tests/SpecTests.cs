@@ -133,6 +133,50 @@ namespace VRC.OSCQuery.Tests
             
             service.Dispose();
         }
+        
+        [Test]
+        public void GetOSCTree_ReturnsExpectedValues()
+        {
+            var r = new Random();
+            int tcpPort = Extensions.GetAvailableTcpPort();
+            var udpPort = Extensions.GetAvailableUdpPort();
+            var service = new OSCQueryService("TestService", tcpPort, udpPort);
+            
+            int randomInt1 = r.Next();
+            int randomInt2 = r.Next();
+            
+            string name1 = Guid.NewGuid().ToString();
+            string name2 = Guid.NewGuid().ToString();
+            
+            string path1 = $"/{name1}";
+            string path2 = $"/{name2}";
+            
+            service.AddEndpoint<int>(
+                path1, 
+                Attributes.AccessValues.ReadOnly, 
+                randomInt1.ToString()
+            );
+
+            service.AddEndpoint<int>(
+                path2, 
+                Attributes.AccessValues.ReadOnly,
+                randomInt2.ToString()
+            );
+
+            var tree = Task.Run(() => Extensions.GetOSCTree(IPAddress.Loopback, tcpPort)).GetAwaiter().GetResult();
+            Assert.NotNull(tree);
+
+            var node1 = tree.GetNodeWithPath(path1);
+            var node2 = tree.GetNodeWithPath(path2);
+            
+            Assert.That(node1.Name, Is.EqualTo(name1));
+            Assert.That(node1.Value, Is.EqualTo(randomInt1.ToString()));
+            
+            Assert.That(node2.Name, Is.EqualTo(name2));
+            Assert.That(node2.Value, Is.EqualTo(randomInt2.ToString()));
+            
+            service.Dispose();
+        }
 
         [Test]
         public async Task Service_AfterAddingGrandChildNode_HasNodesForEachAncestor()

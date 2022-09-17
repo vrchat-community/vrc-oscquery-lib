@@ -70,8 +70,37 @@ namespace VRC.OSCQuery
                     }
                 }
             }
-
             return false;
+        }
+
+        public void RebuildLookup()
+        {
+            _pathLookup = new Dictionary<string, OSCQueryNode>();
+            AddContents(this);
+        }
+
+        /// <summary>
+        /// Recursive Function to rebuild Lookup
+        /// </summary>
+        /// <param name="node"></param>
+        public void AddContents(OSCQueryNode node)
+        {
+            foreach (var pair in node.Contents)
+            {
+                var subNode = pair.Value;
+                _pathLookup.Add(subNode.FullPath, subNode);
+                if (subNode.Contents != null)
+                {
+                    AddContents(subNode);
+                }
+            }
+        }
+
+        public static OSCQueryRootNode FromString(string json)
+        {
+            var tree = JsonConvert.DeserializeObject<OSCQueryRootNode>(json);
+            tree.RebuildLookup();
+            return tree;
         }
     }
     public class OSCQueryNode
