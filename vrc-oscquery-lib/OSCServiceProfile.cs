@@ -15,4 +15,11 @@ namespace VRC.OSCQuery
             this.port = port;
         }
     }
+
+    public class OSCQueryServiceProfile : OSCServiceProfile
+    {
+        public OSCQueryServiceProfile(string name, IPAddress address, int port) : base(name, address, port)
+        {
+        }
+    }
 }

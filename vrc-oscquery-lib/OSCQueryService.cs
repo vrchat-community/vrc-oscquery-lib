@@ -28,6 +28,7 @@ namespace VRC.OSCQuery
         private ServiceDiscovery _discovery;
         public event Action<ServiceProfile> OnProfileAdded;
         public event Action<OSCServiceProfile> OnOscServiceAdded;
+        public event Action<OSCServiceProfile> OnOscQueryServiceAdded;
 
         // Store discovered services
         private HashSet<ServiceProfile> _oscQueryServices = new HashSet<ServiceProfile>();
@@ -157,6 +158,12 @@ namespace VRC.OSCQuery
                 var port = srvRecord.Port;
                 var domainName = srvRecord.Name.Labels;
                 var instanceName = domainName[0];
+                if (instanceName == _zeroconfService.InstanceName || instanceName == _oscService.InstanceName)
+                {
+                    // Skipping because this is our own service
+                    return;
+                }
+                
                 var serviceName = string.Join(".", domainName.Skip(1).SkipLast(1));
                 var ips = response.AdditionalRecords.OfType<ARecord>().Select(r => r.Address);
                 var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ips);
@@ -181,6 +188,7 @@ namespace VRC.OSCQuery
                     {
                         _oscQueryServices.Add(profile);
                         OnProfileAdded?.Invoke(profile);
+                        OnOscQueryServiceAdded?.Invoke(new OSCQueryServiceProfile(instanceName, ips.First(), port));
                         Logger.Info($"Found match {name} on port {port}");
                     }
                 }
