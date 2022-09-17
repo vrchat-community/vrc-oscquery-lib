@@ -14,19 +14,23 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
     {
         public Text HeaderText;
         public InputField InputField;
-        
-        // private OSCQueryService _oscQuery;
-        private OSCQueryService _oscQueryService;
+        public bool connectToDefaultVRCEndpoint;
 
+        private OSCQueryService _oscQueryService;
         private List<OscClient> _receivers = new List<OscClient>();
-        // private OscServer _receiver;
-        
+
         void Start()
         {
             LogManager.Adapter = new UnityLoggerFactoryAdapter(LogLevel.All, true, true, true, "HH:mm:ss");
             StartService();
 
             InputField.onValueChanged.AddListener(OnValueChanged);
+            InputField.onEndEdit.AddListener(OnEndEdit);
+
+            if (connectToDefaultVRCEndpoint)
+            {
+                AddChatboxReceiver(IPAddress.Loopback, 9000);
+            }
         }
 
         private async void OnOscQueryServiceFound(OSCQueryServiceProfile profile)
@@ -59,6 +63,15 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             foreach (var receiver in _receivers)
             {
                 receiver.Send("/chatbox/typing", true);
+            }
+        }
+
+        private void OnEndEdit(string value)
+        {
+            foreach (var receiver in _receivers)
+            {
+                string address = "/chatbox/input";
+                receiver.Send(address, value, true);
             }
         }
 

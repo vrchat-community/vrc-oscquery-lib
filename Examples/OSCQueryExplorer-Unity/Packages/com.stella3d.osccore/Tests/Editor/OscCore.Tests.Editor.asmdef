@@ -1,0 +1,21 @@
+{
+    "name": "OscCore.Tests.Editor",
+    "references": [
+        "OscCore.Runtime",
+        "NtpTimestamp",
+        "BlobHandles.Runtime"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}
