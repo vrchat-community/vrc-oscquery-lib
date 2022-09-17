@@ -8,7 +8,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
     public class FindServiceDialog : Dialog
     {
         private ListView _listView;
-        private ServiceProfile? _selectedProfile;
+        private OSCQueryServiceProfile? _selectedProfile;
 
         private OSCQueryService _service;
 
@@ -55,7 +55,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             Enter += _ => RefreshListings();
         }
 
-        private List<ServiceProfile>? _oscqServices;
+        private List<OSCQueryServiceProfile>? _oscqServices;
 
         public void RefreshListings()
         {
@@ -64,7 +64,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             Title = foundServices ? $"OSCQuery Services Found: {_oscqServices.Count}" : "Searching for OSCQuery Services...";
             
             _listView.Visible = foundServices;
-            _listView.SetSource(_oscqServices.Select(service=>service.InstanceName.ToString()).ToList());
+            _listView.SetSource(_oscqServices.Select(service=>service.name.ToString()).ToList());
 
             SetNeedsDisplay();
         }

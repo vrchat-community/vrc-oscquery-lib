@@ -27,12 +27,12 @@ namespace VRC.OSCQuery
         private MulticastService _mdns;
         private ServiceDiscovery _discovery;
         public event Action<ServiceProfile> OnProfileAdded;
-        public event Action<OSCServiceProfile> OnOscServiceAdded;
-        public event Action<OSCServiceProfile> OnOscQueryServiceAdded;
+        public event Action<OSCQueryServiceProfile> OnOscServiceAdded;
+        public event Action<OSCQueryServiceProfile> OnOscQueryServiceAdded;
 
         // Store discovered services
-        private HashSet<ServiceProfile> _oscQueryServices = new HashSet<ServiceProfile>();
-        private HashSet<ServiceProfile> _oscServices = new HashSet<ServiceProfile>();
+        private HashSet<OSCQueryServiceProfile> _oscQueryServices = new HashSet<OSCQueryServiceProfile>();
+        private HashSet<OSCQueryServiceProfile> _oscServices = new HashSet<OSCQueryServiceProfile>();
 
         // HTTP Server
         HttpListener _listener;
@@ -49,6 +49,7 @@ namespace VRC.OSCQuery
         public OSCQueryService(string serverName)
         {
            Initialize(serverName);
+           RefreshServices();
         }
         
         /// <summary>
@@ -63,6 +64,7 @@ namespace VRC.OSCQuery
             Initialize(serverName);
             BeAnOSCQueryServer(serverName, httpPort);
             BeAnOscServer(serverName, oscPort);
+            RefreshServices();
         }
 
         public void Initialize(string serverName = DefaultServerName)
@@ -88,8 +90,6 @@ namespace VRC.OSCQuery
             // Callback invoked when the above query is answered
             _mdns.AnswerReceived += OnRemoteServiceInfo;
             _mdns.Start();
-
-            RefreshServices();
         }
 
         public void BeAnOSCQueryServer(string serverName, int httpPort = -1)
@@ -103,7 +103,7 @@ namespace VRC.OSCQuery
             _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort, new[] { IPAddress.Loopback });
             _discovery.Advertise(_zeroconfService);
             Logger.Debug($"Advertising TCP Service {serverName} as {Attributes.SERVICE_OSCJSON_TCP} on {httpPort}");
-            
+
             // Create and start HTTPListener
             _listener = new HttpListener();
             _listener.Prefixes.Add($"http://localhost:{httpPort}/");
@@ -116,6 +116,7 @@ namespace VRC.OSCQuery
         public void BeAnOscServer(string serverName, int oscPort = -1)
         {
             _hostInfo.oscPort = oscPort;
+            _hostInfo.oscIP = IPAddress.Loopback.ToString();
             _oscService = new ServiceProfile(serverName, Attributes.SERVICE_OSC_UDP, (ushort)oscPort, new[] { IPAddress.Loopback });
             _discovery.Advertise(_oscService);
             Logger.Debug($"Advertising OSC Service {serverName} as {Attributes.SERVICE_OSC_UDP} on {oscPort}");
@@ -158,12 +159,7 @@ namespace VRC.OSCQuery
                 var port = srvRecord.Port;
                 var domainName = srvRecord.Name.Labels;
                 var instanceName = domainName[0];
-                if (instanceName == _zeroconfService.InstanceName || instanceName == _oscService.InstanceName)
-                {
-                    // Skipping because this is our own service
-                    return;
-                }
-                
+
                 var serviceName = string.Join(".", domainName.Skip(1).SkipLast(1));
                 var ips = response.AdditionalRecords.OfType<ARecord>().Select(r => r.Address);
                 var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ips);
@@ -172,24 +168,30 @@ namespace VRC.OSCQuery
                 if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
                 {
                     // Make sure there's not already a service with the same name
-                    if (!_oscServices.Any(p => p.FullyQualifiedName == profile.FullyQualifiedName))
+                    if (!_oscServices.Any(p => p.name == profile.InstanceName))
                     {
-                        _oscServices.Add(profile);
+                        var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
+                        _oscServices.Add(p);
                         OnProfileAdded?.Invoke(profile);
-                        OnOscServiceAdded?.Invoke(new OSCServiceProfile(instanceName, ips.First(), port));
+                        OnOscServiceAdded?.Invoke(p);
                         Logger.Info($"Found match {name} on port {port}");
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
-                else if (name.CompareTo(_localOscJsonServiceName) == 0 && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName)
+                else if (name.CompareTo(_localOscJsonServiceName) == 0 && (_zeroconfService != null && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName))
                 {
                     // Make sure there's not already a service with the same name
-                    if (!_oscQueryServices.Any(p => p.FullyQualifiedName == profile.FullyQualifiedName))
+                    if (!_oscQueryServices.Any(p => p.name == profile.InstanceName))
                     {
-                        _oscQueryServices.Add(profile);
+                        var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
+                        _oscQueryServices.Add(p);
                         OnProfileAdded?.Invoke(profile);
-                        OnOscQueryServiceAdded?.Invoke(new OSCQueryServiceProfile(instanceName, ips.First(), port));
+                        OnOscQueryServiceAdded?.Invoke(p);
                         Logger.Info($"Found match {name} on port {port}");
+                    }
+                    else
+                    {
+                        Logger.Info($"Not triggering service added for {name} because it's already tracked");
                     }
                 }
             }
@@ -200,8 +202,8 @@ namespace VRC.OSCQuery
             }
         }
 
-        public HashSet<ServiceProfile> GetOSCQueryServices() => _oscQueryServices;
-        public HashSet<ServiceProfile> GetOSCServices() => _oscServices;
+        public HashSet<OSCQueryServiceProfile> GetOSCQueryServices() => _oscQueryServices;
+        public HashSet<OSCQueryServiceProfile> GetOSCServices() => _oscServices;
         
         public void SetValue(string address, string value)
         {

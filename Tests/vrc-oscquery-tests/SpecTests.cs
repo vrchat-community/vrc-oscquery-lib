@@ -32,11 +32,8 @@ namespace VRC.OSCQuery.Tests
             int tcpPort = Extensions.GetAvailableTcpPort();
             int oscPort = Extensions.GetAvailableUdpPort();
             var service = new OSCQueryService("test-service", tcpPort, oscPort);
-            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}?{Attributes.HOST_INFO}");
-
             // Get HostInfo Json
-            var hostInfoString = await response.Content.ReadAsStringAsync();
-            var hostInfo = JsonConvert.DeserializeObject<HostInfo>(hostInfoString);
+            var hostInfo = await Extensions.GetHostInfo(IPAddress.Loopback, tcpPort);
             Assert.That(hostInfo.oscPort, Is.EqualTo(oscPort));
 
             service.Dispose();

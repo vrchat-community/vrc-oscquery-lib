@@ -35,13 +35,12 @@ namespace VRC.OSCQuery.Examples.DataReceiver
         {
             private int _tcpPort;
             private TextView _textView;
-            private ServiceProfile? _profile;
+            private OSCQueryServiceProfile? _profile;
             private SRVRecord _srvRecord;
             
-            public ListServiceData(ServiceProfile? profile)
+            public ListServiceData(OSCQueryServiceProfile? profile)
             {
                 _profile = profile;
-                _srvRecord = profile?.Resources.OfType<SRVRecord>().First()!;
                 _tcpPort = _srvRecord.Port;
 
                 _textView = new TextView()
@@ -53,7 +52,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
                     ReadOnly = true,
                 };
 
-                Title = $"{_profile?.InstanceName} on {_srvRecord.Port}";
+                Title = $"{_profile?.name} on {_srvRecord.Port}";
                 
                 Add(_textView);
 #pragma warning disable 4014

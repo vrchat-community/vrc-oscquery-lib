@@ -67,14 +67,14 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             ClearServices();
             
             // Add each one anew
-            foreach (ServiceProfile profile in _oscQuery.GetOSCQueryServices())
+            foreach (var profile in _oscQuery.GetOSCQueryServices())
             {
                 // Create button
                 var serverButtonGameObject = Instantiate(ServerButtonPrefab, ServerButtonContainer, false);
             
                 // Set Label
                 var label = serverButtonGameObject.GetComponentInChildren<Text>();
-                label.text = $"{profile.InstanceName}";
+                label.text = $"{profile.name}";
             
                 // Listen for click
                 var button = serverButtonGameObject.GetComponent<Button>();
@@ -82,17 +82,15 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             }
         }
 
-        private async UniTask ShowInfoFor(ServiceProfile profile)
+        private async UniTask ShowInfoFor(OSCQueryServiceProfile profile)
         {
             try
             {
-                var srvRecord = profile.Resources.OfType<SRVRecord>().First();
-
-                await RefreshData(srvRecord.Port, InfoText);
+                await RefreshData(profile.port, InfoText);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Couldn't find SRVRecord in {profile.InstanceName}: {e.Message}");
+                Debug.LogError($"Couldn't find SRVRecord in {profile.name}: {e.Message}");
                 return;
             }
         }

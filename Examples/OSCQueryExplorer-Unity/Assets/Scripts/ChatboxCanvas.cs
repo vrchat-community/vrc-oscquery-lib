@@ -1,4 +1,7 @@
-﻿using Common.Logging;
+﻿using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+using Common.Logging;
 using UnityEngine;
 using UnityEngine.UI;
 using OscCore;
@@ -12,56 +15,82 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
         public Text HeaderText;
         public InputField InputField;
         
-        private OSCQueryService _oscQuery;
-        private OscServer _receiver;
+        // private OSCQueryService _oscQuery;
+        private OSCQueryService _oscQueryService;
+
+        private List<OscClient> _receivers = new List<OscClient>();
+        // private OscServer _receiver;
         
         void Start()
         {
             LogManager.Adapter = new UnityLoggerFactoryAdapter(LogLevel.All, true, true, true, "HH:mm:ss");
             StartService();
-            
-            _oscQuery.OnOscServiceAdded += OnOSCFound;
-            _oscQuery.OnOscQueryServiceAdded += OnOSCQueryFound;
-            
+
             InputField.onValueChanged.AddListener(OnValueChanged);
         }
 
-        private void OnOSCQueryFound(OSCServiceProfile profile)
+        private async void OnOscQueryServiceFound(OSCQueryServiceProfile profile)
         {
-            Debug.Log($"Found OSCQuery Service {profile.name} on {profile.address}:{profile.port}");
+            Debug.Log($"found oscqueryservice {profile.name}");
+            if (await ServiceSupportsChatbox(profile))
+            {
+                var hostInfo = await OSCQuery.Extensions.GetHostInfo(profile.address, profile.port);
+                AddChatboxReceiver(profile.address, hostInfo.oscPort);
+            }
         }
 
-        private void OnOSCFound(OSCServiceProfile profile)
+        private void AddChatboxReceiver(IPAddress address, int port)
         {
-            Debug.Log($"Found OSC Service {profile.name} on {profile.address}:{profile.port}");
+            var receiver = new OscClient(address.ToString(), port);
+            _receivers.Add(receiver);
+            _oscQueryService.BeAnOscServer(_serverName, port);
+        }
+
+        private async Task<bool> ServiceSupportsChatbox(OSCQueryServiceProfile profile)
+        {
+            Debug.Log($"Checking fro chatbox in {profile.name}");
+            var tree = await OSCQuery.Extensions.GetOSCTree(profile.address, profile.port);
+            Debug.Log($"Got tree with {tree.Contents.Count} nodes");
+            return tree.GetNodeWithPath("/chatbox") != null;
         }
 
         private void OnValueChanged(string value)
         {
-            Debug.Log($"Field now reads {value}");
+            foreach (var receiver in _receivers)
+            {
+                receiver.Send("/chatbox/typing", true);
+            }
         }
 
+        private string _serverName;
+        
         private void StartService()
         {
             var w = new Bogus.DataSets.Hacker();
             var w2 = new Bogus.DataSets.Lorem();
-            var serverName = $"{w.IngVerb().UpperCaseFirstChar()}-{w2.Word().UpperCaseFirstChar()}-{w.Abbreviation()}";
+            _serverName = $"{w.IngVerb().UpperCaseFirstChar()}-{w2.Word().UpperCaseFirstChar()}-{w.Abbreviation()}";
 
             var port = VRC.OSCQuery.Extensions.GetAvailableTcpPort();
-            _receiver = OscServer.GetOrCreate(port);
-            _oscQuery = new OSCQueryService(
-                serverName, 
-                port,
-                port
-            );
+            _oscQueryService = new OSCQueryService(_serverName);
+            _oscQueryService.BeAnOSCQueryServer(_serverName, port);
             
-            HeaderText.text = $"{serverName} advertising on {port}";
+            _oscQueryService.OnOscQueryServiceAdded += OnOscQueryServiceFound;
+
+            HeaderText.text = $"{_serverName} advertising on {port}";
+            
+            // Look for existing Chatbox-capable service
+            foreach (var profile in _oscQueryService.GetOSCQueryServices())
+            {
+               OnOscQueryServiceFound(profile);
+            }
+            
+            _oscQueryService.RefreshServices();
         }
 
         private void OnDestroy()
         {
-            _receiver.Dispose();
-            _oscQuery.Dispose();
+            // _receiver.Dispose();
+            _oscQueryService.Dispose();
         }
     }
 
