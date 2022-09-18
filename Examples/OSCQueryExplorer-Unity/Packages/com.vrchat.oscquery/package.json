@@ -1,0 +1,16 @@
+{
+	"name" : "com.vrchat.oscquery",
+	"displayName" : "VRC OSCQuery",
+	"version" : "0.0.1",
+	"unity" : "2019.4",
+	"description" : "Library to run and interact with OSCQuery services",
+	"author" : {
+		"name" : "VRChat",
+		"email" : "developer@vrchat.com",
+		"url" : "https://github.com/vrchat-community/vrc-oscquery-lib"
+	},
+	"dependencies" : {
+		"com.unity.nuget.newtonsoft-json" : "2.0.2"
+	},
+	"samples" : []
+}

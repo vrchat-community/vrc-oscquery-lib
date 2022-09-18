@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Common.Logging;
 using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using MeaMod.DNS.Model;
 using MeaMod.DNS.Multicast;
 using Newtonsoft.Json;
 #pragma warning disable 4014
@@ -28,7 +25,7 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
     
         void Start()
         {
-            LogManager.Adapter = new UnityLoggerFactoryAdapter(LogLevel.All, true, true, true, "HH:mm:ss");
+            // LogManager.Adapter = new UnityLoggerFactoryAdapter(LogLevel.All, true, true, true, "HH:mm:ss");
             
             StartService();
             RefreshButton.onClick.AddListener(RefreshServices);

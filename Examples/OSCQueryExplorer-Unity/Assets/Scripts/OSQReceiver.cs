@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Common.Logging;
 using UnityEngine;
 using UnityEngine.UI;
 using BlobHandles;
@@ -24,7 +23,7 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
         
         void Start()
         {
-            LogManager.Adapter = new UnityLoggerFactoryAdapter(LogLevel.All, true, true, true, "HH:mm:ss");
+            // LogManager.Adapter = new UnityLoggerFactoryAdapter(LogLevel.All, true, true, true, "HH:mm:ss");
             StartService();
         }
 
