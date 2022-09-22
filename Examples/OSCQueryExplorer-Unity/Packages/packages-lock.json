@@ -13,13 +13,6 @@
       "dependencies": {},
       "hash": "089b6a3fbee8e64061a31a1005f6d7ae3375eac1"
     },
-    "com.unity.collab-proxy": {
-      "version": "1.10.2",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://packages.unity.com"
-    },
     "com.unity.ext.nunit": {
       "version": "1.0.6",
       "depth": 1,
