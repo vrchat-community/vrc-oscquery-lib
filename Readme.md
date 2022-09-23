@@ -5,7 +5,7 @@
 ![VRC OSCQuery Routing](https://user-images.githubusercontent.com/737888/186757739-9ceb0334-f512-414b-8c5d-2aaec6d7d451.png)
 
 We're developing this implementation of the protocol for OSC app creators integrate into their own projects as we integrate it into [VRChat](https://vrchat.com).
-We're building it in C# targeting .NET Standard 2.0 so it will work in Unity as well as cross-platform .NET projects.
+We're building it in C# targeting .NET 6 and Framework 4.6 so it will work in Unity as well as cross-platform .NET projects.
 
 ## 📊 Status
 
@@ -36,22 +36,23 @@ This library does not yet return limited attributes based on query strings, like
 
 ---
 
-## ❓ Things to Discuss
-
-### 🔍 Tracking OSC Values
-
-One very handy (optional) feature of OSCQuery is the ability to retrieve the _current value_ for a given OSC method. This lets clients do things like updating their UI elements without requesting the server to re-send each value.
-
-The way this is currently implemented is through an optional `Func<string>` 'getter' method which can be passed as a parameter to the `AddEndpoint` function. This method is stored in the `OSCQueryNode` which is constructed to represent this Endpoint. 
-
-When a client requests the value of a method, this `OSCQueryNode` Invoke the getter method if it exists, as well as the getter methods of each of its child nodes. Once all the methods resolve, the latest values are sent to the client. This can result in a bit of a delay, especially for nodes closer to root, and depends on the getter methods passed in during construction to still be valid.
-
-There's other ways to handle this, for example a simple pub/sub system where endpoints are expected to publish value updates directly to the OSCQueryService class itself. In the case of VRChat, we already require any class that wants to send OSC messages to do it through our central `VRCOSCHandler`, so a pub/sub system on the OSCQueryService could be used to route things to/from the rest of VRChat. 
-
----
-
 ## ✨ Examples
 
+### Unity App
+
+You can find a Unity Project in `Exampless/OSCQueryExplorer-Unity` - you can open this up in Unity 2019.4.31f1. 
+
+This app has two scenes: [VRC-Chatbox](#vrc-chatbox) and [OSCQueryReceiver](#oscqueryreceiver). 
+
+#### VRC-Chatbox
+
+This scene demonstrates how to find an OSC receiver compatible with your data and send it. It is similar to how VRChat implements its find-and-send logic. All of the code is in a single MonoBehaviour - [ChatboxCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Chatbox/ChatboxCanvas.cs).
+
+#### OSCQueryReceiver
+
+This scene advertises itself as a receiver of OSC data, which VRChat will find and connect to. All of the code is in a single MonoBehaviour - [ReceiverCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Receiver/ReceiverCanvas.cs)
+
+### Console Apps
 The solution includes two simple examples to demonstrate and test functionality. They are both .NET 6 Console apps and should work on Windows, Mac and Linux, but have only been tested on Windows 10 so far.
 
 https://user-images.githubusercontent.com/737888/186757165-e47f766f-3bc2-46b2-8580-8fd99c6ce6b9.mp4
@@ -60,7 +61,7 @@ https://user-images.githubusercontent.com/737888/186757165-e47f766f-3bc2-46b2-85
 <details>
 <summary>
   
-### DataSender
+#### DataSender
 
 </summary>
   
@@ -79,7 +80,7 @@ After you press ok, it will display the OSC addresses and values of 10 integer p
 <details>
 <summary>
   
-### DataReceiver
+#### DataReceiver
   
 </summary>
 
@@ -98,15 +99,12 @@ It regularly polls for updates and should show value changes soon after they occ
 ---
 
 ## 📝 To-Dos:
-* Figure out why HOST_INFO stopped working
-* Make zeroconf advertising optional
 * Support query strings for choosing attributes to return
-
 
 ---
 
 ## 🏞 Roadmap:
-1. Internal Discovery and Iteration
-2. Integrate into VRChat Client
+1. ~~Internal Discovery and Iteration~~
+2. ~~Integrate into VRChat Client~~
 3. Closed Beta Release to OSC App Developers
 4. General Release of Library and VRChat Client integration
