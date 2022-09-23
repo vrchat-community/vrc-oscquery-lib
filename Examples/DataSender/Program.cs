@@ -13,7 +13,6 @@ namespace VRC.OSCQuery.Examples
             Application.Init ();
 
             LogManager.Adapter = new StatusLoggerFactoryAdapter();
-            // LogManager.GetLogger<DataSender>().Info($"Starting DataSender");
             AddOscQueryService();
 
             Application.Run ();

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Common.Logging;
-using MeaMod.DNS.Model;
-using MeaMod.DNS.Multicast;
 using Newtonsoft.Json;
 using Terminal.Gui;
 
@@ -36,12 +33,11 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             private int _tcpPort;
             private TextView _textView;
             private OSCQueryServiceProfile? _profile;
-            private SRVRecord _srvRecord;
             
-            public ListServiceData(OSCQueryServiceProfile? profile)
+            public ListServiceData(OSCQueryServiceProfile profile)
             {
                 _profile = profile;
-                _tcpPort = _srvRecord.Port;
+                _tcpPort = profile.port;
 
                 _textView = new TextView()
                 {
@@ -52,7 +48,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
                     ReadOnly = true,
                 };
 
-                Title = $"{_profile?.name} on {_srvRecord.Port}";
+                Title = $"{_profile?.name} on {_profile.port}";
                 
                 Add(_textView);
 #pragma warning disable 4014

@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/OSCQueryServerExplorer.unity
     guid: bb80888bfa1a0924587cd74c991d1f47
   - enabled: 0
-    path: Assets/Scenes/OSCQueryReceiver.unity
+    path: Packages/com.vrchat.oscquery/Samples/Receiver/OSCQueryReceiver.unity
     guid: 13ef968ec047ab44aafd70589bd99aa0
   - enabled: 1
     path: Packages/com.vrchat.oscquery/Samples/Chatbox/VRC-Chatbox.unity

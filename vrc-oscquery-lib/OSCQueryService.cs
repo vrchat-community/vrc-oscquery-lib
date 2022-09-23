@@ -62,8 +62,8 @@ namespace VRC.OSCQuery
         public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc)
         {
             Initialize(serverName);
-            BeAnOSCQueryServer(serverName, httpPort);
-            BeAnOscServer(serverName, oscPort);
+            StartOSCQueryService(serverName, httpPort);
+            AdvertiseOSCService(serverName, oscPort);
             RefreshServices();
         }
 
@@ -92,7 +92,7 @@ namespace VRC.OSCQuery
             _mdns.Start();
         }
 
-        public void BeAnOSCQueryServer(string serverName, int httpPort = -1)
+        public void StartOSCQueryService(string serverName, int httpPort = -1)
         {
             BuildRootResponse();
             
@@ -113,7 +113,7 @@ namespace VRC.OSCQuery
             _shouldProcessHttp = true;
         }
 
-        public void BeAnOscServer(string serverName, int oscPort = -1)
+        public void AdvertiseOSCService(string serverName, int oscPort = -1)
         {
             _hostInfo.oscPort = oscPort;
             _hostInfo.oscIP = IPAddress.Loopback.ToString();
