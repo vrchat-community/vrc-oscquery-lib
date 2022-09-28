@@ -50,7 +50,8 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             _oscQuery = new OSCQueryService(
                 serverName, 
                 port,
-                port
+                port,
+                new UnityMSLogger()
             );
             
             // Show server name and chosen port

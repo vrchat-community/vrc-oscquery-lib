@@ -72,7 +72,6 @@ namespace VRC.OSCQuery
 
         public void Initialize(string serverName = DefaultServerName)
         {
-            Logger.LogInformation($"Initializing OSCQueryService");
             // Create HostInfo object
             _hostInfo = new HostInfo()
             {
