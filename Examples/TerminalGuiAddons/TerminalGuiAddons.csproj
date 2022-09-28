@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Common.Logging" Version="3.4.1" />
       <PackageReference Include="Terminal.Gui" Version="1.7.2" />
     </ItemGroup>
 

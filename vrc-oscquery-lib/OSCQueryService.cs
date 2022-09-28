@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Common.Logging;
 using MeaMod.DNS.Model;
 using MeaMod.DNS.Multicast;
+using Microsoft.Extensions.Logging;
 
 namespace VRC.OSCQuery
 {
@@ -41,15 +41,16 @@ namespace VRC.OSCQuery
         // Misc
         private OSCQueryRootNode _rootNode;
         private HostInfo _hostInfo;
-        public static readonly ILog Logger = LogManager.GetLogger(typeof(OSCQueryService)); 
+        public static ILogger<OSCQueryService> Logger;
         private readonly HashSet<string> _matchedNames = new HashSet<string>() { 
             _localOscUdpServiceName, _localOscJsonServiceName
         };
 
-        public OSCQueryService(string serverName)
-        {
-           Initialize(serverName);
-           RefreshServices();
+        public OSCQueryService(string serverName, ILogger<OSCQueryService> logger = null)
+        { 
+            Logger = logger; 
+            Initialize(serverName); 
+            RefreshServices();
         }
         
         /// <summary>
@@ -59,8 +60,9 @@ namespace VRC.OSCQuery
         /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
         /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
-        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc)
+        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null)
         {
+            Logger = logger;
             Initialize(serverName);
             StartOSCQueryService(serverName, httpPort);
             AdvertiseOSCService(serverName, oscPort);
@@ -102,7 +104,7 @@ namespace VRC.OSCQuery
             // Advertise OSCJSON service
             _zeroconfService = new ServiceProfile(serverName, Attributes.SERVICE_OSCJSON_TCP, (ushort)httpPort, new[] { IPAddress.Loopback });
             _discovery.Advertise(_zeroconfService);
-            Logger.Debug($"Advertising TCP Service {serverName} as {Attributes.SERVICE_OSCJSON_TCP} on {httpPort}");
+            Logger.LogInformation($"Advertising TCP Service {serverName} as {Attributes.SERVICE_OSCJSON_TCP} on {httpPort}");
 
             // Create and start HTTPListener
             _listener = new HttpListener();
@@ -119,7 +121,7 @@ namespace VRC.OSCQuery
             _hostInfo.oscIP = IPAddress.Loopback.ToString();
             _oscService = new ServiceProfile(serverName, Attributes.SERVICE_OSC_UDP, (ushort)oscPort, new[] { IPAddress.Loopback });
             _discovery.Advertise(_oscService);
-            Logger.Debug($"Advertising OSC Service {serverName} as {Attributes.SERVICE_OSC_UDP} on {oscPort}");
+            Logger.LogInformation($"Advertising OSC Service {serverName} as {Attributes.SERVICE_OSC_UDP} on {oscPort}");
         }
 
         public void RefreshServices()
@@ -151,7 +153,7 @@ namespace VRC.OSCQuery
                 var srvRecord = response.AdditionalRecords.OfType<SRVRecord>().FirstOrDefault();
                 if (srvRecord == default)
                 {
-                    Logger.Warn($"Found the matching service {name}, but it doesn't have an SRVRecord, can't proceed.");
+                    Logger.LogWarning($"Found the matching service {name}, but it doesn't have an SRVRecord, can't proceed.");
                     return;
                 }
                 
@@ -174,7 +176,7 @@ namespace VRC.OSCQuery
                         _oscServices.Add(p);
                         OnProfileAdded?.Invoke(profile);
                         OnOscServiceAdded?.Invoke(p);
-                        Logger.Info($"Found match {name} on port {port}");
+                        Logger.LogInformation($"Found match {name} on port {port}");
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
@@ -187,18 +189,18 @@ namespace VRC.OSCQuery
                         _oscQueryServices.Add(p);
                         OnProfileAdded?.Invoke(profile);
                         OnOscQueryServiceAdded?.Invoke(p);
-                        Logger.Info($"Found match {name} on port {port}");
+                        Logger.LogInformation($"Found match {name} on port {port}");
                     }
                     else
                     {
-                        Logger.Info($"Not triggering service added for {name} because it's already tracked");
+                        Logger.LogInformation($"Not triggering service added for {name} because it's already tracked");
                     }
                 }
             }
             catch (Exception e)
             {
                 // Using a non-error log level because we may have just found a non-matching service
-                Logger.Info($"Could not parse answer from {eventArgs.RemoteEndPoint}: {e.Message}");
+                Logger.LogInformation($"Could not parse answer from {eventArgs.RemoteEndPoint}: {e.Message}");
             }
         }
 
@@ -247,7 +249,7 @@ namespace VRC.OSCQuery
                     }
                     catch (Exception e)
                     {
-                        Logger.Error($"Could not construct and send Host Info: {e.Message}");
+                        Logger.LogError($"Could not construct and send Host Info: {e.Message}");
                     }
                 }
                 else if (context.Request.RawUrl.Contains("favicon.ico"))
@@ -311,7 +313,7 @@ namespace VRC.OSCQuery
         {
             if (_rootNode.GetNodeWithPath(path) != null)
             {
-                Logger.Warn($"Path already exists, skipping: {path}");
+                Logger.LogWarning($"Path already exists, skipping: {path}");
                 return false;
             }
             
@@ -331,7 +333,7 @@ namespace VRC.OSCQuery
             var oscType = Attributes.OSCTypeFor(typeof(T));
             if (string.IsNullOrWhiteSpace(oscType))
             {
-                Logger.Error($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
+                Logger.LogError($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
                 return false;
             }
 
@@ -348,7 +350,7 @@ namespace VRC.OSCQuery
             // Exit early if no matching path is found
             if (_rootNode == null || _rootNode.GetNodeWithPath(path) == null)
             {
-                Logger.Error($"No endpoint found for {path}");
+                Logger.LogError($"No endpoint found for {path}");
                 return false;
             }
 

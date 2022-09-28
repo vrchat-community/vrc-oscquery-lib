@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Common.Logging;
 using Newtonsoft.Json;
 
 namespace VRC.OSCQuery
@@ -59,11 +58,10 @@ namespace VRC.OSCQuery
 
             public static async Task<OSCQueryRootNode> GetOSCTree(IPAddress ip, int port)
             {
-                var Logger = LogManager.GetLogger(typeof(Extensions)); 
                 var response = await _client.GetAsync($"http://{ip}:{port}/");
                 if (!response.IsSuccessStatusCode)
                 {
-                    Logger.Error($"Could not get OSC Tree from {ip}:{port} because {response.ReasonPhrase}");
+                    // Logger.Error($"Could not get OSC Tree from {ip}:{port} because {response.ReasonPhrase}");
                     return null;
                 }
 
