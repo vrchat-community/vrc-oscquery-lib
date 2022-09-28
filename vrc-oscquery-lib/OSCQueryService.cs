@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MeaMod.DNS.Model;
 using MeaMod.DNS.Multicast;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace VRC.OSCQuery
 {
@@ -48,7 +49,7 @@ namespace VRC.OSCQuery
 
         public OSCQueryService(string serverName, ILogger<OSCQueryService> logger = null)
         { 
-            Logger = logger; 
+            Logger = logger ?? new NullLogger<OSCQueryService>();
             Initialize(serverName); 
             RefreshServices();
         }
@@ -62,7 +63,7 @@ namespace VRC.OSCQuery
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
         public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null)
         {
-            Logger = logger;
+            Logger = logger ?? new NullLogger<OSCQueryService>();
             Initialize(serverName);
             StartOSCQueryService(serverName, httpPort);
             AdvertiseOSCService(serverName, oscPort);
@@ -71,6 +72,7 @@ namespace VRC.OSCQuery
 
         public void Initialize(string serverName = DefaultServerName)
         {
+            Logger.LogInformation($"Initializing OSCQueryService");
             // Create HostInfo object
             _hostInfo = new HostInfo()
             {
