@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Terminal.Gui;
 
 namespace VRC.OSCQuery.Examples.DataReceiver
@@ -11,9 +12,9 @@ namespace VRC.OSCQuery.Examples.DataReceiver
 
         private OSCQueryService _service;
 
-        public FindServiceDialog()
+        public FindServiceDialog(ILogger<OSCQueryService> logger)
         {
-            _service = new OSCQueryService( OSCQueryService.DefaultServerName + "1", OSCQueryService.DefaultPortHttp + 10, OSCQueryService.DefaultPortOsc + 10);
+            _service = new OSCQueryService( OSCQueryService.DefaultServerName + "1", OSCQueryService.DefaultPortHttp + 10, OSCQueryService.DefaultPortOsc + 10, logger);
             
             Width = 45;
             Height = 10;
