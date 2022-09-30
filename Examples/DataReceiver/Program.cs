@@ -2,7 +2,6 @@
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Common.Logging;
 using Newtonsoft.Json;
 using Terminal.Gui;
 
@@ -11,18 +10,14 @@ namespace VRC.OSCQuery.Examples.DataReceiver
     class DataReceiver
     {
         
-        private static ILog Logger;
-        
         static void Main ()
         {
 #pragma warning disable CA1416
             Console.SetWindowSize(50,15);
 #pragma warning restore CA1416
             Application.Init ();
-            
-            LogManager.Adapter = new StatusLoggerFactoryAdapter();
 
-            Application.Top.Add (new FindServiceDialog());
+            Application.Top.Add (new FindServiceDialog(new StatusLogger()));
             
             Application.Run ();
             Application.Shutdown ();

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using VRC.OSCQuery.Samples.Shared;
 
 #pragma warning disable 4014
 
@@ -116,7 +117,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
         {
             // Create a new OSCQueryService, advertise
             var port = VRC.OSCQuery.Extensions.GetAvailableTcpPort();
-            _oscQueryService = new OSCQueryService(_serverName);
+            _oscQueryService = new OSCQueryService(_serverName, new UnityMSLogger());
             _oscQueryService.StartOSCQueryService(_serverName, port);
             
             // Listen for other services

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace VRC.OSCQuery
@@ -42,7 +43,7 @@ namespace VRC.OSCQuery
             }
             else if (parent.Contents.ContainsKey(node.Name))
             {
-                OSCQueryService.Logger.Warn($"Child node {node.Name} already exists on {FullPath}, you need to remove the existing entry first");
+                OSCQueryService.Logger.LogWarning($"Child node {node.Name} already exists on {FullPath}, you need to remove the existing entry first");
                 return null;
             }
 

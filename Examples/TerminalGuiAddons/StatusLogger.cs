@@ -1,17 +1,16 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using Terminal.Gui;
-using Common.Logging;
-using Common.Logging.Simple;
 
 namespace VRC.OSCQuery.Examples
 {
-     public class StatusLogger : AbstractSimpleLogger
+     public class StatusLogger : ILogger<OSCQueryService>
      {
             private Window _logsView;
             private StatusItem _item;
             private TextView _textView;
 
-            public StatusLogger(string logName, LogLevel logLevel, bool showlevel, bool showDateTime, bool showLogName, string dateTimeFormat) : base(logName, logLevel, showlevel, showDateTime, showLogName, dateTimeFormat)
+            public StatusLogger()
             {
                 // Add window with text view
                 _logsView = new Window("Logs")
@@ -43,14 +42,25 @@ namespace VRC.OSCQuery.Examples
                     _logsView.SetFocus();
                 }
             }
-            
-            protected override void WriteInternal(LogLevel level, object message, Exception exception)
+         
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             {
                 // Log to status bar
-                _item.Title = message.ToString();
+                _item.Title = state.ToString();
                 
                 // Log to text view
-                _textView.Text += $"{message}{Environment.NewLine}";
+                _textView.Text += $"{state}{Environment.NewLine}";
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return true;
+            }
+
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+            {
+                return null;
             }
      }
 }

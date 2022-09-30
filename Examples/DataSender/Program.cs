@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using Common.Logging;
+using Microsoft.Extensions.Logging;
 using Terminal.Gui;
 
 namespace VRC.OSCQuery.Examples
 {
     class DataSender
     {
+
         static void Main ()
         {
             Console.SetWindowSize(50,20);
             Application.Init ();
 
-            LogManager.Adapter = new StatusLoggerFactoryAdapter();
             AddOscQueryService();
 
             Application.Run ();
@@ -54,7 +54,7 @@ namespace VRC.OSCQuery.Examples
 
             buttonConfirm.Clicked += () =>
             {
-                var window = new OSCQueryServiceWindow(nameField.Text.ToString(), Int32.Parse(tcpPortField.Text.ToString()), Int32.Parse(oscField.Text.ToString()));
+                var window = new OSCQueryServiceWindow(nameField.Text.ToString(), Int32.Parse(tcpPortField.Text.ToString()), Int32.Parse(oscField.Text.ToString()), new StatusLogger());
                 Application.Top.Add(window);
                 Application.Top.Remove(dialog);
             };
