@@ -154,7 +154,11 @@ namespace VRC.OSCQuery
                 var srvRecord = response.AdditionalRecords.OfType<SRVRecord>().FirstOrDefault();
                 if (srvRecord == default)
                 {
-                    Logger.LogWarning($"Found the matching service {name}, but it doesn't have an SRVRecord, can't proceed.");
+                    srvRecord = response.Answers.OfType<SRVRecord>().FirstOrDefault();
+                    if (srvRecord == default)
+                    {
+                        Logger.LogWarning($"Found the matching service {name}, but it doesn't have an SRVRecord, can't proceed.");
+                    }
                     return;
                 }
                 

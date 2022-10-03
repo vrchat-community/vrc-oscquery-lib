@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSCQuery Explorer</title>
+    <link rel="stylesheet" href="assets/main.css" />
+</head>
+<body>
+    <button class="primary center" onclick="startChatbox()">Chatbox</button>
+
+    <script>
+        
+        function startChatbox(){
+            window.location = "chatbox/index.html";
+        }
+        
+        window.external.receiveMessage(message => console.log(message));
+    </script>
+</body>
+</html>

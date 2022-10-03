@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSCQuery Explorer - Chatbox</title>
+    <link rel="stylesheet" href="main.css" />
+</head>
+<body>
+
+<h3 id="HeaderText">Looking for Chatbox Services...</h3>
+
+<form id="FormInputField" onsubmit="sendChatMessage(event.preventDefault())">
+    <input type="text" id="InputField">
+</form>
+
+<script>
+    
+    function startChatbox(){
+        window.external.sendMessage(JSON.stringify(
+            {
+                "command":"startChatbox"
+            }
+        ));
+    }
+    
+    function sendChatMessage(){
+        window.external.sendMessage(JSON.stringify(
+            {
+                "command": "sendChatMessage",
+                "data": inputField.value
+            }
+        ));
+    }
+    
+    function onReceiveMessage(message){
+        console.log(message);
+        headerText.textContent = message;
+    }
+    
+    let headerText = document.getElementById("HeaderText");
+    let inputField = document.getElementById("InputField");
+    
+    window.external.receiveMessage(onReceiveMessage);
+    
+    startChatbox();
+</script>
+</body>
+</html>

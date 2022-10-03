@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-using VRC.OSCQuery.Samples.Shared;
+using VRC.OSCQuery.Examples.OSCQueryExplorerUnity;
 
 #pragma warning disable 4014
 
@@ -68,7 +68,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
             {
                 var hostInfo = await OSCQuery.Extensions.GetHostInfo(profile.address, profile.port);
                 HeaderText.text =
-                    $"Sending to {profile.name} at {profile.address}:{profile.port}";
+                    $"Sending to {profile.name} at {profile.address}:{hostInfo.oscPort}";
                 AddChatboxReceiver(profile.address, hostInfo.oscPort);
             }
         }

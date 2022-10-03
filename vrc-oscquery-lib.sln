@@ -1,14 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vrc-oscquery-lib", "vrc-oscquery-lib\vrc-oscquery-lib.csproj", "{8E5E6E26-3714-4280-8CBB-CE413774E5BC}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.32912.340
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vrc-oscquery-lib", "vrc-oscquery-lib\vrc-oscquery-lib.csproj", "{8E5E6E26-3714-4280-8CBB-CE413774E5BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vrc-oscquery-tests", "Tests\vrc-oscquery-tests\vrc-oscquery-tests.csproj", "{9A789B5A-0224-4049-9694-DB04956B5CF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vrc-oscquery-tests", "Tests\vrc-oscquery-tests\vrc-oscquery-tests.csproj", "{9A789B5A-0224-4049-9694-DB04956B5CF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSender", "Examples\DataSender\DataSender.csproj", "{CF153C23-FFB1-4ACF-A580-358636F13C97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataSender", "Examples\DataSender\DataSender.csproj", "{CF153C23-FFB1-4ACF-A580-358636F13C97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataReceiver", "Examples\DataReceiver\DataReceiver.csproj", "{DAC297A9-253B-4A9E-B602-21AD54521D17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataReceiver", "Examples\DataReceiver\DataReceiver.csproj", "{DAC297A9-253B-4A9E-B602-21AD54521D17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalGuiAddons", "Examples\TerminalGuiAddons\TerminalGuiAddons.csproj", "{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerminalGuiAddons", "Examples\TerminalGuiAddons\TerminalGuiAddons.csproj", "{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OSCQuery-Explorer-Photino", "Examples\MyPhotinoApp\OSCQuery-Explorer-Photino.csproj", "{714F8482-A450-4016-B3AB-643E6C42A047}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +41,15 @@ Global
 		{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{471B5039-A8BC-4D5C-807C-A8FBBF2FB462}.Release|Any CPU.Build.0 = Release|Any CPU
+		{714F8482-A450-4016-B3AB-643E6C42A047}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{714F8482-A450-4016-B3AB-643E6C42A047}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{714F8482-A450-4016-B3AB-643E6C42A047}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{714F8482-A450-4016-B3AB-643E6C42A047}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BE515CB9-B22E-4F1D-A8FC-51D962FD907E}
 	EndGlobalSection
 EndGlobal

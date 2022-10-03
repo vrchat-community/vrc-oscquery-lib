@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using ConsoleApplication1;
+using Newtonsoft.Json;
 
 namespace VRC.OSCQuery
 {
@@ -6,6 +8,7 @@ namespace VRC.OSCQuery
     {
         public int port;
         public string name;
+        [JsonConverter(typeof(IPAddressConverter))]
         public IPAddress address;
         public ServiceType serviceType;
 
