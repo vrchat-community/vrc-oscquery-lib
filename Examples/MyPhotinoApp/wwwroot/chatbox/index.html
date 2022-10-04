@@ -61,7 +61,6 @@
         {
             case commands.connectToServer:
                 let info = JSON.parse(commandMessage.data);
-                console.log(info.name);
                 headerText.textContent = `Sending to ${info.name} at ${info.address}:${info.port}`; 
                 break;
             case commands.response:
