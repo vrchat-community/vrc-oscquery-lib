@@ -11,7 +11,7 @@
 
 <h3 id="HeaderText">Looking for Chatbox Services...</h3>
 
-<form id="FormInputField" onsubmit="sendChatMessage(event.preventDefault())">
+<form id="FormInputField">
     <input type="text" id="InputField">
 </form>
 
@@ -25,22 +25,47 @@
         ));
     }
     
-    function sendChatMessage(){
+    function sendChatMessage(e){
+        e.preventDefault();
         window.external.sendMessage(JSON.stringify(
             {
                 "command": "sendChatMessage",
                 "data": inputField.value
             }
         ));
+        inputField.value="";
+    }
+    
+    function sendChatTyping(){
+        window.external.sendMessage(JSON.stringify(
+            {
+                "command": "sendChatTyping",
+                "data" : "true"
+            }
+        ))
     }
     
     function onReceiveMessage(message){
-        console.log(message);
-        headerText.textContent = message;
+        const commandMessage = JSON.parse(message);
+        
+        switch (commandMessage.command)
+        {
+            case "connectToServer":
+                let info = JSON.parse(commandMessage.data);
+                console.log(info.name);
+                headerText.textContent = `Sending to ${info.name} at ${info.address}:${info.port}`; 
+                break;
+            case "response":
+                console.log(commandMessage.data)
+        }
     }
     
     let headerText = document.getElementById("HeaderText");
     let inputField = document.getElementById("InputField");
+    let inputForm = document.getElementById("FormInputField");
+
+    inputForm.addEventListener("submit", sendChatMessage);
+    inputField.addEventListener("input", sendChatTyping)
     
     window.external.receiveMessage(onReceiveMessage);
     

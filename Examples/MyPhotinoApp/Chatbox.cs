@@ -89,16 +89,17 @@ namespace VRC.OSCQuery.Examples.Photino
         private async Task<bool> ServiceSupportsChatbox(OSCQueryServiceProfile profile)
         {
             var tree = await OSCQuery.Extensions.GetOSCTree(profile.address, profile.port);
-            return tree.GetNodeWithPath(OSC_PATH_CHATBOX) != null;
+            return tree == null ? false : tree.GetNodeWithPath(OSC_PATH_CHATBOX) != null;
         }
         
-        // Sends 'typing' message to each receiver when input field value is changed
-        private void OnInputFieldValueChanged(string value)
+        public string SendChatTyping(bool value)
         {
-            // foreach (var receiver in _receivers)
-            // {
-            //     receiver.Send(OSC_PATH_CHATBOX_TYPING, true);
-            // }
+            foreach (var receiver in _senders)
+            {
+                receiver.Send(OSC_PATH_CHATBOX_TYPING, true);
+            }
+
+            return "";
         }
         
         public string SendChatMessage(string s)
@@ -106,9 +107,9 @@ namespace VRC.OSCQuery.Examples.Photino
             // Send message to each receiver
             foreach (var receiver in _senders)
             {
-                receiver.Send(OSC_PATH_CHATBOX_INPUT, s);
+                receiver.Send(OSC_PATH_CHATBOX_INPUT, s, true);
             }
-            return $"Sent {s}";
+            return Program.WebResponse($"Sent {s}");
         }
 
 

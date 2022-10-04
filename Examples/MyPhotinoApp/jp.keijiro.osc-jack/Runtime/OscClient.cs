@@ -119,6 +119,29 @@ namespace OscJack
             _encoder.Append(",s");
             _encoder.Append(data);
             _socket.Send(_encoder.Buffer, _encoder.Length, SocketFlags.None);
+            
+        }
+        
+        public void Send(string address, string data, bool value)
+        {
+            string boolTag = value ? "T" : "F";
+            
+            _encoder.Clear();
+            _encoder.Append(address);
+            _encoder.Append($",s{value}");
+            _encoder.Append(data);
+            _socket.Send(_encoder.Buffer, _encoder.Length, SocketFlags.None);
+            
+        }
+        
+        public void Send(string address, bool data)
+        {
+            string boolTag = data ? "T" : "F";
+            
+            _encoder.Clear();
+            _encoder.Append(address);
+            _encoder.Append($",{boolTag}");
+            _socket.Send(_encoder.Buffer, _encoder.Length, SocketFlags.None);
         }
 
         #endregion
