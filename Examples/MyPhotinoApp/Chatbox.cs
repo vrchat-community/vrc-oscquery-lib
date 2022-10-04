@@ -11,7 +11,8 @@ namespace VRC.OSCQuery.Examples.Photino
         // List of receivers to send to
         private List<OscClient> _senders = new();
         private string _serverName = "ChatboxServer";
-        private const int RefreshServicesInterval = 10;
+        private bool _doRefresh = false;
+        private const int RefreshServicesIntervalMS = 10000;
 
         // Constant strings
         private const string OSC_PATH_CHATBOX = "/chatbox";
@@ -40,9 +41,21 @@ namespace VRC.OSCQuery.Examples.Photino
             {
                 OnOscQueryServiceFound(profile);
             }
-            
+
             // Query network for services
             OnChatboxFound += AddChatboxReceiver;
+            _doRefresh = true;
+
+            Task.Run(RefreshServices);
+        }
+        
+        private async Task RefreshServices()
+        {
+            while (_doRefresh)
+            {
+                _oscQueryService.RefreshServices();
+                await Task.Delay(RefreshServicesIntervalMS);
+            }
         }
 
         private void AddChatboxReceiver(OSCQueryServiceProfile profile)
@@ -108,6 +121,8 @@ namespace VRC.OSCQuery.Examples.Photino
 
         public void Dispose()
         {
+            // Stop looking for services
+            _doRefresh = false;
             foreach (OscClient sender in _senders)
             {
                 sender.Dispose();
