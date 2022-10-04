@@ -94,9 +94,9 @@ namespace VRC.OSCQuery.Examples.Photino
         
         public string SendChatTyping(bool value)
         {
-            foreach (var receiver in _senders)
+            foreach (var sender in _senders)
             {
-                receiver.Send(OSC_PATH_CHATBOX_TYPING, true);
+                sender.Send(OSC_PATH_CHATBOX_TYPING, true);
             }
 
             return "";
@@ -104,10 +104,10 @@ namespace VRC.OSCQuery.Examples.Photino
         
         public string SendChatMessage(string s)
         {
-            // Send message to each receiver
-            foreach (var receiver in _senders)
+            // Send message to each sender
+            foreach (var sender in _senders)
             {
-                receiver.Send(OSC_PATH_CHATBOX_INPUT, s, true);
+                sender.Send(OSC_PATH_CHATBOX_INPUT, s, true);
             }
             return Program.WebResponse($"Sent {s}");
         }
