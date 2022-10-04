@@ -9,7 +9,7 @@ namespace VRC.OSCQuery.Examples.Photino
     public class Chatbox : IDisposable
     {
         // List of receivers to send to
-        private List<OscClient> _senders = new List<OscClient>();
+        private List<OscClient> _senders = new();
         private string _serverName = "ChatboxServer";
         private const int RefreshServicesInterval = 10;
 
@@ -56,7 +56,6 @@ namespace VRC.OSCQuery.Examples.Photino
             try
             {
                 var receiver = new OscClient(address.ToString(), port);
-                // var receiver = new OscSender(address, port);
                 _senders.Add(receiver);
                 _oscQueryService.AdvertiseOSCService(_serverName, port);
             }
@@ -65,22 +64,16 @@ namespace VRC.OSCQuery.Examples.Photino
                 Console.WriteLine(e);
                 throw;
             }
-
-            // Enable inputfield to communicate with client
-            // InputField.enabled = true;
         }
 
         // Creates a new OSCClient for each new Chatbox-capable receiver found
         private async void OnOscQueryServiceFound(OSCQueryServiceProfile profile)
         {
-            // await UniTask.SwitchToMainThread();
-            //
             if (await ServiceSupportsChatbox(profile))
             {
                 var hostInfo = await OSCQuery.Extensions.GetHostInfo(profile.address, profile.port);
                 var oscService = new OSCQueryServiceProfile(profile.name, profile.address, hostInfo.oscPort,
                     OSCQueryServiceProfile.ServiceType.OSC);
-                // SetViewHeaderText($"Sending to {profile.name} at {profile.address}:{profile.port}";
                 OnChatboxFound(oscService);
             }
         }
