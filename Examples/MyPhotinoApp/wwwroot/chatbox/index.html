@@ -17,10 +17,19 @@
 
 <script>
     
+    // Would be nice to generate these from somewhere
+    let commands = {
+        startChatbox:       "startChatbox",
+        sendChatMessage:    "sendChatMessage",
+        sendChatTyping:     "sendChatTyping",
+        connectToServer:    "connectToServer",
+        response:           "response"
+    };
+    
     function startChatbox(){
         window.external.sendMessage(JSON.stringify(
             {
-                "command":"startChatbox"
+                "command":commands.startChatbox
             }
         ));
     }
@@ -29,7 +38,7 @@
         e.preventDefault();
         window.external.sendMessage(JSON.stringify(
             {
-                "command": "sendChatMessage",
+                "command": commands.sendChatMessage,
                 "data": inputField.value
             }
         ));
@@ -39,7 +48,7 @@
     function sendChatTyping(){
         window.external.sendMessage(JSON.stringify(
             {
-                "command": "sendChatTyping",
+                "command": commands.sendChatTyping,
                 "data" : "true"
             }
         ))
@@ -50,12 +59,12 @@
         
         switch (commandMessage.command)
         {
-            case "connectToServer":
+            case commands.connectToServer:
                 let info = JSON.parse(commandMessage.data);
                 console.log(info.name);
                 headerText.textContent = `Sending to ${info.name} at ${info.address}:${info.port}`; 
                 break;
-            case "response":
+            case commands.response:
                 console.log(commandMessage.data)
         }
     }
