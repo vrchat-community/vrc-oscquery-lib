@@ -15,6 +15,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
         public FindServiceDialog(ILogger<OSCQueryService> logger)
         {
             _service = new OSCQueryService( OSCQueryService.DefaultServerName + "1", OSCQueryService.DefaultPortHttp + 10, OSCQueryService.DefaultPortOsc + 10, logger);
+            _service.serviceTimeoutInSeconds = 5;
             
             Width = 45;
             Height = 10;
@@ -47,8 +48,14 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             };
             Add(_listView);
 
-            _service.OnProfileAdded += _ =>
+            _service.OnOscQueryServiceAdded += _ =>
             {
+                RefreshListings();
+            };
+
+            _service.OnOscQueryServiceRemoved += profile =>
+            {
+                logger.LogInformation($"Removed {profile.name}");
                 RefreshListings();
             };
 

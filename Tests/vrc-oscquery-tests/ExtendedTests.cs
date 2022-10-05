@@ -34,14 +34,14 @@ namespace VRC.OSCQuery.Tests
                     disconnected = true;
                 }
             };
-            listenService.OnOscQueryServiceAdded += async profile =>
+            listenService.OnOscQueryServiceAdded += profile =>
             {
                 if (profile.name == sendServiceName)
                 {
                     sendService.Dispose();
                     // listenService.RefreshServices();
 
-                    await Task.Delay(10000);
+                    // await Task.Delay(10000);
                     
                     Assert.True(disconnected);
                 }

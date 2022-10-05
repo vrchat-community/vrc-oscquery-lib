@@ -207,8 +207,9 @@ namespace VRC.OSCQuery
                 if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
                 {
                     // Check if there's already a service with the same name
-                    var existingProfile = _oscServices.FirstOrDefault(p => p.name == profile.InstanceName);
-                    if (existingProfile == default)
+                    // var existingProfile = _oscServices.FirstOrDefault(p => p.name == profile.InstanceName);
+                    var exists = _oscServices.Any(p => p.name == profile.InstanceName);
+                    if (!exists)
                     {
                         var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
                         _oscServices.Add(p);
@@ -219,6 +220,7 @@ namespace VRC.OSCQuery
                     }
                     else
                     {
+                        var existingProfile = _oscServices.FirstOrDefault(p => p.name == profile.InstanceName);
                         // Update heartbeat time for profile
                         _lastTimeServiceSeen[existingProfile] = DateTime.Now;
                     }
@@ -227,8 +229,8 @@ namespace VRC.OSCQuery
                 else if (name.CompareTo(_localOscJsonServiceName) == 0 && (_zeroconfService != null && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName))
                 {
                     // Check if there's already a service with the same name
-                    var existingProfile = _oscServices.FirstOrDefault(p => p.name == profile.InstanceName);
-                    if (existingProfile == default)
+                    var exists = _oscQueryServices.Any(p => p.name == profile.InstanceName);
+                    if (!exists)
                     {
                         var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
                         _oscQueryServices.Add(p);
@@ -239,6 +241,7 @@ namespace VRC.OSCQuery
                     }
                     else
                     {
+                        var existingProfile = _oscQueryServices.FirstOrDefault(p => p.name == profile.InstanceName);
                         // Update heartbeat time for profile
                         _lastTimeServiceSeen[existingProfile] = DateTime.Now;
                     }
