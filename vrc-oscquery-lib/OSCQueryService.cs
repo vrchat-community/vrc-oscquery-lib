@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using MeaMod.DNS.Model;
 using MeaMod.DNS.Multicast;
+using MeaMod.DNS.Server;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -30,10 +32,15 @@ namespace VRC.OSCQuery
         public event Action<ServiceProfile> OnProfileAdded;
         public event Action<OSCQueryServiceProfile> OnOscServiceAdded;
         public event Action<OSCQueryServiceProfile> OnOscQueryServiceAdded;
+        public event Action<OSCQueryServiceProfile> OnOscQueryServiceRemoved;
 
         // Store discovered services
-        private HashSet<OSCQueryServiceProfile> _oscQueryServices = new HashSet<OSCQueryServiceProfile>();
-        private HashSet<OSCQueryServiceProfile> _oscServices = new HashSet<OSCQueryServiceProfile>();
+        private ConcurrentSet<OSCQueryServiceProfile> _oscQueryServices = new ConcurrentSet<OSCQueryServiceProfile>();
+        private ConcurrentSet<OSCQueryServiceProfile> _oscServices = new ConcurrentSet<OSCQueryServiceProfile>();
+
+        private ConcurrentDictionary<OSCQueryServiceProfile, DateTime> _lastTimeServiceSeen =
+            new ConcurrentDictionary<OSCQueryServiceProfile, DateTime>();
+        public int serviceTimeoutInSeconds = 30;
 
         // HTTP Server
         HttpListener _listener;
@@ -127,6 +134,35 @@ namespace VRC.OSCQuery
 
         public void RefreshServices()
         {
+            HashSet<OSCQueryServiceProfile> servicesToRemove = new HashSet<OSCQueryServiceProfile>();
+                
+            // Remove stale services
+            foreach (var pair in _lastTimeServiceSeen.ToList())
+            {
+                if (DateTime.Now - pair.Value > TimeSpan.FromSeconds(serviceTimeoutInSeconds))
+                {
+                    servicesToRemove.Add(pair.Key);
+                }
+            }
+
+            foreach (var profile in servicesToRemove)
+            {
+                if (_oscServices.Contains(profile))
+                {
+                    _oscServices.Remove(profile);
+                }
+                else if (_oscQueryServices.Contains(profile))
+                {
+                    _oscQueryServices.Remove(profile);
+                }
+
+                // Remove from service seen tracking
+                _lastTimeServiceSeen.TryRemove(profile, out DateTime _);
+
+                // Send event with removal of service
+                OnOscQueryServiceRemoved?.Invoke(profile);
+            }
+            
             _mdns.SendQuery(_localOscUdpServiceName);
             _mdns.SendQuery(_localOscJsonServiceName);
         }
@@ -170,31 +206,41 @@ namespace VRC.OSCQuery
                 // If this is an OSC service, add it to the OSC collection
                 if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
                 {
-                    // Make sure there's not already a service with the same name
-                    if (!_oscServices.Any(p => p.name == profile.InstanceName))
+                    // Check if there's already a service with the same name
+                    var existingProfile = _oscServices.FirstOrDefault(p => p.name == profile.InstanceName);
+                    if (existingProfile == default)
                     {
                         var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
                         _oscServices.Add(p);
+                        _lastTimeServiceSeen.TryAdd(p, DateTime.Now);
                         OnProfileAdded?.Invoke(profile);
                         OnOscServiceAdded?.Invoke(p);
                         Logger.LogInformation($"Found match {name} on port {port}");
+                    }
+                    else
+                    {
+                        // Update heartbeat time for profile
+                        _lastTimeServiceSeen[existingProfile] = DateTime.Now;
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
                 else if (name.CompareTo(_localOscJsonServiceName) == 0 && (_zeroconfService != null && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName))
                 {
-                    // Make sure there's not already a service with the same name
-                    if (!_oscQueryServices.Any(p => p.name == profile.InstanceName))
+                    // Check if there's already a service with the same name
+                    var existingProfile = _oscServices.FirstOrDefault(p => p.name == profile.InstanceName);
+                    if (existingProfile == default)
                     {
                         var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
                         _oscQueryServices.Add(p);
+                        _lastTimeServiceSeen.TryAdd(p, DateTime.Now);
                         OnProfileAdded?.Invoke(profile);
                         OnOscQueryServiceAdded?.Invoke(p);
                         Logger.LogInformation($"Found match {name} on port {port}");
                     }
                     else
                     {
-                        Logger.LogInformation($"Not triggering service added for {name} because it's already tracked");
+                        // Update heartbeat time for profile
+                        _lastTimeServiceSeen[existingProfile] = DateTime.Now;
                     }
                 }
             }
@@ -205,8 +251,8 @@ namespace VRC.OSCQuery
             }
         }
 
-        public HashSet<OSCQueryServiceProfile> GetOSCQueryServices() => _oscQueryServices;
-        public HashSet<OSCQueryServiceProfile> GetOSCServices() => _oscServices;
+        public List<OSCQueryServiceProfile> GetOSCQueryServices() => _oscQueryServices.ToList();
+        public List<OSCQueryServiceProfile> GetOSCServices() => _oscServices.ToList();
         
         public void SetValue(string address, string value)
         {

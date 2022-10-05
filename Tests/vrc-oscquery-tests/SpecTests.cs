@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace VRC.OSCQuery.Tests
 {
+    [TestFixture]
     public class SpecTests
     {
         [SetUp]
