@@ -192,10 +192,6 @@ namespace VRC.OSCQuery
                         OnOscQueryServiceAdded?.Invoke(p);
                         Logger.LogInformation($"Found match {name} on port {port}");
                     }
-                    else
-                    {
-                        Logger.LogInformation($"Not triggering service added for {name} because it's already tracked");
-                    }
                 }
             }
             catch (Exception e)
