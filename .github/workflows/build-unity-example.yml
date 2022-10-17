@@ -32,8 +32,23 @@ jobs:
           targetPlatform: StandaloneWindows64
           projectPath: Examples/OSCQueryExplorer-Unity
 
-      # Output
-      - uses: actions/upload-artifact@v2
+#      # Output
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: Build
+#          path: build
+      
+      # Version
+      - name: Set Version from Tag
+            shell: bash
+            run: |
+              tag=$(git describe --tags --abbrev=0)
+              echo "GIT_TAG= $(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+      
+      # Publish
+      uses: softprops/action-gh-release@v1
         with:
-          name: Build
-          path: build
+          files: "build"
+          tag_name: ${{ env.GIT_TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
