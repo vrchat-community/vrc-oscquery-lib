@@ -48,8 +48,8 @@ jobs:
       # Publish
       - name: Publish
         uses: softprops/action-gh-release@v1
-          with:
-            files: "build"
-            tag_name: ${{ env.GIT_TAG }}
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: "build"
+          tag_name: ${{ env.GIT_TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
