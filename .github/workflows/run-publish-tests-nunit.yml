@@ -37,7 +37,7 @@ jobs:
           echo "GIT_TAG= '$(git describe --tags --abbrev=0)'" >> $GITHUB_ENV
 
           # Build everything
-          dotnet publish --runtime "${{ matrix.target }}" --self-contained -c Release -o "$release_name"
+          dotnet publish --runtime "${{ matrix.target }}" -f net6.0 --self-contained -c Release -o "$release_name"
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
