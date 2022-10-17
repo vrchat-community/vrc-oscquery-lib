@@ -33,7 +33,7 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="App-$tag-${{ matrix.target }}"
+          release_name="Example-Apps-$tag-${{ matrix.target }}"
           echo "GIT_TAG= '$(git describe --tags --abbrev=0)'" >> $GITHUB_ENV
 
           # Build everything
@@ -49,14 +49,11 @@ jobs:
 
           # Delete output directory
           rm -r "$release_name"
-          
-      - name: Echo tag
-        run: echo ${{ env.GIT_TAG }}
 
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "App*"
+          files: "Example-Apps-*"
           tag_name: ${{ env.GIT_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
