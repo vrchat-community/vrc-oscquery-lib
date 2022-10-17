@@ -31,12 +31,6 @@ jobs:
         with:
           targetPlatform: StandaloneWindows64
           projectPath: Examples/OSCQueryExplorer-Unity
-
-#      # Output
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: Build
-#          path: build
       
       # Version
       - name: Set Version from Tag
