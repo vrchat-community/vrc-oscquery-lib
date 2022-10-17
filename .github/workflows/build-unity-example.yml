@@ -40,15 +40,16 @@ jobs:
       
       # Version
       - name: Set Version from Tag
-            shell: bash
-            run: |
-              tag=$(git describe --tags --abbrev=0)
-              echo "GIT_TAG= $(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+        shell: bash
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          echo "GIT_TAG= $(git describe --tags --abbrev=0)" >> $GITHUB_ENV
       
       # Publish
-      uses: softprops/action-gh-release@v1
-        with:
-          files: "build"
-          tag_name: ${{ env.GIT_TAG }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+          with:
+            files: "build"
+            tag_name: ${{ env.GIT_TAG }}
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
