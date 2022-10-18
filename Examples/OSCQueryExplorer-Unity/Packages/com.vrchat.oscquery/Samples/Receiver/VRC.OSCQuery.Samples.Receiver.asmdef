@@ -4,7 +4,8 @@
         "OscCore.Runtime",
         "BlobHandles.Runtime",
         "NtpTimestamp",
-        "OSCQuery.Samples.Shared"
+        "OSCQuery.Samples.Shared",
+        "VRC.OSCQuery"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
 
-namespace VRC.OSCQuery.Samples.Shared
+namespace VRC.OSCQuery
 {
     public class UnityMSLogger : ILogger<OSCQueryService>
     {

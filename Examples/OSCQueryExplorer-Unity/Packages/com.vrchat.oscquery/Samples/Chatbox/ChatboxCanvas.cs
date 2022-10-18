@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-using VRC.OSCQuery.Examples.OSCQueryExplorerUnity;
 
 #pragma warning disable 4014
 
