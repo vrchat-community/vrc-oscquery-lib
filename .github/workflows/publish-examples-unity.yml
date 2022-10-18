@@ -1,4 +1,4 @@
-name: Build Unity Example
+name: Publish Examples for Unity
 
 on: [workflow_dispatch]
 

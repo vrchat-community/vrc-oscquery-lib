@@ -1,4 +1,4 @@
-name: Publish
+name: Publish Examples for .NET
 
 on:
   workflow_dispatch: 
