@@ -38,7 +38,7 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          echo "GIT_TAG= $(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+          echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
           
       - name: Compress
         shell: bash
