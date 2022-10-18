@@ -4,6 +4,11 @@
         <TargetFrameworks>net462;net6.0</TargetFrameworks>
         <RootNamespace>vrc_oscquery_lib</RootNamespace>
     </PropertyGroup>
+    <ItemGroup>
+        <Content Include="OSCQueryExplorer.html">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="MeaMod.DNS" Version="1.0.70" />
