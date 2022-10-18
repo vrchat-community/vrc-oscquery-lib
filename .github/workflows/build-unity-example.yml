@@ -31,9 +31,24 @@ jobs:
         with:
           targetPlatform: StandaloneWindows64
           projectPath: Examples/OSCQueryExplorer-Unity
-
-      # Output
-      - uses: actions/upload-artifact@v2
+          buildName: OSCQueryExplorer-Unity-Win
+      
+      # Version
+      - name: Set Version from Tag
+        shell: bash
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          echo "GIT_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+          
+      - name: Compress
+        shell: bash
+        run: 7z a -tzip "OSCQueryExplorer-Unity-Win${{env.GIT_TAG}}.zip" "./build/StandaloneWindows64/*"
+        
+      # Publish
+      - name: Publish
+        uses: softprops/action-gh-release@v1
         with:
-          name: Build
-          path: build
+          files: "OSCQueryExplorer-Unity-Win${{env.GIT_TAG}}.zip"
+          tag_name: ${{ env.GIT_TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
