@@ -42,13 +42,13 @@ jobs:
           
       - name: Compress
         shell: bash
-        run: 7z a -tzip "OSCQueryExplorer-Unity-Win${{env.GIT_TAG}}.zip" "./build/StandaloneWindows64/*"
+        run: 7z a -tzip "OSCQueryExplorer-Unity-Win-${{env.GIT_TAG}}.zip" "./build/StandaloneWindows64/*"
         
       # Publish
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "OSCQueryExplorer-Unity-Win${{env.GIT_TAG}}.zip"
+          files: "OSCQueryExplorer-Unity-Win-${{env.GIT_TAG}}.zip"
           tag_name: ${{ env.GIT_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
