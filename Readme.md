@@ -7,10 +7,6 @@
 We're developing this implementation of the protocol for OSC app creators integrate into their own projects as we integrate it into [VRChat](https://vrchat.com).
 We're building it in C# targeting .NET 6 and Framework 4.6 so it will work in Unity as well as cross-platform .NET projects.
 
-## 📊 Status
-
-![NUnit Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/vrchat-developer/4c1497eb43ee225c377c964b2e447a89/raw/test.json)
-
 ## 🔨 Functionality
 
 This library implements almost all of the [Core Functionality](https://github.com/Vidvox/OSCQueryProposal#core-functionality) as described in the proposal:
