@@ -38,12 +38,16 @@ jobs:
         run: |
           tag=$(git describe --tags --abbrev=0)
           echo "GIT_TAG= $(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-      
+          
+      - name: Compress
+        shell: bash
+        run: 7z a -tzip "OSCQueryExplorer-Unity-${{env.GIT_TAG}}.zip" "./build/StandaloneWindows64/*"
+        
       # Publish
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "build/StandaloneWindows64/*"
+          files: "OSCQueryExplorer-Unity-${{env.GIT_TAG}}.zip"
           tag_name: ${{ env.GIT_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
