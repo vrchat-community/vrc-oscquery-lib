@@ -58,6 +58,8 @@ This scene demonstrates how to find an OSC receiver compatible with your data an
 
 This scene advertises itself as a receiver of OSC data, which VRChat will find and connect to. All of the code is in a single MonoBehaviour - [ReceiverCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Receiver/ReceiverCanvas.cs)
 
+https://user-images.githubusercontent.com/737888/196583859-6616b260-87c7-43a9-b6cc-26cfc110fbfe.mov
+
 ### Console Apps
 The solution includes two simple examples to demonstrate and test functionality. They are both .NET 6 Console apps and should work on Windows, Mac and Linux, but have only been tested on Windows 10 so far.
 
