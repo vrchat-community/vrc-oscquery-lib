@@ -32,6 +32,16 @@ This library does not yet return limited attributes based on query strings, like
 
 ---
 
+## 🐱‍🏍Testing with VRChat
+
+You can opt-in to a version of the VRChat Client using Steam Beta with the password `R34SzEpf4xp3g81`, which gives you access to the beta branch `oq-cb`. Please do not share the password, we don't want people using this feature before we've had a chance to work with the OSC app creators on iteration and integration.
+
+After launching this special beta client, VRChat will start up an OSCQuery Service if you have OSC turned on. Note that we've changed the functionality of the OSC toggle a bit so you may need to turn it on every time you launch for now. VRChat will start a TCP service at [http://localhost:9001](http://localhost:9001) by default, or whatever port you have specified with your launch arguments. You can visit this url in a regular web browser to see the plain JSON which is returned for a request to the root namespace.
+
+You can use the Unity App example which is included in this repo as source as well as in [the Releases](https://github.com/vrchat-community/vrc-oscquery-lib/releases) to test automatically connecting to VRChat and sending text to the Chatbox or receiving outgoing data over OSC. 
+
+Try opening up two instances of the app to see VRChat send to both automatically.
+
 ## ✨ Examples
 
 ### Unity App
