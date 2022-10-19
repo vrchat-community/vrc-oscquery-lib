@@ -143,6 +143,13 @@
       margin-right: 2rem;
     }
 
+    .w-100 {
+      width: 100%;
+    }
+
+    .flex-1 {
+      flex: 1;
+    }
 
     .align-items-center {
       align-items: center;
@@ -180,10 +187,87 @@
       display: none;
     }
 
+    #dataContainer.compact {
+      display: grid;
+      grid-gap: 0.5rem;
+    }
+
+    .compact .entry div {
+      font-size: 0.8rem !important;
+    }
+
     .entry {
       margin-bottom: 0.5rem;
       border-radius: 4px;
       overflow: hidden;
+    }
+
+    .compact .entry {
+      margin-bottom: 0;
+    }
+
+    .entry.group {
+      cursor: pointer;
+    }
+
+    @media screen and (max-width: 767px) {
+      #dataContainer.compact {
+        grid-template-columns: repeat(1, minmax(300px, 1fr));
+      }
+
+      .compact .entry.group {
+        cursor: pointer;
+        grid-column-start: 1;
+        grid-column-end: 2;
+      }
+    }
+
+    @media screen and (min-width: 768px) {
+      #dataContainer.compact {
+        grid-template-columns: repeat(2, minmax(300px, 1fr));
+      }
+
+      .compact .entry.group {
+        cursor: pointer;
+        grid-column-start: 1;
+        grid-column-end: 3;
+      }
+    }
+
+    @media screen and (min-width: 960px) {
+      #dataContainer.compact {
+        grid-template-columns: repeat(3, minmax(300px, 1fr));
+      }
+
+      .compact .entry.group {
+        cursor: pointer;
+        grid-column-start: 1;
+        grid-column-end: 4;
+      }
+    }
+
+    @media screen and (min-width: 1280px) {
+      #dataContainer.compact {
+        grid-template-columns: repeat(4, minmax(300px, 1fr));
+      }
+
+      .compact .entry.group {
+        cursor: pointer;
+        grid-column-start: 1;
+        grid-column-end: 5;
+      }
+    }
+
+    @media screen and (min-width: 1700px) {
+      #dataContainer.compact {
+        grid-template-columns: repeat(5, minmax(300px, 1fr));
+      }
+
+      .compact .entry.group {
+        cursor: pointer;
+        grid-column-start: 1;
+        grid-column-end: 6;
+      }
     }
 
     .entryInfo {
@@ -198,16 +282,42 @@
       background-color: var(--bg1hover);
     }
 
+    .entryPathRow {
+      flex-wrap: wrap;
+    }
+
+    .entryPathRow .code {
+      margin-right: 0;
+    }
+
+    .compact .entryPathRow {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .compact .entryPathRow .code {
+      margin-left: 0;
+      margin-top: 0.25rem;
+      margin-right: 0.25rem;
+    }
+
     .entryCurrValContainer {
       flex-wrap: wrap;
+      flex-grow: 1;
       background-color: var(--bg2pressed);
       padding: 0.5rem 1rem;
 
       transition: background-color 0.125s ease-in-out;
     }
 
-    #dataContainer {
-      margin-top: 1rem;
+    .compact .entryCurrValContainer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .compact .entryCurrValContainer .code {
+      margin-left: 0;
+      margin-top: 0.25rem;
     }
 
     .button {
@@ -251,6 +361,54 @@
     .active {
       opacity: 1;
     }
+
+    .search {
+      outline: none;
+      background-color: var(--bg2hover);
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      color: var(--fg1);
+
+      transition: all 0.125s ease;
+    }
+
+    .search:focus {
+      background-color: var(--bg2pressed);
+    }
+    
+    .toggler {
+      transform: scale(1.5, 0.9)  translateY(-2px);
+      transition: all 0.125s ease-in-out;
+    }
+
+    .toggler.flipped {
+      transform: scale(1.5, 0.9) translateY(2px) rotate(180deg);
+    }
+
+    .error {
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .errorHeader {
+      background-color: var(--bg1);
+      padding: 0.5rem 1rem;
+      border-bottom: 2px solid #d13438;
+    }
+
+    .errorHeader h3 {
+      padding: 0;
+      margin: 0;
+    }
+
+    .errorBody {
+      background-color: var(--bg2pressed);
+      padding: 0.5rem 1rem;
+    }
+
+    
   </style>
 </head>
 <body>
@@ -275,12 +433,19 @@
       <div>Description:</div>
       <div class="ms-1" id="nodeDescription"></div>
     </div>
+    <div class="mt-2 mb-2 row">
+      <input type="text" class="search flex-1" placeholder="Filter by path..." id="pathFilter" />
+      <button class="button button-secondary row ms-2" title="Toggle Compact Mode" id="compactMode">
+        Compact Mode
+        <span class="ms-2 animated faded" id="compactModeIcon">📦</span>
+      </button>
+    </div>
     <div id="dataContainer">
     </div>
   </div>
   <script>
     const TYPE_MAP = {
-      i: "int32",
+      i: 'int32',
       u: 'uint32',
       h: 'int64',
       f: 'float',
@@ -291,6 +456,20 @@
       b: 'byte[]',
       T: 'bool'
     }
+    const ACCESS_MAP = [
+      'none',
+      'read',
+      'write',
+      'read/write'
+    ]
+
+    const COLUMNS_MAP = [
+      [1700, 5],
+      [1280, 4],
+      [960, 3],
+      [768, 2],
+      [0, 1],
+    ];
 
     let apiData = {};
     let apiIsLoading = false;
@@ -298,6 +477,8 @@
     let apiIsError = false;
     let apiError = null;
     let autoRefresh = false;
+    const collapseState = [];
+    let compactModeState = false;
 
     const setupRoot = () => {
       const rootUrl = new URL(window.location.href);
@@ -315,6 +496,7 @@
         apiIsError = false;
         apiError = null;
       } catch (e) {
+        console.error(e);
         apiIsError = true;
         apiError = e;
         apiIsSuccess = false;
@@ -336,16 +518,16 @@
     const setupRefresh = () => {
       const refreshBtn = document.getElementById('refresh');
       refreshBtn.addEventListener('click', async () => {
-        refreshBtn.textContent = "Refreshing...";
+        refreshBtn.textContent = 'Refreshing...';
         await refreshData();
-        refreshBtn.textContent = "Refreshed!";
+        refreshBtn.textContent = 'Refreshed!';
 
         if (refreshTimeout != null) {
           clearTimeout(refreshTimeout);
         }
 
         refreshTiemout = setTimeout(() => {
-          refreshBtn.textContent = "Refresh";
+          refreshBtn.textContent = 'Refresh';
         }, 1000);
       });
     }
@@ -371,85 +553,214 @@
       });
     }
 
+    const filterElements = searchTerm =>  {
+      const searchEls = document.querySelectorAll('.entry');
+        for (const el of searchEls) {
+          const text = el.querySelector('.entryPath').innerText.toLowerCase();
+          if (text.includes(searchTerm)) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+    }
+
+    const setupSearch = () => {
+      const searchInput = document.getElementById('pathFilter');
+      searchInput.addEventListener('input', () => {
+        const search = searchInput.value.toLowerCase();
+        filterElements(search);
+      });
+    }
+
+    const setupCompactMode = () => {
+      const compactMode = document.getElementById('compactMode');
+      const compactModeIcon = document.getElementById('compactModeIcon');
+      const dataContainer = document.getElementById('dataContainer');
+      compactMode.addEventListener('click', () => {
+        compactModeState = !compactModeState;
+        if (compactModeState) {
+          dataContainer.classList.add('compact');
+          compactModeIcon.classList.add('active');
+          compactModeIcon.classList.remove('faded');
+        } else {
+          dataContainer.classList.remove('compact');
+          compactModeIcon.classList.add('faded');
+          compactModeIcon.classList.remove('active');
+        }
+        render();
+      });
+    }
+
     const render = () => {
+      const dataContainer = document.getElementById('dataContainer');
+      const scrollPos = window.scrollY;
+      dataContainer.innerHTML = '';
       if (apiData?.CONTENTS && !apiIsError) {
-        const dataContainer = document.getElementById('dataContainer');
-        dataContainer.innerHTML = '';
-        renderContents(apiData.CONTENTS, dataContainer);
+        renderParent(apiData.CONTENTS, dataContainer, 0);
         const descriptionNode = document.getElementById('nodeDescription');
         descriptionNode.innerText = apiData.DESCRIPTION;
+        const search = document.getElementById('pathFilter');
+        if (search.value != '') {
+          filterElements(search.value.toLowerCase());
+        }
+        window.scrollTo(0, scrollPos);
+      }
+      if (apiIsError) {
+        renderError(dataContainer);
       }
     }
 
-    const renderContents = (contents, container) => {
-      Object.entries(contents).forEach(([key, data]) => {
-        const entry = document.createElement('div');
-        entry.classList.add("entry");
-        entry.classList.add("col");
+    const renderError = container => {
+      const errorContainer = document.createElement('div');
+      errorContainer.classList.add('error');
 
-        const mainInfo = document.createElement('div');
-        mainInfo.classList.add("entryInfo");
-        mainInfo.classList.add("row");
-        mainInfo.classList.add("align-items-center");
-        mainInfo.classList.add("justify-content-between");
+      const errorHeaderContainer = document.createElement('div');
+      errorHeaderContainer.classList.add('errorHeader');
 
-        const leftContainer = document.createElement('div');
-        leftContainer.classList.add("row");
-        leftContainer.classList.add("align-items-center");
+      const errorHeader = document.createElement('h3');
+      errorHeader.innerText = 'Could not load the OSQuery Node Data';
 
-        const path = document.createElement('div');
-        path.classList.add("entryPath");
-        path.classList.add("mono");
-        path.textContent = data.FULL_PATH;
+      errorHeaderContainer.appendChild(errorHeader);
 
-        const type = document.createElement('div');
-        type.classList.add("entryType");
-        type.classList.add("code");
-        type.textContent = TYPE_MAP[data.TYPE]
+      const errorBody = document.createElement('div');
+      errorBody.classList.add('errorBody');
+      errorBody.innerText = apiError ?? 'Something went wrong, please try refreshing';
 
-        leftContainer.appendChild(path);
-        leftContainer.appendChild(type);
+      errorContainer.appendChild(errorHeaderContainer);
+      errorContainer.appendChild(errorBody);
 
-        mainInfo.appendChild(leftContainer);
-        
-        if (data.DESCRIPTION !== "") {
-          const description = document.createElement('div');
-          description.classList.add("entryDescription");
-          description.textContent = data.DESCRIPTION;
-          mainInfo.appendChild(description);
-        }
+      container.appendChild(errorContainer);
+    }
 
-        const currValContainer = document.createElement('div');
-        currValContainer.classList.add("entryCurrValContainer");
-        currValContainer.classList.add("row");
-        currValContainer.classList.add("align-items-center");
-
-        const currValLabel = document.createElement('div');
-        currValLabel.textContent = "Current Value: ";
-
-        const currVal = document.createElement('div');
-        currVal.classList.add("code");
-        if (Array.isArray(data.VALUE)) {
-          currVal.textContent = `[${data.VALUE.join(', ')}]`;
+    const renderParent = (data, container, nestLevel) => {
+      const totalWidth = document.body.clientWidth;
+      const columns = COLUMNS_MAP.find(c => c[0] < totalWidth)[1];
+      Object.entries(data).forEach(([key, data], index) => {
+        const shouldSkip = collapseState.find(c => data.FULL_PATH.startsWith(c));
+        if (data.ACCESS == 0) {
+          renderParentElement(data, container, nestLevel, shouldSkip);
+          if (shouldSkip) return;
+          renderParent(data.CONTENTS, container, nestLevel + 1);
         } else {
-          currVal.textContent = data.VALUE;
+          if (shouldSkip) return;
+          const noIndent = index % columns !== 0 && compactModeState;
+          console.log(columns, index, compactModeState, noIndent);
+          renderElement(data, container, noIndent ? 0 : nestLevel, index);
         }
-
-        currValContainer.appendChild(currValLabel);
-        currValContainer.appendChild(currVal);
-        
-        
-        entry.appendChild(mainInfo);
-        entry.appendChild(currValContainer);
-
-        container.appendChild(entry);
       });
-    } 
+    }
+
+    const renderParentElement = (data, container, nestLevel, childrenSkipped) => {
+      const entry = document.createElement('div');
+      entry.classList.add('entry', 'col', 'group');
+      entry.style.marginLeft = `${nestLevel * 20}px`;
+
+      const mainInfo = document.createElement('div');
+      mainInfo.classList.add('entryInfo', 'row', 'align-items-center', 'justify-content-between');
+
+      const leftContainer = document.createElement('div');
+      leftContainer.classList.add('row', 'align-items-center');
+
+      const path = document.createElement('div');
+      path.classList.add('entryPath', 'mono');
+      path.textContent = data.FULL_PATH;
+
+      const toggler = document.createElement('div');
+      toggler.classList.add('toggler');
+      if (childrenSkipped) {
+        toggler.classList.add('flipped');
+      }
+      toggler.textContent = "v";
+
+      leftContainer.appendChild(path);
+
+      mainInfo.appendChild(leftContainer);
+      mainInfo.appendChild(toggler);
+      entry.appendChild(mainInfo);
+      container.appendChild(entry);
+
+      entry.addEventListener('click', () => {
+        if (!collapseState.includes(data.FULL_PATH)) {
+          collapseState.push(data.FULL_PATH);
+        } else {
+          collapseState.splice(collapseState.indexOf(data.FULL_PATH), 1);
+        }
+        render();
+      });
+    }
+
+    const renderElement = (data, container, nestLevel, index) => {
+      const entry = document.createElement('div');
+      entry.classList.add('entry', 'col');
+      entry.style.marginLeft = `${nestLevel * 20}px`;
+
+      const mainInfo = document.createElement('div');
+      mainInfo.classList.add('entryInfo', 'row', 'align-items-center', 'justify-content-between');
+
+      const leftContainer = document.createElement('div');
+      leftContainer.classList.add('entryPathRow', 'row', 'align-items-center');
+
+      const path = document.createElement('div');
+      path.classList.add('entryPath', 'mono');
+      path.textContent = data.FULL_PATH;
+
+      const typeInfo = document.createElement('div');
+      typeInfo.classList.add('row', 'align-items-center');
+
+      const type = document.createElement('div');
+      type.classList.add('entryType', 'code');
+      type.textContent = TYPE_MAP[data.TYPE]
+
+      const access = document.createElement('div');
+      access.classList.add('entryAccess', 'code');
+      access.textContent = ACCESS_MAP[data.ACCESS]
+
+      typeInfo.appendChild(type);
+      typeInfo.appendChild(access);
+
+      leftContainer.appendChild(path);
+      leftContainer.appendChild(typeInfo);
+
+      mainInfo.appendChild(leftContainer);
+      
+      if (data.DESCRIPTION !== '') {
+        const description = document.createElement('div');
+        description.classList.add('entryDescription');
+        description.textContent = data.DESCRIPTION;
+        mainInfo.appendChild(description);
+      }
+
+      const currValContainer = document.createElement('div');
+      currValContainer.classList.add('entryCurrValContainer', 'row', 'align-items-center');
+
+      const currValLabel = document.createElement('div');
+      currValLabel.textContent = 'Current Value: ';
+
+      const currVal = document.createElement('div');
+      currVal.classList.add('code');
+      if (Array.isArray(data.VALUE)) {
+        currVal.textContent = `[${data.VALUE.join(', ')}]`;
+      } else {
+        currVal.textContent = data.VALUE;
+      }
+
+      currValContainer.appendChild(currValLabel);
+      currValContainer.appendChild(currVal);
+      
+      
+      entry.appendChild(mainInfo);
+      entry.appendChild(currValContainer);
+
+      container.appendChild(entry);
+    }
 
     (async () => {
       setupRoot();
       setupRefresh();
       setupAutoRefresh();
+      setupSearch();
+      setupCompactMode();
 
       await fetchApi();
       render();
