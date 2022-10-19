@@ -54,6 +54,8 @@ This app has two scenes: [VRC-Chatbox](#vrc-chatbox) and [OSCQueryReceiver](#osc
 
 This scene demonstrates how to find an OSC receiver compatible with your data and send it. It is similar to how VRChat implements its find-and-send logic. All of the code is in a single MonoBehaviour - [ChatboxCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Chatbox/ChatboxCanvas.cs).
 
+https://user-images.githubusercontent.com/737888/196586397-31c4d862-f119-4dce-97a2-375b212f27ca.mp4
+
 #### OSCQueryReceiver
 
 This scene advertises itself as a receiver of OSC data, which VRChat will find and connect to. All of the code is in a single MonoBehaviour - [ReceiverCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Receiver/ReceiverCanvas.cs)
