@@ -131,7 +131,7 @@ namespace VRC.OSCQuery
                 RootNodeMiddleware
             };
             _listener.Start();
-            Task.Run(() => HttpListenerLoop());
+            _listener.BeginGetContext(HttpListenerLoop, _listener);
             _shouldProcessHttp = true;
         }
 
@@ -238,13 +238,12 @@ namespace VRC.OSCQuery
         /// <summary>
         /// Process and responds to incoming HTTP queries
         /// </summary>
-        private async Task HttpListenerLoop()
+        private void HttpListenerLoop(IAsyncResult result)
         {
-            while (_shouldProcessHttp)
+            var context = _listener.EndGetContext(result);
+            _listener.BeginGetContext(HttpListenerLoop, _listener);
+            Task.Run(async () =>
             {
-                // Wait until next request
-                var context = await _listener.GetContextAsync();
-                
                 // Pre middleware
                 foreach (var middleware in _preMiddleware)
                 {
@@ -268,7 +267,7 @@ namespace VRC.OSCQuery
                     await middleware(context, () => move = true);
                     if (!move) break;
                 }
-            }
+            }).ConfigureAwait(false);
         }
         
         private async Task HostInfoMiddleware(HttpListenerContext context, Action next)
