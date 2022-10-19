@@ -66,6 +66,7 @@ namespace VRC.OSCQuery
         /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
         /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
+        /// <param name="middleware">Optional set of middleware to be injected into the HTTP server. Middleware will be executed in the order they are passed in.</param>
         public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null, params Func<HttpListenerContext, Action, Task>[] middleware)
         {
             Logger = logger ?? new NullLogger<OSCQueryService>();
