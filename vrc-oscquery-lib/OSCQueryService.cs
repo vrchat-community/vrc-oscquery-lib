@@ -250,7 +250,7 @@ namespace VRC.OSCQuery
                 {
                     var move = false;
                     await middleware(context, () => move = true);
-                    if (!move) break;
+                    if (!move) return;
                 }
                 
                 // User middleware
@@ -258,7 +258,7 @@ namespace VRC.OSCQuery
                 {
                     var move = false;
                     await middleware(context, () => move = true);
-                    if (!move) break;
+                    if (!move) return;
                 }
                 
                 // Post middleware
@@ -266,7 +266,7 @@ namespace VRC.OSCQuery
                 {
                     var move = false;
                     await middleware(context, () => move = true);
-                    if (!move) break;
+                    if (!move) return;
                 }
             }).ConfigureAwait(false);
         }
