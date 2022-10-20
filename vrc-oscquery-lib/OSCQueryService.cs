@@ -241,6 +241,8 @@ namespace VRC.OSCQuery
         /// </summary>
         private void HttpListenerLoop(IAsyncResult result)
         {
+            if (!_shouldProcessHttp) return;
+            
             var context = _listener.EndGetContext(result);
             _listener.BeginGetContext(HttpListenerLoop, _listener);
             Task.Run(async () =>

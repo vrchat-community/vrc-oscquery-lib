@@ -178,13 +178,15 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task Service_AfterAddingGrandChildNode_HasNodesForEachAncestor()
         {
-            var service = new OSCQueryService();
+
+            var port = Extensions.GetAvailableTcpPort();
+            var service = new OSCQueryService(Guid.NewGuid().ToString(), port);
 
             string fullPath = "/foo/bar/baz";
 
             service.AddEndpoint<int>(fullPath, Attributes.AccessValues.ReadOnly);
             
-            var response = await new HttpClient().GetAsync($"http://localhost:{OSCQueryService.DefaultPortHttp}/");
+            var response = await new HttpClient().GetAsync($"http://localhost:{port}/");
 
             Assert.True(response.IsSuccessStatusCode);
             
@@ -197,13 +199,13 @@ namespace VRC.OSCQuery.Tests
         }
 
         [Test]
-        public async Task Service_WithRequestForFavicon_NoCrash()
+        public async Task Service_WithRequestForFavicon_ReturnsSuccess()
         {
             var port = Extensions.GetAvailableTcpPort();
             var service = new OSCQueryService("TestService", port);
             
             var response = await new HttpClient().GetAsync($"http://localhost:{port}/favicon.ico");
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
         
         [Test]
