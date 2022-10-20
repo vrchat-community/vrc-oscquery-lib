@@ -645,7 +645,6 @@
         } else {
           if (shouldSkip) return;
           const noIndent = index % columns !== 0 && compactModeState;
-          console.log(columns, index, compactModeState, noIndent);
           renderElement(data, container, noIndent ? 0 : nestLevel, index);
         }
       });

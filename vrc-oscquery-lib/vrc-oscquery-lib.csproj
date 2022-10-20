@@ -4,17 +4,18 @@
         <TargetFrameworks>net462;net6.0</TargetFrameworks>
         <RootNamespace>vrc_oscquery_lib</RootNamespace>
     </PropertyGroup>
-    <ItemGroup>
-        <Content Include="OSCQueryExplorer.html">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="MeaMod.DNS" Version="1.0.70" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
       <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Resources\**">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <Target Name="CopyUnityDLL" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net462'">
