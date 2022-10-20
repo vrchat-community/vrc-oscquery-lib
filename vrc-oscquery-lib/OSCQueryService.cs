@@ -37,7 +37,6 @@ namespace VRC.OSCQuery
 
         // HTTP Server
         HttpListener _listener;
-        private bool _shouldProcessHttp;
         
         // HTTP Middleware
         private List<Func<HttpListenerContext, Action, Task>> _preMiddleware;
@@ -133,7 +132,6 @@ namespace VRC.OSCQuery
             };
             _listener.Start();
             _listener.BeginGetContext(HttpListenerLoop, _listener);
-            _shouldProcessHttp = true;
         }
 
         public void AdvertiseOSCService(string serverName, int oscPort = -1)
@@ -241,34 +239,45 @@ namespace VRC.OSCQuery
         /// </summary>
         private void HttpListenerLoop(IAsyncResult result)
         {
-            var context = _listener.EndGetContext(result);
-            _listener.BeginGetContext(HttpListenerLoop, _listener);
-            Task.Run(async () =>
+            if (!_listener.IsListening) return;
+            
+            try
             {
-                // Pre middleware
-                foreach (var middleware in _preMiddleware)
+                var context = _listener.EndGetContext(result);
+                // context.Response.Close();
+                _listener.BeginGetContext(HttpListenerLoop, _listener);
+                Task.Run(async () =>
                 {
-                    var move = false;
-                    await middleware(context, () => move = true);
-                    if (!move) return;
-                }
+                    // Pre middleware
+                    foreach (var middleware in _preMiddleware)
+                    {
+                        var move = false;
+                        await middleware(context, () => move = true);
+                        if (!move) return;
+                    }
                 
-                // User middleware
-                foreach (var middleware in _middleware)
-                {
-                    var move = false;
-                    await middleware(context, () => move = true);
-                    if (!move) return;
-                }
+                    // User middleware
+                    foreach (var middleware in _middleware)
+                    {
+                        var move = false;
+                        await middleware(context, () => move = true);
+                        if (!move) return;
+                    }
                 
-                // Post middleware
-                foreach (var middleware in _postMiddleware)
-                {
-                    var move = false;
-                    await middleware(context, () => move = true);
-                    if (!move) return;
-                }
-            }).ConfigureAwait(false);
+                    // Post middleware
+                    foreach (var middleware in _postMiddleware)
+                    {
+                        var move = false;
+                        await middleware(context, () => move = true);
+                        if (!move) return;
+                    }
+                }).ConfigureAwait(false);
+            }
+            catch (ObjectDisposedException e)
+            {
+                //Intentionally not doing anything with the exception.
+                Logger.LogError($"Error in HttpListenerLoop: {e.Message}");
+            }
         }
 
         private async Task HostInfoMiddleware(HttpListenerContext context, Action next)
@@ -429,16 +438,16 @@ namespace VRC.OSCQuery
 
         public void Dispose()
         {
-            _shouldProcessHttp = false;
-            
             // HttpListener teardown
-            if (_listener != null)
-            {
-                if (_listener.IsListening)
-                    _listener.Stop();
-                
-                _listener.Close();
-            }
+            // if (_listener != null)
+            // {
+            //     if (_listener.IsListening)
+            //     {
+            //         _listener.Stop();
+            //     }
+            //
+            //     _listener.Close();
+            // }
             
             // Service Teardown
             _discovery.Dispose();

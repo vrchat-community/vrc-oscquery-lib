@@ -10,6 +10,8 @@ namespace VRC.OSCQuery.Tests
 {
     public class SpecTests
     {
+        private static HttpClient _httpClient = new HttpClient();
+        
         [SetUp]
         public void Setup()
         {
@@ -20,7 +22,7 @@ namespace VRC.OSCQuery.Tests
         {
             int targetPort = Extensions.GetAvailableTcpPort();
             var service = new OSCQueryService("test-service", targetPort);
-            var result = await new HttpClient().GetAsync($"http://localhost:{targetPort}");
+            var result = await _httpClient.GetAsync($"http://localhost:{targetPort}");
             Assert.True(result.IsSuccessStatusCode);
             
             service.Dispose();
@@ -54,7 +56,7 @@ namespace VRC.OSCQuery.Tests
                 Attributes.AccessValues.ReadOnly,
                 randomInt.ToString()
             );
-            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
+            var response = await _httpClient.GetAsync($"http://localhost:{tcpPort}{path}");
 
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
@@ -80,7 +82,7 @@ namespace VRC.OSCQuery.Tests
             );
             service.SetValue(path, "true");
             
-            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
+            var response = await _httpClient.GetAsync($"http://localhost:{tcpPort}{path}");
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
@@ -118,7 +120,7 @@ namespace VRC.OSCQuery.Tests
                 randomInt2.ToString()
             );
             
-            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}/");
+            var response = await _httpClient.GetAsync($"http://localhost:{tcpPort}/");
 
             Assert.True(response.IsSuccessStatusCode);
             
@@ -178,13 +180,15 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task Service_AfterAddingGrandChildNode_HasNodesForEachAncestor()
         {
-            var service = new OSCQueryService();
+            var tcpPort = Extensions.GetAvailableTcpPort();
+
+            var service = new OSCQueryService("TestService", tcpPort);
 
             string fullPath = "/foo/bar/baz";
 
             service.AddEndpoint<int>(fullPath, Attributes.AccessValues.ReadOnly);
             
-            var response = await new HttpClient().GetAsync($"http://localhost:{OSCQueryService.DefaultPortHttp}/");
+            var response = await _httpClient.GetAsync($"http://localhost:{tcpPort}/");
 
             Assert.True(response.IsSuccessStatusCode);
             
@@ -197,22 +201,23 @@ namespace VRC.OSCQuery.Tests
         }
 
         [Test]
-        public async Task Service_WithRequestForFavicon_NoCrash()
+        public async Task Service_WithRequestForFavicon_ReturnsOk()
         {
             var port = Extensions.GetAvailableTcpPort();
             var service = new OSCQueryService("TestService", port);
             
-            var response = await new HttpClient().GetAsync($"http://localhost:{port}/favicon.ico");
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+            var response = await _httpClient.GetAsync($"http://localhost:{port}/favicon.ico");
+            Console.WriteLine(response.StatusCode);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
         
         [Test]
         public async Task Service_After404_CanReturnParameterValue()
         {
             var port = Extensions.GetAvailableTcpPort();
-            var service = new OSCQueryService("TestService", port);
+            var service = new OSCQueryService(Guid.NewGuid().ToString(), port);
             
-            var response = await new HttpClient().GetAsync($"http://localhost:{port}/whatever");
+            var response = await _httpClient.GetAsync($"http://localhost:{port}/whatever");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
             
             // Add random int param
@@ -227,7 +232,7 @@ namespace VRC.OSCQuery.Tests
 
             var tokenSource = new CancellationTokenSource();
             tokenSource.CancelAfter(TimeSpan.FromSeconds(5));
-            response = await new HttpClient().GetAsync($"http://localhost:{port}{path}", tokenSource.Token);
+            response = await _httpClient.GetAsync($"http://localhost:{port}{path}", tokenSource.Token);
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
