@@ -270,37 +270,35 @@ namespace VRC.OSCQuery
                 }
             }).ConfigureAwait(false);
         }
-        
+
         private async Task HostInfoMiddleware(HttpListenerContext context, Action next)
         {
-            if (context.Request.RawUrl.Contains(Attributes.HOST_INFO))
+            if (!context.Request.RawUrl.Contains(Attributes.HOST_INFO))
             {
-                try
-                {
-                    // Serve Host Info for requests with "HOST_INFO" in them
-                    var hostInfoString = _hostInfo.ToString();
-                        
-                    // Send Response
-                    context.Response.Headers.Add("pragma:no-cache");
-                
-                    context.Response.ContentType = "application/json";
-                    context.Response.ContentLength64 = hostInfoString.Length;
-                    using (var sw = new StreamWriter(context.Response.OutputStream))
-                    {
-                        await sw.WriteAsync(hostInfoString);
-                        await sw.FlushAsync();
-                    }
-
-                    return;
-                }
-                catch (Exception e)
-                {
-                    Logger.LogError($"Could not construct and send Host Info: {e.Message}");
-                }
-
+                next();
                 return;
             }
-            next();
+            
+            try
+            {
+                // Serve Host Info for requests with "HOST_INFO" in them
+                var hostInfoString = _hostInfo.ToString();
+                        
+                // Send Response
+                context.Response.Headers.Add("pragma:no-cache");
+                
+                context.Response.ContentType = "application/json";
+                context.Response.ContentLength64 = hostInfoString.Length;
+                using (var sw = new StreamWriter(context.Response.OutputStream))
+                {
+                    await sw.WriteAsync(hostInfoString);
+                    await sw.FlushAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Could not construct and send Host Info: {e.Message}");
+            }
         }
 
         private async Task ExplorerMiddleware(HttpListenerContext context, Action next)
@@ -310,35 +308,19 @@ namespace VRC.OSCQuery
                 next();
                 return;
             }
-            
-            using (var targetFile = File.OpenRead("OSCQueryExplorer.html"))
-            {
-                context.Response.ContentType = "text/html";
-                context.Response.StatusCode = 200;
-                context.Response.ContentLength64 = targetFile.Length;
-                await targetFile.CopyToAsync(context.Response.OutputStream);
-                await context.Response.OutputStream.FlushAsync();
-            }
+
+            await Extensions.ServeStaticFile(Path.Combine("Resources","OSCQueryExplorer.html"), "text/html", context);
         }
 
         private async Task FaviconMiddleware(HttpListenerContext context, Action next)
         {
-            if (context.Request.RawUrl.Contains("favicon.ico"))
+            if (!context.Request.RawUrl.Contains("favicon.ico"))
             {
-                // ignore for now, could send favicon if we want to be fancy
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                string err = "favicon not supported";
-                context.Response.ContentLength64 = err.Length;
-                using (var sw = new StreamWriter(context.Response.OutputStream))
-                {
-                    await sw.WriteAsync(err);
-                    await sw.FlushAsync();
-                }
-
+                next();
                 return;
             }
-
-            next();
+            
+            await Extensions.ServeStaticFile(Path.Combine("Resources","favicon.ico"), "image/x-icon", context);
         }
 
         private async Task RootNodeMiddleware(HttpListenerContext context, Action next)
