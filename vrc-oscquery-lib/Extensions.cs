@@ -62,7 +62,6 @@ namespace VRC.OSCQuery
             var response = await _client.GetAsync($"http://{ip}:{port}/");
             if (!response.IsSuccessStatusCode)
             {
-                // Logger.Error($"Could not get OSC Tree from {ip}:{port} because {response.ReasonPhrase}");
                 return null;
             }
 
