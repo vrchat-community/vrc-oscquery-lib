@@ -71,5 +71,11 @@ namespace VRC.OSCQuery
         public const string SERVICE_OSC_UDP = "_osc._udp";
         
         #endregion
+        
+        #region HTTPServer
+        
+        public static string EXPLORER = "?explorer";
+        
+        #endregion
     }
 }

@@ -28,11 +28,12 @@ This library does not yet return limited attributes based on query strings, like
 1. Build vrc-oscquery-lib into vrc-oscquery-lib.dll and add it to your project (will make this a NuGet package once it's ready for wider use).
 2. Construct a new OSCQuery service with `new OSCQueryService()`, optionally passing in the name, TCP port to use for serving HTTP, UDP port that you're using for OSC, and an ILogger if you want logs.
 3. You should now be able to visit `http://localhost:tcpPort` in a browser and see raw JSON describing an empty root node.
+    - You can also visit `http://localhost:tcpPort?explorer` to see an OSCQuery Explorer UI for the OSCQuery service, which should be easier to navigate than the raw JSON.
 4. You can also visit `http://localhost:tcpPort?HOST_INFO` to get information about the supported attributes of this OSCQuery Server.
 5. Next, you can call `AddEndpoint` on your service to add information about an available OSC method. Note that this library does not send or receive OSC messages directly, it is up to you to choose and implement an OSC Library.
 6. After you have added an endpoint, you can its information by querying the root node again, or query for your method specifically. If you added an endpoint for the OSC address "/foo/bar", you would query this method directly at `http://localhost:tcpPort/foo/bar`.
 7. To remove the endpoint, call the `RemoveEndpoint()` method on your OSCQueryService instance, passing in the OSC address as a string ("/foo/bar");
-8. When you are done with the service, call `Dispose` to clean it up
+8. When you are done with the service, call `Dispose` to clean it up.
 
 ---
 

@@ -39,6 +39,11 @@ namespace VRC.OSCQuery
         HttpListener _listener;
         private bool _shouldProcessHttp;
         
+        // HTTP Middleware
+        private List<Func<HttpListenerContext, Action, Task>> _preMiddleware;
+        private List<Func<HttpListenerContext, Action, Task>> _middleware;
+        private List<Func<HttpListenerContext, Action, Task>> _postMiddleware;
+        
         // Misc
         private OSCQueryRootNode _rootNode;
         private HostInfo _hostInfo;
@@ -61,11 +66,12 @@ namespace VRC.OSCQuery
         /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
         /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
-        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null)
+        /// <param name="middleware">Optional set of middleware to be injected into the HTTP server. Middleware will be executed in the order they are passed in.</param>
+        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null, params Func<HttpListenerContext, Action, Task>[] middleware)
         {
             Logger = logger ?? new NullLogger<OSCQueryService>();
             Initialize(serverName);
-            StartOSCQueryService(serverName, httpPort);
+            StartOSCQueryService(serverName, httpPort, middleware);
             AdvertiseOSCService(serverName, oscPort);
             RefreshServices();
         }
@@ -95,7 +101,7 @@ namespace VRC.OSCQuery
             _mdns.Start();
         }
 
-        public void StartOSCQueryService(string serverName, int httpPort = -1)
+        public void StartOSCQueryService(string serverName, int httpPort = -1, params Func<HttpListenerContext, Action, Task>[] middleware)
         {
             BuildRootResponse();
             
@@ -111,8 +117,22 @@ namespace VRC.OSCQuery
             _listener = new HttpListener();
             _listener.Prefixes.Add($"http://localhost:{httpPort}/");
             _listener.Prefixes.Add($"http://127.0.0.1:{httpPort}/");
+            _preMiddleware = new List<Func<HttpListenerContext, Action, Task>>
+            {
+                HostInfoMiddleware
+            };
+            if (middleware != null)
+            {
+                _middleware = middleware.ToList();
+            }
+            _postMiddleware = new List<Func<HttpListenerContext, Action, Task>>
+            {
+                FaviconMiddleware,
+                ExplorerMiddleware,
+                RootNodeMiddleware
+            };
             _listener.Start();
-            Task.Run(() => HttpListenerLoop());
+            _listener.BeginGetContext(HttpListenerLoop, _listener);
             _shouldProcessHttp = true;
         }
 
@@ -219,80 +239,121 @@ namespace VRC.OSCQuery
         /// <summary>
         /// Process and responds to incoming HTTP queries
         /// </summary>
-        private async Task HttpListenerLoop()
+        private void HttpListenerLoop(IAsyncResult result)
         {
-            while (_shouldProcessHttp)
+            if (!_shouldProcessHttp) return;
+            
+            var context = _listener.EndGetContext(result);
+            _listener.BeginGetContext(HttpListenerLoop, _listener);
+            Task.Run(async () =>
             {
-                // Wait until next request
-                var context = await _listener.GetContextAsync();
-                
-                if (context.Request.RawUrl.Contains(Attributes.HOST_INFO))
+                // Pre middleware
+                foreach (var middleware in _preMiddleware)
                 {
-                    try
-                    {
-                        // Serve Host Info for requests with "HOST_INFO" in them
-                        var hostInfoString = _hostInfo.ToString();
-                        
-                        // Send Response
-                        context.Response.Headers.Add("pragma:no-cache");
-                
-                        context.Response.ContentType = "application/json";
-                        context.Response.ContentLength64 = hostInfoString.Length;
-                        using (var sw = new StreamWriter(context.Response.OutputStream))
-                        {
-                            await sw.WriteAsync(hostInfoString);
-                            await sw.FlushAsync();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError($"Could not construct and send Host Info: {e.Message}");
-                    }
+                    var move = false;
+                    await middleware(context, () => move = true);
+                    if (!move) return;
                 }
-                else if (context.Request.RawUrl.Contains("favicon.ico"))
-                {
-                    // ignore for now, could send favicon if we want to be fancy
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    string err = "favicon not supported";
-                    context.Response.ContentLength64 = err.Length;
-                    using (var sw = new StreamWriter(context.Response.OutputStream))
-                    {
-                        await sw.WriteAsync(err);
-                        await sw.FlushAsync();
-                    }
-                }
-                else
-                {
-                    var path = context.Request.Url.LocalPath;
-                    var matchedNode = _rootNode.GetNodeWithPath(path);
-                    if (matchedNode == null)
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                        string err = "OSC Path not found";
-                        context.Response.ContentLength64 = err.Length;
-                        using (var sw = new StreamWriter(context.Response.OutputStream))
-                        {
-                            await sw.WriteAsync(err);
-                            await sw.FlushAsync();
-                        }
-                    }
-                    else
-                    {
-                        var stringResponse = matchedNode.ToString();
-                    
-                        // Send Response
-                        context.Response.Headers.Add("pragma:no-cache");
                 
-                        context.Response.ContentType = "application/json";
-                        context.Response.ContentLength64 = stringResponse.Length;
-                        using (var sw = new StreamWriter(context.Response.OutputStream))
-                        {
-                            await sw.WriteAsync(stringResponse);
-                            await sw.FlushAsync();
-                        }
+                // User middleware
+                foreach (var middleware in _middleware)
+                {
+                    var move = false;
+                    await middleware(context, () => move = true);
+                    if (!move) return;
+                }
+                
+                // Post middleware
+                foreach (var middleware in _postMiddleware)
+                {
+                    var move = false;
+                    await middleware(context, () => move = true);
+                    if (!move) return;
+                }
+            }).ConfigureAwait(false);
+        }
 
-                    }
+        private async Task HostInfoMiddleware(HttpListenerContext context, Action next)
+        {
+            if (!context.Request.RawUrl.Contains(Attributes.HOST_INFO))
+            {
+                next();
+                return;
+            }
+            
+            try
+            {
+                // Serve Host Info for requests with "HOST_INFO" in them
+                var hostInfoString = _hostInfo.ToString();
+                        
+                // Send Response
+                context.Response.Headers.Add("pragma:no-cache");
+                
+                context.Response.ContentType = "application/json";
+                context.Response.ContentLength64 = hostInfoString.Length;
+                using (var sw = new StreamWriter(context.Response.OutputStream))
+                {
+                    await sw.WriteAsync(hostInfoString);
+                    await sw.FlushAsync();
                 }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Could not construct and send Host Info: {e.Message}");
+            }
+        }
+
+        private async Task ExplorerMiddleware(HttpListenerContext context, Action next)
+        {
+            if (!context.Request.Url.Query.Contains(Attributes.EXPLORER))
+            {
+                next();
+                return;
+            }
+
+            await Extensions.ServeStaticFile(Path.Combine("Resources","OSCQueryExplorer.html"), "text/html", context);
+        }
+
+        private async Task FaviconMiddleware(HttpListenerContext context, Action next)
+        {
+            if (!context.Request.RawUrl.Contains("favicon.ico"))
+            {
+                next();
+                return;
+            }
+            
+            await Extensions.ServeStaticFile(Path.Combine("Resources","favicon.ico"), "image/x-icon", context);
+        }
+
+        private async Task RootNodeMiddleware(HttpListenerContext context, Action next)
+        {
+            var path = context.Request.Url.LocalPath;
+            var matchedNode = _rootNode.GetNodeWithPath(path);
+            if (matchedNode == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                string err = "OSC Path not found";
+                context.Response.ContentLength64 = err.Length;
+                using (var sw = new StreamWriter(context.Response.OutputStream))
+                {
+                    await sw.WriteAsync(err);
+                    await sw.FlushAsync();
+                }
+
+                return;
+            }
+
+            var stringResponse = matchedNode.ToString();
+                    
+            // Send Response
+            context.Response.Headers.Add("pragma:no-cache");
+                
+            context.Response.ContentType = "application/json";
+            context.Response.ContentLength64 = stringResponse.Length;
+            using (var sw = new StreamWriter(context.Response.OutputStream))
+            {
+                await sw.WriteAsync(stringResponse);
+                await sw.FlushAsync();
             }
         }
 
