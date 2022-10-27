@@ -425,7 +425,8 @@ namespace VRC.OSCQuery
             _rootNode = new OSCQueryRootNode()
             {
                 Access = Attributes.AccessValues.NoValue,
-                Description = "root node"
+                Description = "root node",
+                FullPath = "/",
             };
         }
 

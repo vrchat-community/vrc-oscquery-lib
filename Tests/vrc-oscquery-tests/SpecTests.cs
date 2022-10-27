@@ -238,5 +238,18 @@ namespace VRC.OSCQuery.Tests
             service.Dispose();
         }
 
+        [Test]
+        public void Service_RootNode_HasFullPathWithSlash()
+        {
+            var port = Extensions.GetAvailableTcpPort();
+            var udpPort = Extensions.GetAvailableUdpPort();
+            var service = new OSCQueryService(Guid.NewGuid().ToString(), port, udpPort);
+            var tree = Task.Run(() => Extensions.GetOSCTree(IPAddress.Loopback, port)).GetAwaiter().GetResult();
+            Assert.NotNull(tree);
+
+            var rootNode = tree.GetNodeWithPath("/");
+            Assert.AreEqual("/", rootNode.FullPath);
+        }
+
     }
 }
