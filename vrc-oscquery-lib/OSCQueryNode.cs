@@ -21,6 +21,11 @@ namespace VRC.OSCQuery
         }
         public OSCQueryNode GetNodeWithPath(string path)
         {
+            if (_pathLookup == null)
+            {
+                RebuildLookup();
+            }
+            
             if (_pathLookup.TryGetValue(path, out OSCQueryNode node))
             {
                 return node;
@@ -76,7 +81,10 @@ namespace VRC.OSCQuery
 
         public void RebuildLookup()
         {
-            _pathLookup = new Dictionary<string, OSCQueryNode>();
+            _pathLookup = new Dictionary<string, OSCQueryNode>()
+            {
+                { "/", this },
+            };
             AddContents(this);
         }
 
@@ -86,6 +94,12 @@ namespace VRC.OSCQuery
         /// <param name="node"></param>
         public void AddContents(OSCQueryNode node)
         {
+            // Don't try to add null contents
+            if (node.Contents == null)
+            {
+                return;
+            }
+            
             foreach (var pair in node.Contents)
             {
                 var subNode = pair.Value;
