@@ -360,15 +360,22 @@ namespace VRC.OSCQuery
         /// <summary>
         /// Registers the info for an OSC path.
         /// </summary>
-        /// <param name="name">String used for building JSON tree</param>
-        /// <param name="accessValues">Enum - 0: NoValue, 1: ReadOnly 2:WriteOnly 3:ReadWrite</param>
         /// <param name="path">Full OSC path to entry</param>
-        /// <param name="getter">Function which can return the current value for the entry</param>
+        /// <param name="oscTypeString">String representation of OSC type(s)</param>
+        /// <param name="accessValues">Enum - 0: NoValue, 1: ReadOnly 2:WriteOnly 3:ReadWrite</param>
+        /// <param name="initialValue">Starting value for param in string form</param>
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
         /// <returns></returns>
         public bool AddEndpoint(string path, string oscTypeString, Attributes.AccessValues accessValues, string initialValue = null,
             string description = "")
         {
+            // Exit early if path does not start with slash
+            if (!path.StartsWith("/"))
+            {
+                Logger.LogError($"An OSC path must start with a '/', your path {path} does not.");
+                return false;
+            }
+            
             if (_rootNode.GetNodeWithPath(path) != null)
             {
                 Logger.LogWarning($"Path already exists, skipping: {path}");
