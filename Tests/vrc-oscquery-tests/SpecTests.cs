@@ -238,5 +238,13 @@ namespace VRC.OSCQuery.Tests
             service.Dispose();
         }
 
+        [Test]
+        public void Service_GivenInvalidPathToAdd_ReturnsFalse()
+        {
+            var port = Extensions.GetAvailableTcpPort();
+            var service = new OSCQueryService("TestService", port);
+            var result = service.AddEndpoint<bool>("invalid", Attributes.AccessValues.ReadWrite);
+            Assert.False(result);
+        }
     }
 }
