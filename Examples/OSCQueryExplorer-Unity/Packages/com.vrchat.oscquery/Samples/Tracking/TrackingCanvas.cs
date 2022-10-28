@@ -8,13 +8,12 @@ using VRC.OSCQuery.Samples.Shared;
 
 #pragma warning disable 4014
 
-namespace VRC.OSCQuery.Samples.Chatbox
+namespace VRC.OSCQuery.Samples.Tracking
 {
-    public class ChatboxCanvas : MonoBehaviour
+    public class TrackingCanvas : MonoBehaviour
     {
         // Scene Objects
         public Text HeaderText;
-        public InputField InputField;
         
         // Connects to default OSC endpoint instead of searching via OSCQuery
         public bool connectToDefaultVRCEndpoint;
@@ -23,96 +22,72 @@ namespace VRC.OSCQuery.Samples.Chatbox
         private OSCQueryService _oscQueryService;
         // List of receivers to send to
         private List<OscClientPlus> _receivers = new List<OscClientPlus>();
-        private string _serverName = "ChatboxServer";
+        private string _serverName = "TrackingServer";
         private const int RefreshServicesInterval = 10;
 
         // Constant strings
-        private const string OSC_PATH_CHATBOX = "/chatbox";
-        private const string OSC_PATH_CHATBOX_TYPING = "/chatbox/typing";
-        private const string OSC_PATH_CHATBOX_INPUT = "/chatbox/input";
+        private const string TRACKERS_ROOT = "/tracking/trackers";
+        private const string TRACKERS_POSITION = "position";
+        private const string TRACKERS_ROTATION = "rotation";
+
+        public float userHeight = 1.7f; // Default height, change for your real-world height in meters
+        private float _avatarHeight = 1.89f; // Measured by hand for now, the world-space position of the top of the Avatar's head
+
+        public Transform headTransform;
+        public List<Transform> trackerTransforms;
 
         void Start()
         {
-
-            InputField.enabled = false;
-            
-            // Starts an OSCQuery Server with Bogus Name, listens for Chatbox Services
+            // Starts an OSCQuery Server, listens for Chatbox Services
             StartService();
-
-            // Subscribes to each change made to the input field in order to show 'typing' indicator
-            InputField.onValueChanged.AddListener(OnInputFieldValueChanged);
             
-            // Subscribes to Input Field submit to send data
-            InputField.onEndEdit.AddListener(OnInputFieldSubmit);
-
             // Connects to default local VRC client for direct testing
             if (connectToDefaultVRCEndpoint)
             {
-                AddChatboxReceiver(IPAddress.Loopback, 9000);
+                AddTrackingReceiver(IPAddress.Loopback, 9000);
             }
             
             InvokeRepeating(nameof(RefreshServices), 1, RefreshServicesInterval);
         }
-
+        
         private void RefreshServices()
         {
             _oscQueryService.RefreshServices();
         }
-
-        // Creates a new OSCClient for each new Chatbox-capable receiver found
+        
+        // Creates a new OSCClient for each new Tracking-capable receiver found
         private async void OnOscQueryServiceFound(OSCQueryServiceProfile profile)
         {
             await UniTask.SwitchToMainThread();
             
-            if (await ServiceSupportsChatbox(profile))
+            if (await ServiceSupportsTracking(profile))
             {
                 var hostInfo = await OSCQuery.Extensions.GetHostInfo(profile.address, profile.port);
                 HeaderText.text =
                     $"Sending to {profile.name} at {profile.address}:{hostInfo.oscPort}";
-                AddChatboxReceiver(profile.address, hostInfo.oscPort);
+                AddTrackingReceiver(profile.address, hostInfo.oscPort);
+            }
+            else
+            {
+                Debug.Log($"Could not find required endpoint on {profile.name}");
             }
         }
-
+        
         // Does the actual construction of the OSC Client, and advertises this service
-        private void AddChatboxReceiver(IPAddress address, int port)
+        private void AddTrackingReceiver(IPAddress address, int port)
         {
             var receiver = new OscClientPlus(address.ToString(), port);
             _receivers.Add(receiver);
             _oscQueryService.AdvertiseOSCService(_serverName, port);
-            
-            // Enable inputfield to communicate with client
-            InputField.enabled = true;
         }
-
+        
         // Checks for compatibility by looking for matching Chatbox root node
-        private async Task<bool> ServiceSupportsChatbox(OSCQueryServiceProfile profile)
+        private async Task<bool> ServiceSupportsTracking(OSCQueryServiceProfile profile)
         {
             var tree = await OSCQuery.Extensions.GetOSCTree(profile.address, profile.port);
-            return tree.GetNodeWithPath(OSC_PATH_CHATBOX) != null;
+            return tree.GetNodeWithPath(TRACKERS_ROOT) != null;
         }
-
-        // Sends 'typing' message to each receiver when input field value is changed
-        private void OnInputFieldValueChanged(string value)
-        {
-            foreach (var receiver in _receivers)
-            {
-                receiver.Send(OSC_PATH_CHATBOX_TYPING, true);
-            }
-        }
-
-
-        // Sends message immediately when field is submitted
-        private void OnInputFieldSubmit(string value)
-        {
-            foreach (var receiver in _receivers)
-            {
-                string address = OSC_PATH_CHATBOX_INPUT;
-                receiver.Send(address, value, true);
-            }
-
-            InputField.text = "";
-        }
-
+        
         private void StartService()
         {
             // Create a new OSCQueryService, advertise
@@ -135,12 +110,43 @@ namespace VRC.OSCQuery.Samples.Chatbox
             _oscQueryService.RefreshServices();
         }
 
+        // Send Tracker updates if ready
+        void Update()
+        {
+            // Exit early if we don't have the required Transforms
+            if (headTransform == null) return;
+            if (_receivers.Count > 0)
+            {
+                foreach (var receiver in _receivers)
+                {
+                    SendTrackerDataToReceiver("head", headTransform, receiver);
+                    if (trackerTransforms != null)
+                    {
+                        for (int i = 0; i < trackerTransforms.Count; i++)
+                        {
+                            SendTrackerDataToReceiver((i+1).ToString(), trackerTransforms[i], receiver);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Convenience function to send tracker data from a transform and name
+        private void SendTrackerDataToReceiver(string trackerName, Transform target, OscClientPlus receiver)
+        {
+            var newPosition = ScaleToUserHeight(target.position);
+            receiver.Send($"{TRACKERS_ROOT}/{trackerName}/position", newPosition);
+            receiver.Send($"{TRACKERS_ROOT}/{trackerName}/rotation", target.rotation.eulerAngles);   
+        }
+
+        // Required in order to scale between world and user differences
+        private Vector3 ScaleToUserHeight(Vector3 targetPosition)
+        {
+            return targetPosition * (userHeight / _avatarHeight);
+        }
+
         private void OnDestroy()
         {
-            // Removes listeners from Scene Objects
-            InputField.onValueChanged.RemoveAllListeners();
-            InputField.onEndEdit.RemoveAllListeners();
-            
             _oscQueryService.Dispose();
         }
     }
