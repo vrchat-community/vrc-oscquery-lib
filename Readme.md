@@ -35,7 +35,7 @@ This library does not yet return limited attributes based on query strings, like
 7. To remove the endpoint, call the `RemoveEndpoint()` method on your OSCQueryService instance, passing in the OSC address as a string ("/foo/bar");
 8. When you are done with the service, call `Dispose` to clean it up.
 
-For a more detailed walkthrough [see here](https://github.com/vrchat-community/vrc-oscquery-lib/blob/docs/readme/getting-started.md?plain=1)
+For a more detailed walkthrough see [Getting Started](https://github.com/vrchat-community/vrc-oscquery-lib/blob/docs/readme/getting-started.md)
 
 ---
 
