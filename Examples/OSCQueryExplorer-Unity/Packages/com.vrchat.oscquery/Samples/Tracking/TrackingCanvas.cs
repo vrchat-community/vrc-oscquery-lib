@@ -47,6 +47,7 @@ namespace VRC.OSCQuery.Samples.Tracking
                 AddTrackingReceiver(IPAddress.Loopback, 9000);
             }
             
+            // Check for new Services regularly
             InvokeRepeating(nameof(RefreshServices), 1, RefreshServicesInterval);
         }
         
@@ -92,8 +93,8 @@ namespace VRC.OSCQuery.Samples.Tracking
         {
             // Create a new OSCQueryService, advertise
             var port = VRC.OSCQuery.Extensions.GetAvailableTcpPort();
-            _oscQueryService = new OSCQueryService(_serverName, new UnityMSLogger());
-            _oscQueryService.StartOSCQueryService(_serverName, port);
+            _oscQueryService = new OSCQueryService(_serverName,  port, 0, new UnityMSLogger());
+            Debug.Log($"Starting OSCQueryService {_serverName} on {port}");
             
             // Listen for other services
             _oscQueryService.OnOscQueryServiceAdded += OnOscQueryServiceFound;
@@ -114,7 +115,6 @@ namespace VRC.OSCQuery.Samples.Tracking
         void Update()
         {
             // Exit early if we don't have the required Transforms
-            if (headTransform == null) return;
             if (_receivers.Count > 0)
             {
                 foreach (var receiver in _receivers)
@@ -131,12 +131,23 @@ namespace VRC.OSCQuery.Samples.Tracking
             }
         }
 
-        // Convenience function to send tracker data from a transform and name
+        /// Convenience function to send tracker data from a transform and name
+        /// The Head data should be sent like this:
+        /// `/tracking/trackers/head/position`
+        /// `/tracking/trackers/head/rotation`
+        ///
+        /// The Tracker data should be sent like this, where `i` is the number of the tracker between 1-8 (no tracker 0!)
+        /// `/tracking/trackers/i/position`
+        /// `/tracking/trackers/i/rotation`
+        
         private void SendTrackerDataToReceiver(string trackerName, Transform target, OscClientPlus receiver)
         {
+            // Exit early if transform is null
+            if (!target) return;
+            
             var newPosition = ScaleToUserHeight(target.position);
-            receiver.Send($"{TRACKERS_ROOT}/{trackerName}/position", newPosition);
-            receiver.Send($"{TRACKERS_ROOT}/{trackerName}/rotation", target.rotation.eulerAngles);   
+            receiver.Send($"{TRACKERS_ROOT}/{trackerName}/{TRACKERS_POSITION}", newPosition);
+            receiver.Send($"{TRACKERS_ROOT}/{trackerName}/{TRACKERS_ROTATION}", target.rotation.eulerAngles);   
         }
 
         // Required in order to scale between world and user differences

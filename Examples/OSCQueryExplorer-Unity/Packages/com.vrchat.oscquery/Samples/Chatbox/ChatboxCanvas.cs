@@ -117,8 +117,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
         {
             // Create a new OSCQueryService, advertise
             var port = VRC.OSCQuery.Extensions.GetAvailableTcpPort();
-            _oscQueryService = new OSCQueryService(_serverName, new UnityMSLogger());
-            _oscQueryService.StartOSCQueryService(_serverName, port);
+            _oscQueryService = new OSCQueryService(_serverName, port, -1, new UnityMSLogger());
             
             // Listen for other services
             _oscQueryService.OnOscQueryServiceAdded += OnOscQueryServiceFound;
