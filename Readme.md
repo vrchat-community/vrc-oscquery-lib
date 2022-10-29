@@ -123,5 +123,5 @@ It regularly polls for updates and should show value changes soon after they occ
 ## 🏞 Roadmap:
 1. ~~Internal Discovery and Iteration~~
 2. ~~Integrate into VRChat Client~~
-3. Closed Beta Release to OSC App Developers
+3. ~~Closed Beta Release to OSC App Developers~~
 4. General Release of Library and VRChat Client integration
