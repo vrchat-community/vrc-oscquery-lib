@@ -43,6 +43,8 @@ In principle this should function similarly to our existing implementation for S
 
 
 **Auto-center OSC Trackers** (button available in Tracking & IK section of the VRC Quickmenu)
+![Auto-center_OSC_Trackers (1)](https://user-images.githubusercontent.com/737888/198941861-0b49a77b-028e-4436-8bc8-db12321ed603.png)
+
 - This button will find the two lowest trackers on the y axis and center their mid-point under the user's current head position in VRChat. Additionally it will guess a forward direction based on assuming the two lowest trackers represent left and right feet. There is no way to determine front vs back from this alone, so clicking the Auto-center OSC Trackers button repeatedly will alternate the forward direction.
 
 **Receiving Head Data:**
@@ -54,7 +56,9 @@ In principle this should function similarly to our existing implementation for S
 
 - Data sent to `/tracking/trackers/head/rotation` will be used for yaw alignment. It is assumed that euler angles (0,0,0) represent a neutral forward-looking direction. VRChat's tracking space yaw alignment will slowly lerp towards the rotation provided.
 
-- For the head tracker, it is possible to send just position, just rotation, both or neither. When available, the head data will be used for the corresponding alignment. If unavailable, that alignment will not occur (for example position-only without yaw alignment is possible if only position is sent).
+- For the head data, it is possible to send just position, just rotation, both or neither. When available, the head data will be used for the corresponding alignment. If unavailable, that alignment will not occur (for example position-only without yaw alignment is possible if only position is sent).
 
 **Tracker Models**
+![Tracker-System](https://user-images.githubusercontent.com/737888/198941946-dc42a143-a712-4040-b85a-1c29dff8202c.png)
+
 - When using the tracker display model setting in the Tracking & IK section of the VRC Quickmenu, if you set the model to "Tracker: System" the models will never disappear even after calibration. This can aid in debugging.
