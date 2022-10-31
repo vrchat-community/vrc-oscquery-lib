@@ -28,16 +28,16 @@ namespace VRC.OSCQuery
         };
 
         // Todo: handle array types
-        public static string OSCTypeFor(Type type)
+        public static bool OSCTypeFor(Type type, out string oscType)
         {
-            if (_oscTypeLookup.TryGetValue(type, out string value))
+            if (_oscTypeLookup.TryGetValue(type, out var value))
             {
-                return value;
+                oscType = value;
+                return true;
             }
-            else
-            {
-                return null;
-            }
+
+            oscType = string.Empty;
+            return false;
         }
         
         #region Required Attributes

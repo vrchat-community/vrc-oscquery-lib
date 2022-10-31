@@ -423,14 +423,12 @@ namespace VRC.OSCQuery
         
         public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, string initialValue = null, string description = "")
         {
-            var oscType = Attributes.OSCTypeFor(typeof(T));
-            if (string.IsNullOrWhiteSpace(oscType))
-            {
-                Logger.LogError($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
-                return false;
-            }
+            var typeExists = Attributes.OSCTypeFor(typeof(T), out string oscType);
 
-            return AddEndpoint(path, oscType, accessValues, initialValue, description);
+            if (typeExists) return AddEndpoint(path, oscType, accessValues, initialValue, description);
+            
+            Logger.LogError($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
+            return false;
         }
 
         /// <summary>
