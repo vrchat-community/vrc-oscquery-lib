@@ -308,7 +308,7 @@ namespace VRC.OSCQuery
                 if (string.IsNullOrWhiteSpace(_pathToResources))
                 {
                     string dllLocation = Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                    _pathToResources = Path.Combine(new DirectoryInfo(dllLocation).Parent?.FullName, "Resources");
+                    _pathToResources = Path.Combine(new DirectoryInfo(dllLocation).Parent?.FullName ?? string.Empty, "Resources");
                 }
                 return _pathToResources;
             }
