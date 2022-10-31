@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -66,7 +67,7 @@ namespace VRC.OSCQuery
             if(_pathLookup.TryGetValue(path, out OSCQueryNode node))
             {
                 var parent = GetNodeWithPath(node.ParentPath);
-                if (parent != null && parent.Contents != null)
+                if (parent?.Contents != null)
                 {
                     if (parent.Contents.ContainsKey(node.Name))
                     {
@@ -99,10 +100,9 @@ namespace VRC.OSCQuery
             {
                 return;
             }
-            
-            foreach (var pair in node.Contents)
+
+            foreach (var subNode in node.Contents.Select(pair => pair.Value))
             {
-                var subNode = pair.Value;
                 _pathLookup.Add(subNode.FullPath, subNode);
                 if (subNode.Contents != null)
                 {

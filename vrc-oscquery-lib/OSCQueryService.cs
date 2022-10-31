@@ -187,7 +187,7 @@ namespace VRC.OSCQuery
                 if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
                 {
                     // Make sure there's not already a service with the same name
-                    if (!_oscServices.Any(p => p.name == profile.InstanceName))
+                    if (_oscServices.All(p => p.name != profile.InstanceName))
                     {
                         var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
                         _oscServices.Add(p);
@@ -200,7 +200,7 @@ namespace VRC.OSCQuery
                 else if (name.CompareTo(_localOscJsonServiceName) == 0 && (_zeroconfService != null && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName))
                 {
                     // Make sure there's not already a service with the same name
-                    if (!_oscQueryServices.Any(p => p.name == profile.InstanceName))
+                    if (_oscQueryServices.All(p => p.name != profile.InstanceName))
                     {
                         var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
                         _oscQueryServices.Add(p);
@@ -356,8 +356,9 @@ namespace VRC.OSCQuery
             var matchedNode = _rootNode.GetNodeWithPath(path);
             if (matchedNode == null)
             {
+                const string err = "OSC Path not found";
+
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                string err = "OSC Path not found";
                 context.Response.ContentLength64 = err.Length;
                 using (var sw = new StreamWriter(context.Response.OutputStream))
                 {
@@ -438,7 +439,7 @@ namespace VRC.OSCQuery
         public bool RemoveEndpoint(string path)
         {
             // Exit early if no matching path is found
-            if (_rootNode == null || _rootNode.GetNodeWithPath(path) == null)
+            if (_rootNode?.GetNodeWithPath(path) == null)
             {
                 Logger.LogWarning($"No endpoint found for {path}");
                 return false;
@@ -452,7 +453,7 @@ namespace VRC.OSCQuery
         /// <summary>
         /// Constructs the response the server will use for HOST_INFO queries
         /// </summary>
-        void BuildRootResponse()
+        private void BuildRootResponse()
         {
             _rootNode = new OSCQueryRootNode()
             {
