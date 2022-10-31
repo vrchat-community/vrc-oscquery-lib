@@ -257,7 +257,7 @@ namespace VRC.OSCQuery.Tests
             Assert.NotNull(tree);
 
             var rootNode = tree.GetNodeWithPath("/");
-            Assert.AreEqual("/", rootNode.FullPath);
+            Assert.That("/", Is.EqualTo(rootNode.FullPath));
         }
 
     }

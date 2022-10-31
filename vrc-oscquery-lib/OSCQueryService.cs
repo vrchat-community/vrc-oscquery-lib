@@ -52,13 +52,6 @@ namespace VRC.OSCQuery
             _localOscUdpServiceName, _localOscJsonServiceName
         };
 
-        public OSCQueryService(string serverName, ILogger<OSCQueryService> logger = null)
-        { 
-            Logger = logger ?? new NullLogger<OSCQueryService>();
-            Initialize(serverName); 
-            RefreshServices();
-        }
-        
         /// <summary>
         /// Creates an OSCQueryService which can track OSC endpoints in the enclosing program as well as find other OSCQuery-compatible services on the link-local network
         /// </summary>
@@ -72,7 +65,10 @@ namespace VRC.OSCQuery
             Logger = logger ?? new NullLogger<OSCQueryService>();
             Initialize(serverName);
             StartOSCQueryService(serverName, httpPort, middleware);
-            AdvertiseOSCService(serverName, oscPort);
+            if (oscPort > 0)
+            {
+                AdvertiseOSCService(serverName, oscPort);
+            }
             RefreshServices();
         }
 
@@ -303,6 +299,20 @@ namespace VRC.OSCQuery
             }
         }
 
+        private static string _pathToResources;
+
+        private static string PathToResources
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_pathToResources))
+                {
+                    string dllLocation = Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    _pathToResources = Path.Combine(new DirectoryInfo(dllLocation).Parent?.FullName, "Resources");
+                }
+                return _pathToResources;
+            }
+        }
         private async Task ExplorerMiddleware(HttpListenerContext context, Action next)
         {
             if (!context.Request.Url.Query.Contains(Attributes.EXPLORER))
@@ -311,7 +321,14 @@ namespace VRC.OSCQuery
                 return;
             }
 
-            await Extensions.ServeStaticFile(Path.Combine("Resources","OSCQueryExplorer.html"), "text/html", context);
+            var path = Path.Combine(PathToResources, "OSCQueryExplorer.html");
+            if (!File.Exists(path))
+            {
+                Logger.LogError($"Cannot find file at {path} to serve.");
+                next();
+                return;
+            }
+            await Extensions.ServeStaticFile(path, "text/html", context);
         }
 
         private async Task FaviconMiddleware(HttpListenerContext context, Action next)
@@ -322,7 +339,15 @@ namespace VRC.OSCQuery
                 return;
             }
             
-            await Extensions.ServeStaticFile(Path.Combine("Resources","favicon.ico"), "image/x-icon", context);
+            var path = Path.Combine(PathToResources, "favicon.ico");
+            if (!File.Exists(path))
+            {
+                Logger.LogError($"Cannot find file at {path} to serve.");
+                next();
+                return;
+            }
+            
+            await Extensions.ServeStaticFile(path, "image/x-icon", context);
         }
 
         private async Task RootNodeMiddleware(HttpListenerContext context, Action next)
@@ -415,7 +440,7 @@ namespace VRC.OSCQuery
             // Exit early if no matching path is found
             if (_rootNode == null || _rootNode.GetNodeWithPath(path) == null)
             {
-                Logger.LogError($"No endpoint found for {path}");
+                Logger.LogWarning($"No endpoint found for {path}");
                 return false;
             }
 
