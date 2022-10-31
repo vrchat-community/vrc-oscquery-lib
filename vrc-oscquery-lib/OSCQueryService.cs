@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,11 +32,11 @@ namespace VRC.OSCQuery
         public event Action<OSCQueryServiceProfile> OnOscQueryServiceAdded;
 
         // Store discovered services
-        private HashSet<OSCQueryServiceProfile> _oscQueryServices = new HashSet<OSCQueryServiceProfile>();
-        private HashSet<OSCQueryServiceProfile> _oscServices = new HashSet<OSCQueryServiceProfile>();
+        private readonly HashSet<OSCQueryServiceProfile> _oscQueryServices = new HashSet<OSCQueryServiceProfile>();
+        private readonly HashSet<OSCQueryServiceProfile> _oscServices = new HashSet<OSCQueryServiceProfile>();
 
         // HTTP Server
-        HttpListener _listener;
+        private HttpListener _listener;
         private bool _shouldProcessHttp;
         
         // HTTP Middleware
@@ -159,7 +159,7 @@ namespace VRC.OSCQuery
             try
             {
                 // Check whether this service matches OSCJSON or OSC services for which we're looking
-                bool hasMatch = response.Answers.Any(record => _matchedNames.Contains(record?.CanonicalName));
+                var hasMatch = response.Answers.Any(record => _matchedNames.Contains(record?.CanonicalName));
                 if (!hasMatch)
                 {
                     return;
@@ -181,15 +181,17 @@ namespace VRC.OSCQuery
 
                 var serviceName = string.Join(".", domainName.Skip(1).SkipLast(1));
                 var ips = response.AdditionalRecords.OfType<ARecord>().Select(r => r.Address);
-                var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ips);
+                
+                var ipAddressList = ips.ToList();
+                var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ipAddressList);
 
                 // If this is an OSC service, add it to the OSC collection
-                if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
+                if (string.Compare(name, _localOscUdpServiceName, StringComparison.Ordinal) == 0 && profile != _oscService)
                 {
                     // Make sure there's not already a service with the same name
-                    if (!_oscServices.Any(p => p.name == profile.InstanceName))
+                    if (_oscServices.All(p => p.name != profile.InstanceName))
                     {
-                        var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
+                        var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
                         _oscServices.Add(p);
                         OnProfileAdded?.Invoke(profile);
                         OnOscServiceAdded?.Invoke(p);
@@ -197,12 +199,12 @@ namespace VRC.OSCQuery
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
-                else if (name.CompareTo(_localOscJsonServiceName) == 0 && (_zeroconfService != null && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName))
+                else if (string.Compare(name, _localOscJsonServiceName, StringComparison.Ordinal) == 0 && (_zeroconfService != null && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName))
                 {
                     // Make sure there's not already a service with the same name
-                    if (!_oscQueryServices.Any(p => p.name == profile.InstanceName))
+                    if (_oscQueryServices.All(p => p.name != profile.InstanceName))
                     {
-                        var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
+                        var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
                         _oscQueryServices.Add(p);
                         OnProfileAdded?.Invoke(profile);
                         OnOscQueryServiceAdded?.Invoke(p);
@@ -307,8 +309,8 @@ namespace VRC.OSCQuery
             {
                 if (string.IsNullOrWhiteSpace(_pathToResources))
                 {
-                    string dllLocation = Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                    _pathToResources = Path.Combine(new DirectoryInfo(dllLocation).Parent?.FullName, "Resources");
+                    var dllLocation = Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    _pathToResources = Path.Combine(new DirectoryInfo(dllLocation).Parent?.FullName ?? string.Empty, "Resources");
                 }
                 return _pathToResources;
             }
@@ -356,8 +358,9 @@ namespace VRC.OSCQuery
             var matchedNode = _rootNode.GetNodeWithPath(path);
             if (matchedNode == null)
             {
+                const string err = "OSC Path not found";
+
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                string err = "OSC Path not found";
                 context.Response.ContentLength64 = err.Length;
                 using (var sw = new StreamWriter(context.Response.OutputStream))
                 {
@@ -420,14 +423,12 @@ namespace VRC.OSCQuery
         
         public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, string initialValue = null, string description = "")
         {
-            var oscType = Attributes.OSCTypeFor(typeof(T));
-            if (string.IsNullOrWhiteSpace(oscType))
-            {
-                Logger.LogError($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
-                return false;
-            }
+            var typeExists = Attributes.OSCTypeFor(typeof(T), out string oscType);
 
-            return AddEndpoint(path, oscType, accessValues, initialValue, description);
+            if (typeExists) return AddEndpoint(path, oscType, accessValues, initialValue, description);
+            
+            Logger.LogError($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
+            return false;
         }
 
         /// <summary>
@@ -438,7 +439,7 @@ namespace VRC.OSCQuery
         public bool RemoveEndpoint(string path)
         {
             // Exit early if no matching path is found
-            if (_rootNode == null || _rootNode.GetNodeWithPath(path) == null)
+            if (_rootNode?.GetNodeWithPath(path) == null)
             {
                 Logger.LogWarning($"No endpoint found for {path}");
                 return false;
@@ -452,7 +453,7 @@ namespace VRC.OSCQuery
         /// <summary>
         /// Constructs the response the server will use for HOST_INFO queries
         /// </summary>
-        void BuildRootResponse()
+        private void BuildRootResponse()
         {
             _rootNode = new OSCQueryRootNode()
             {
@@ -478,6 +479,8 @@ namespace VRC.OSCQuery
             // Service Teardown
             _discovery.Dispose();
             _mdns.Stop();
+            
+            GC.SuppressFinalize(this);
         }
 
         ~OSCQueryService()

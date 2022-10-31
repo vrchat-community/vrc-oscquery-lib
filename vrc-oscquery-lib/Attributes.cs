@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace VRC.OSCQuery
 {
-    public class Attributes
+    public static class Attributes
     {
         public enum AccessValues
         {
@@ -13,21 +13,22 @@ namespace VRC.OSCQuery
             ReadWrite = 3
         }
 
-        private static Dictionary<Type, string> _oscTypeLookup = new Dictionary<Type, string>()
+        private static readonly Dictionary<Type, string> _oscTypeLookup = new Dictionary<Type, string>()
         {
-            {typeof(Int32), "i"},
-            {typeof(UInt32), "u"},
-            {typeof(Int64), "h"},
-            {typeof(Single), "f"},
-            {typeof(Double), "d"},
+            {typeof(int), "i"},
+            {typeof(uint), "u"},
+            {typeof(long), "h"},
+            {typeof(float), "f"},
+            {typeof(double), "d"},
             {typeof(string), "s"},
-            {typeof(Char), "c"},
+            {typeof(char), "c"},
             {typeof(Array), "[,]"},
-            {typeof(Byte[]), "b"},
-            {typeof(Boolean), "T"},
+            {typeof(byte[]), "b"},
+            {typeof(bool), "T"},
         };
-
-        // Todo: handle array types
+        
+        // Can be removed 2023-01-01
+        [Obsolete("Please use OSCTypeFor(Type type, out string oscType) instead")]
         public static string OSCTypeFor(Type type)
         {
             if (_oscTypeLookup.TryGetValue(type, out string value))
@@ -38,6 +39,19 @@ namespace VRC.OSCQuery
             {
                 return null;
             }
+        }
+
+        // Todo: handle array types
+        public static bool OSCTypeFor(Type type, out string oscType)
+        {
+            if (_oscTypeLookup.TryGetValue(type, out var value))
+            {
+                oscType = value;
+                return true;
+            }
+
+            oscType = string.Empty;
+            return false;
         }
         
         #region Required Attributes

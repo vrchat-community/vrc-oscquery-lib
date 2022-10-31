@@ -11,7 +11,7 @@ namespace VRC.OSCQuery
 {
     public static class Extensions
     {
-        private static HttpClient _client = new HttpClient();
+        private static readonly HttpClient _client = new HttpClient();
         
         public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> source, int count)
         {
