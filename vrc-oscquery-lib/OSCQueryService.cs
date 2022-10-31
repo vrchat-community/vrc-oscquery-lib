@@ -32,11 +32,11 @@ namespace VRC.OSCQuery
         public event Action<OSCQueryServiceProfile> OnOscQueryServiceAdded;
 
         // Store discovered services
-        private HashSet<OSCQueryServiceProfile> _oscQueryServices = new HashSet<OSCQueryServiceProfile>();
-        private HashSet<OSCQueryServiceProfile> _oscServices = new HashSet<OSCQueryServiceProfile>();
+        private readonly HashSet<OSCQueryServiceProfile> _oscQueryServices = new HashSet<OSCQueryServiceProfile>();
+        private readonly HashSet<OSCQueryServiceProfile> _oscServices = new HashSet<OSCQueryServiceProfile>();
 
         // HTTP Server
-        HttpListener _listener;
+        private HttpListener _listener;
         private bool _shouldProcessHttp;
         
         // HTTP Middleware
@@ -159,7 +159,7 @@ namespace VRC.OSCQuery
             try
             {
                 // Check whether this service matches OSCJSON or OSC services for which we're looking
-                bool hasMatch = response.Answers.Any(record => _matchedNames.Contains(record?.CanonicalName));
+                var hasMatch = response.Answers.Any(record => _matchedNames.Contains(record?.CanonicalName));
                 if (!hasMatch)
                 {
                     return;
@@ -309,7 +309,7 @@ namespace VRC.OSCQuery
             {
                 if (string.IsNullOrWhiteSpace(_pathToResources))
                 {
-                    string dllLocation = Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    var dllLocation = Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().Location);
                     _pathToResources = Path.Combine(new DirectoryInfo(dllLocation).Parent?.FullName ?? string.Empty, "Resources");
                 }
                 return _pathToResources;
