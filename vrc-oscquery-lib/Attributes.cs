@@ -26,6 +26,20 @@ namespace VRC.OSCQuery
             {typeof(byte[]), "b"},
             {typeof(bool), "T"},
         };
+        
+        // Can be removed 2022-01-01
+        [Obsolete("Please use OSCTypeFor(Type type, out string oscType) instead")]
+        public static string OSCTypeFor(Type type)
+        {
+            if (_oscTypeLookup.TryGetValue(type, out string value))
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         // Todo: handle array types
         public static bool OSCTypeFor(Type type, out string oscType)
