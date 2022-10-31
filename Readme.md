@@ -55,6 +55,8 @@ Try opening up two instances of the app to see VRChat send to both automatically
 
 You can find a Unity Project in `Exampless/OSCQueryExplorer-Unity` - you can open this up in Unity 2019.4.31f1. 
 
+Latest Release: [OSCQueryExplorer-Unity 0.0.4 for Windows](https://github.com/vrchat-community/vrc-oscquery-lib/releases/download/0.0.4/OSCQueryExplorer-Unity-Win.zip)
+
 This app has two scenes: [VRC-Chatbox](#vrc-chatbox) and [OSCQueryReceiver](#oscqueryreceiver). 
 
 #### VRC-Chatbox
@@ -68,6 +70,27 @@ https://user-images.githubusercontent.com/737888/196586397-31c4d862-f119-4dce-97
 This scene advertises itself as a receiver of OSC data, which VRChat will find and connect to. All of the code is in a single MonoBehaviour - [ReceiverCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Receiver/ReceiverCanvas.cs)
 
 https://user-images.githubusercontent.com/737888/196583859-6616b260-87c7-43a9-b6cc-26cfc110fbfe.mov
+
+### OSC-Trackers
+
+This scene uses the same logic to find an OSC receiver compatible with Tracking data and send it.
+
+https://user-images.githubusercontent.com/737888/198946626-033c8192-9b55-4b37-ac33-115e9dcd0ceb.mp4
+
+To use it with VRChat:
+1. Start VRChat in VR mode.
+2. Start OSCQueryExplorer-Unity and press "OSC-Trackers" on the menu page.
+3. Wait until the app connects to your VRChat client. Leave it on the T-Pose animation.
+4. In VRChat, open your QuickMenu and press "Calibrate FBT".
+5. Wait for the avatar to reload, then press both triggers on your VR controllers.
+6. Back in OSCQueryExplorer, press "Test-Motion" to send some virtual tracker data to VRChat.
+
+Known Issues:
+- In a mirror, the movements will look backwards 😛
+- Hands are still tracked by controllers, so elbow movements may not do much
+- The example video is at potato resolution, sorry
+
+Read more: [OSC Trackers for VRChat](osc-trackers.md).
 
 ### Console Apps
 The solution includes two simple examples to demonstrate and test functionality. They are both .NET 6 Console apps and should work on Windows, Mac and Linux, but have only been tested on Windows 10 so far.
