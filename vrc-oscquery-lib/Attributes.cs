@@ -27,7 +27,7 @@ namespace VRC.OSCQuery
             {typeof(bool), "T"},
         };
         
-        // Can be removed 2022-01-01
+        // Can be removed 2023-01-01
         [Obsolete("Please use OSCTypeFor(Type type, out string oscType) instead")]
         public static string OSCTypeFor(Type type)
         {
