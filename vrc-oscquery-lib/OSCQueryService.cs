@@ -181,7 +181,9 @@ namespace VRC.OSCQuery
 
                 var serviceName = string.Join(".", domainName.Skip(1).SkipLast(1));
                 var ips = response.AdditionalRecords.OfType<ARecord>().Select(r => r.Address);
-                var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ips);
+                
+                var ipAddressList = ips.ToList();
+                var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ipAddressList);
 
                 // If this is an OSC service, add it to the OSC collection
                 if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
@@ -189,7 +191,7 @@ namespace VRC.OSCQuery
                     // Make sure there's not already a service with the same name
                     if (_oscServices.All(p => p.name != profile.InstanceName))
                     {
-                        var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
+                        var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
                         _oscServices.Add(p);
                         OnProfileAdded?.Invoke(profile);
                         OnOscServiceAdded?.Invoke(p);
@@ -202,7 +204,7 @@ namespace VRC.OSCQuery
                     // Make sure there's not already a service with the same name
                     if (_oscQueryServices.All(p => p.name != profile.InstanceName))
                     {
-                        var p = new OSCQueryServiceProfile(instanceName, ips.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
+                        var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
                         _oscQueryServices.Add(p);
                         OnProfileAdded?.Invoke(profile);
                         OnOscQueryServiceAdded?.Invoke(p);
