@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -478,6 +478,8 @@ namespace VRC.OSCQuery
             // Service Teardown
             _discovery.Dispose();
             _mdns.Stop();
+            
+            GC.SuppressFinalize(this);
         }
 
         ~OSCQueryService()
