@@ -186,7 +186,7 @@ namespace VRC.OSCQuery
                 var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ipAddressList);
 
                 // If this is an OSC service, add it to the OSC collection
-                if (name.CompareTo(_localOscUdpServiceName) == 0 && profile != _oscService)
+                if (string.Compare(name, _localOscUdpServiceName, StringComparison.Ordinal) == 0 && profile != _oscService)
                 {
                     // Make sure there's not already a service with the same name
                     if (_oscServices.All(p => p.name != profile.InstanceName))
@@ -199,7 +199,7 @@ namespace VRC.OSCQuery
                     }
                 }
                 // If this is an OSCQuery service, add it to the OSCQuery collection
-                else if (name.CompareTo(_localOscJsonServiceName) == 0 && (_zeroconfService != null && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName))
+                else if (string.Compare(name, _localOscJsonServiceName, StringComparison.Ordinal) == 0 && (_zeroconfService != null && profile.FullyQualifiedName != _zeroconfService.FullyQualifiedName))
                 {
                     // Make sure there's not already a service with the same name
                     if (_oscQueryServices.All(p => p.name != profile.InstanceName))
