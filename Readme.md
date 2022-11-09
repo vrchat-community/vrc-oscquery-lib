@@ -9,7 +9,7 @@ We're building it in C# targeting .NET 6 and Framework 4.6 so it will work in Un
 
 ## 🦜 Closed Beta Discord
 
-If you can see this message, then you are invited to join the conversation in the [VRChat General Testing Discord server](https://discord.gg/8AresRu6). Note that you won't see the `#oscquery` channel until an admin sees you join and gives you access, which may take up to 1 business day.
+If you can see this message, then you are invited to join the conversation in the [VRChat General Testing Discord server](https://discord.gg/5m6X4WHMGJ). Note that you won't see the `#oscquery` channel until an admin sees you join and gives you access, which may take up to 1 business day.
 
 ## 🔨 Functionality
 
