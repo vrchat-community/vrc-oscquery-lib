@@ -18,7 +18,7 @@ namespace VRC.OSCQuery
         public int TcpPort { get; set; } = DefaultPortHttp;
         public int OscPort { get; set; } = DefaultPortOsc;
         public string ServerName { get; set; } = DefaultServerName;
-
+        
         public OSCQueryService()
         {
             // should probs make this fluent too
@@ -61,23 +61,18 @@ namespace VRC.OSCQuery
             };
         }
         
-        public void StartHttpServer()
+        public void StartHttpServer(IPAddress ipAddress = null)
         {
+            ipAddress = ipAddress ?? DefaultHostIP;
             // Create and start HTTPListener
             _listener = new HttpListener();
-            
-            // Todo: allow setting of the target IP, so android can do 0.0.0.0
-            _listener.Prefixes.Add($"http://localhost:{TcpPort}/");
-            _listener.Prefixes.Add($"http://127.0.0.1:{TcpPort}/");
+
+            string prefix = $"http://{ipAddress}:{TcpPort}/";
+            _listener.Prefixes.Add($"http://{ipAddress}:{TcpPort}/");
             _preMiddleware = new List<Func<HttpListenerContext, Action, Task>>
             {
                 HostInfoMiddleware
             };
-            // if (middleware != null)
-            // {
-            //     _middleware = middleware.ToList();
-            // }
-            _middleware = new List<Func<HttpListenerContext, Action, Task>>();
             _postMiddleware = new List<Func<HttpListenerContext, Action, Task>>
             {
                 FaviconMiddleware,
@@ -89,12 +84,17 @@ namespace VRC.OSCQuery
             _shouldProcessHttp = true;
         }
 
+        public void AddMiddleware(Func<HttpListenerContext, Action, Task> middleware)
+        {
+            _middleware.Add(middleware);
+        }
 
         #endregion
         // Constants
         public const int DefaultPortHttp = 8080;
         public const int DefaultPortOsc = 9000;
         public const string DefaultServerName = "OSCQueryService";
+        public readonly IPAddress DefaultHostIP = IPAddress.Loopback;
 
         // Services
         private static readonly string _localOscUdpServiceName = $"{Attributes.SERVICE_OSC_UDP}.local";
@@ -119,7 +119,7 @@ namespace VRC.OSCQuery
         
         // HTTP Middleware
         private List<Func<HttpListenerContext, Action, Task>> _preMiddleware;
-        private List<Func<HttpListenerContext, Action, Task>> _middleware;
+        private List<Func<HttpListenerContext, Action, Task>> _middleware = new List<Func<HttpListenerContext, Action, Task>>(); // constructed here to ensure it exists even if empty
         private List<Func<HttpListenerContext, Action, Task>> _postMiddleware;
         
         // Misc
@@ -138,6 +138,7 @@ namespace VRC.OSCQuery
         /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
         /// <param name="middleware">Optional set of middleware to be injected into the HTTP server. Middleware will be executed in the order they are passed in.</param>
+        [Obsolete("Use the Fluent Interface so we can remove this constructor", false)]
         public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null, params Func<HttpListenerContext, Action, Task>[] middleware)
         {
             Logger = logger ?? new NullLogger<OSCQueryService>();
@@ -150,6 +151,7 @@ namespace VRC.OSCQuery
             RefreshServices();
         }
 
+        [Obsolete("Use the Fluent Interface so we can remove this function", false)]
         public void Initialize(string serverName = DefaultServerName)
         {
             // Create HostInfo object
@@ -197,7 +199,10 @@ namespace VRC.OSCQuery
             };
             if (middleware != null)
             {
-                _middleware = middleware.ToList();
+                foreach (var newMiddleware in middleware)
+                {
+                    AddMiddleware(newMiddleware);
+                }
             }
             _postMiddleware = new List<Func<HttpListenerContext, Action, Task>>
             {

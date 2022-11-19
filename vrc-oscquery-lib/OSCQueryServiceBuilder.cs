@@ -1,4 +1,8 @@
-﻿namespace VRC.OSCQuery
+﻿using System;
+using System.Net;
+using System.Threading.Tasks;
+
+namespace VRC.OSCQuery
 {
     public class OSCQueryServiceBuilder
     {
@@ -19,15 +23,21 @@
             return this;
         }
 
-        public OSCQueryServiceBuilder StartHttpServer()
+        public OSCQueryServiceBuilder StartHttpServer(IPAddress ipAddress = null)
         {
-            _service.StartHttpServer();
+            _service.StartHttpServer(ipAddress);
             return this;
         }
 
         public OSCQueryServiceBuilder WithServiceName(string name)
         {
             _service.ServerName = name;
+            return this;
+        }
+
+        public OSCQueryServiceBuilder WithMiddleware(Func<HttpListenerContext, Action, Task> middleware)
+        {
+            _service.AddMiddleware(middleware);
             return this;
         }
     }
