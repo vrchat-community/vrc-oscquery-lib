@@ -13,6 +13,84 @@ namespace VRC.OSCQuery
 {
     public class OSCQueryService : IDisposable
     {
+        #region Fluent Pattern Implementation
+
+        public int TcpPort { get; set; } = DefaultPortHttp;
+        public int OscPort { get; set; } = DefaultPortOsc;
+        public string ServerName { get; set; } = DefaultServerName;
+
+        public OSCQueryService()
+        {
+            // should probs make this fluent too
+            Logger = new NullLogger<OSCQueryService>();
+        }
+
+        private HostInfo HostInfo
+        {
+            get
+            {
+                if (_hostInfo == null)
+                {
+                    BuildHostInfo();
+                }
+                return _hostInfo;
+            }
+        }
+
+        private OSCQueryRootNode RootNode
+        {
+            get
+            {
+                if (_rootNode == null)
+                {
+                    BuildRootNode();
+                }
+
+                return _rootNode;
+            }
+        }
+
+        private void BuildHostInfo()
+        {
+            // Create HostInfo object
+            _hostInfo = new HostInfo()
+            {
+                name = ServerName,
+                oscPort = OscPort,
+                oscIP = IPAddress.Loopback.ToString()
+            };
+        }
+        
+        public void StartHttpServer()
+        {
+            // Create and start HTTPListener
+            _listener = new HttpListener();
+            
+            // Todo: allow setting of the target IP, so android can do 0.0.0.0
+            _listener.Prefixes.Add($"http://localhost:{TcpPort}/");
+            _listener.Prefixes.Add($"http://127.0.0.1:{TcpPort}/");
+            _preMiddleware = new List<Func<HttpListenerContext, Action, Task>>
+            {
+                HostInfoMiddleware
+            };
+            // if (middleware != null)
+            // {
+            //     _middleware = middleware.ToList();
+            // }
+            _middleware = new List<Func<HttpListenerContext, Action, Task>>();
+            _postMiddleware = new List<Func<HttpListenerContext, Action, Task>>
+            {
+                FaviconMiddleware,
+                ExplorerMiddleware,
+                RootNodeMiddleware
+            };
+            _listener.Start();
+            _listener.BeginGetContext(HttpListenerLoop, _listener);
+            _shouldProcessHttp = true;
+        }
+
+
+        #endregion
         // Constants
         public const int DefaultPortHttp = 8080;
         public const int DefaultPortOsc = 9000;
@@ -96,10 +174,10 @@ namespace VRC.OSCQuery
             _mdns.AnswerReceived += OnRemoteServiceInfo;
             _mdns.Start();
         }
-
+        
         public void StartOSCQueryService(string serverName, int httpPort = -1, params Func<HttpListenerContext, Action, Task>[] middleware)
         {
-            BuildRootResponse();
+            BuildRootNode();
             
             // Use the provided port or grab a new one
             httpPort = httpPort == -1 ? Extensions.GetAvailableTcpPort() : httpPort;
@@ -224,11 +302,11 @@ namespace VRC.OSCQuery
         
         public void SetValue(string address, string value)
         {
-            var target = _rootNode.GetNodeWithPath(address);
+            var target = RootNode.GetNodeWithPath(address);
             if (target == null)
             {
                 // add this node
-                target = _rootNode.AddNode(new OSCQueryNode(address));
+                target = RootNode.AddNode(new OSCQueryNode(address));
             }
             
             target.Value = value;
@@ -282,7 +360,7 @@ namespace VRC.OSCQuery
             try
             {
                 // Serve Host Info for requests with "HOST_INFO" in them
-                var hostInfoString = _hostInfo.ToString();
+                var hostInfoString = HostInfo.ToString();
                         
                 // Send Response
                 context.Response.Headers.Add("pragma:no-cache");
@@ -355,7 +433,7 @@ namespace VRC.OSCQuery
         private async Task RootNodeMiddleware(HttpListenerContext context, Action next)
         {
             var path = context.Request.Url.LocalPath;
-            var matchedNode = _rootNode.GetNodeWithPath(path);
+            var matchedNode = RootNode.GetNodeWithPath(path);
             if (matchedNode == null)
             {
                 const string err = "OSC Path not found";
@@ -404,13 +482,13 @@ namespace VRC.OSCQuery
                 return false;
             }
             
-            if (_rootNode.GetNodeWithPath(path) != null)
+            if (RootNode.GetNodeWithPath(path) != null)
             {
                 Logger.LogWarning($"Path already exists, skipping: {path}");
                 return false;
             }
             
-            _rootNode.AddNode(new OSCQueryNode(path)
+            RootNode.AddNode(new OSCQueryNode(path)
             {
                 Access = accessValues,
                 Description = description,
@@ -439,13 +517,13 @@ namespace VRC.OSCQuery
         public bool RemoveEndpoint(string path)
         {
             // Exit early if no matching path is found
-            if (_rootNode?.GetNodeWithPath(path) == null)
+            if (RootNode.GetNodeWithPath(path) == null)
             {
                 Logger.LogWarning($"No endpoint found for {path}");
                 return false;
             }
 
-            _rootNode.RemoveNode(path);
+            RootNode.RemoveNode(path);
 
             return true;
         }
@@ -453,7 +531,7 @@ namespace VRC.OSCQuery
         /// <summary>
         /// Constructs the response the server will use for HOST_INFO queries
         /// </summary>
-        private void BuildRootResponse()
+        private void BuildRootNode()
         {
             _rootNode = new OSCQueryRootNode()
             {
@@ -477,8 +555,8 @@ namespace VRC.OSCQuery
             }
             
             // Service Teardown
-            _discovery.Dispose();
-            _mdns.Stop();
+            _discovery?.Dispose();
+            _mdns?.Stop();
             
             GC.SuppressFinalize(this);
         }
