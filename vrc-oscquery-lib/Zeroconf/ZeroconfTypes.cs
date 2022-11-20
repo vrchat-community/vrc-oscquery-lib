@@ -5,7 +5,6 @@ namespace VRC.OSCQuery
 {
     public interface IDiscovery : IDisposable
     {
-        void Initialize();
         void RefreshServices();
         event Action<OSCQueryServiceProfile> OnOscServiceAdded;
         event Action<OSCQueryServiceProfile> OnOscQueryServiceAdded;

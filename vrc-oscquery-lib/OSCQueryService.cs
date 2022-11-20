@@ -137,7 +137,7 @@ namespace VRC.OSCQuery
             
             Initialize(serverName);
             StartOSCQueryService(serverName, httpPort, middleware);
-            if (oscPort > 0)
+            if (oscPort != DefaultPortOsc)
             {
                 AdvertiseOSCService(serverName, oscPort);
             }
@@ -166,7 +166,7 @@ namespace VRC.OSCQuery
             ServerName = serverName;
             
             // Use the provided port or grab a new one
-            httpPort = httpPort == -1 ? Extensions.GetAvailableTcpPort() : httpPort;
+            TcpPort = httpPort == -1 ? Extensions.GetAvailableTcpPort() : httpPort;
 
             // Add all provided middleware
             if (middleware != null)
@@ -177,7 +177,7 @@ namespace VRC.OSCQuery
                 }
             }
             
-            AdvertiseOSCQueryService(serverName, httpPort);
+            AdvertiseOSCQueryService(serverName, TcpPort);
             StartHttpServer();
         }
         

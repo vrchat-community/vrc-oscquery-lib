@@ -21,19 +21,16 @@ namespace VRC.OSCQuery
         public HashSet<OSCQueryServiceProfile> GetOSCQueryServices() => _oscQueryServices;
         public HashSet<OSCQueryServiceProfile> GetOSCServices() => _oscServices;
 
-        public MeaModDiscovery(ILogger<OSCQueryService> logger = null)
-        {
-            Logger = logger ?? new NullLogger<OSCQueryService>();
-        }
-        
         public void Dispose()
         {
             _discovery?.Dispose();
             _mdns?.Stop();
         }
 
-        public void Initialize()
+        public MeaModDiscovery(ILogger<OSCQueryService> logger = null)
         {
+            Logger = logger ?? new NullLogger<OSCQueryService>();
+            
             _mdns = new MulticastService();
             _mdns.UseIpv6 = false;
             _mdns.IgnoreDuplicateMessages = true;
