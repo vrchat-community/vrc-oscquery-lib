@@ -47,7 +47,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
             };
             Add(_listView);
 
-            _service.OnProfileAdded += _ =>
+            _service.OnOscQueryServiceAdded += _ =>
             {
                 RefreshListings();
             };
