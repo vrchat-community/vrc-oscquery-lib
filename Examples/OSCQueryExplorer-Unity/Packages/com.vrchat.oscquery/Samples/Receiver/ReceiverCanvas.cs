@@ -43,19 +43,20 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
 
             // Create OSC Server on available port
             var port = VRC.OSCQuery.Extensions.GetAvailableTcpPort();
-            _receiver = OscServer.GetOrCreate(port);
+            var udpPort = Extensions.GetAvailableUdpPort();
+            _receiver = OscServer.GetOrCreate(udpPort);
             
             // Listen to all incoming messages
             _receiver.AddMonitorCallback(OnMessageReceived);
             _oscQuery = new OSCQueryService(
                 serverName, 
                 port,
-                port,
+                udpPort,
                 new UnityMSLogger()
             );
             
             // Show server name and chosen port
-            HeaderText.text = $"{serverName} listening on {port}";
+            HeaderText.text = $"{serverName} running at tcp:{port} osc: {udpPort}";
         }
 
         // Process incoming messages, add to message queue

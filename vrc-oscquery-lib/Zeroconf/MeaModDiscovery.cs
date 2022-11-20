@@ -54,16 +54,13 @@ namespace VRC.OSCQuery
             _mdns.SendQuery(OSCQueryService._localOscJsonServiceName);
         }
         
-        // private ServiceProfile _zeroconfService;
-        // private ServiceProfile _oscService;
-
         public event Action<OSCQueryServiceProfile> OnOscServiceAdded;
         public event Action<OSCQueryServiceProfile> OnOscQueryServiceAdded;
         
         private Dictionary<OSCQueryServiceProfile, ServiceProfile> _profiles = new Dictionary<OSCQueryServiceProfile, ServiceProfile>();
         public void Advertise(OSCQueryServiceProfile profile)
         {
-            var meaProfile = new ServiceProfile(profile.name, Attributes.SERVICE_OSCJSON_TCP, (ushort)profile.port, new[] { profile.address });
+            var meaProfile = new ServiceProfile(profile.name, profile.GetServiceTypeString(), (ushort)profile.port, new[] { profile.address });
             _discovery.Advertise(meaProfile);
             _profiles.Add(profile, meaProfile);
             
