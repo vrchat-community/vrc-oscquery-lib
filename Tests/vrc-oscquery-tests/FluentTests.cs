@@ -307,9 +307,23 @@ namespace VRC.OSCQuery.Tests
             
             var tree = Task.Run(() => Extensions.GetOSCTree(IPAddress.Loopback, port)).GetAwaiter().GetResult();
             Assert.NotNull(tree);
-
-            var rootNode = tree.GetNodeWithPath("/");
-            Assert.That("/", Is.EqualTo(rootNode.FullPath));
+            string rootPath = "/";
+            var rootNode = tree.GetNodeWithPath(rootPath);
+            Assert.That(rootPath, Is.EqualTo(rootNode.FullPath));
+        }
+        
+        [Test]
+        public void OSCQueryServiceFluent_WithOscPort_ReturnsSamePort()
+        {
+            var port = Extensions.GetAvailableTcpPort();
+            var oscPort = Extensions.GetAvailableUdpPort();
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .WithOscPort(oscPort)
+                .StartHttpServer()
+                .Build();
+            
+            Assert.That(oscPort, Is.EqualTo(service.OscPort));
         }
     }
 }

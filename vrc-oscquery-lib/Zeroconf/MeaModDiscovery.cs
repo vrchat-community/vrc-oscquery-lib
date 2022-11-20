@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace VRC.OSCQuery
 {
-    public class MeaModDiscovery : IDiscovery, IAdvertiser
+    public class MeaModDiscovery : IDiscovery
     {
         private ServiceDiscovery _discovery;
         private MulticastService _mdns;

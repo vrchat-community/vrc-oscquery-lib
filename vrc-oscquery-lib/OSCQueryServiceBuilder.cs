@@ -7,7 +7,7 @@ namespace VRC.OSCQuery
 {
     public class OSCQueryServiceBuilder
     {
-        private OSCQueryService _service = new OSCQueryService();
+        private readonly OSCQueryService _service = new OSCQueryService();
         public OSCQueryService Build() => _service;
         
         public OSCQueryServiceBuilder WithTcpPort(int port)
@@ -19,7 +19,6 @@ namespace VRC.OSCQuery
         
         public OSCQueryServiceBuilder WithOscPort(int port)
         {
-            //set osc port for service
             _service.OscPort = port;
             return this;
         }
@@ -44,7 +43,7 @@ namespace VRC.OSCQuery
 
         public OSCQueryServiceBuilder WithLogger(ILogger<OSCQueryService> logger)
         {
-            _service.Initialize();
+            OSCQueryService.Logger = logger;
             return this;
         }
 
@@ -54,15 +53,21 @@ namespace VRC.OSCQuery
             return this;
         }
 
-        public OSCQueryServiceBuilder AdvertiseOSC(string serviceName, int port = -1)
+        public OSCQueryServiceBuilder WithDiscovery(IDiscovery d)
         {
-            _service.AdvertiseOSCService(serviceName, port);
+            _service.SetDiscovery(d);
             return this;
         }
 
-        public OSCQueryServiceBuilder AdvertiseOSCQuery(string serviceName, int port = -1)
+        public OSCQueryServiceBuilder AdvertiseOSC()
         {
-            _service.AdvertiseOSCQueryService(serviceName, port);
+            _service.AdvertiseOSCService(_service.ServerName, _service.OscPort);
+            return this;
+        }
+
+        public OSCQueryServiceBuilder AdvertiseOSCQuery()
+        {
+            _service.AdvertiseOSCQueryService(_service.ServerName, _service.TcpPort);
             return this;
         }
     }

@@ -21,7 +21,7 @@ namespace VRC.OSCQuery
         public string oscIP;
         
         [JsonProperty(Keys.OSC_PORT)]
-        public int oscPort;
+        public int oscPort = OSCQueryService.DefaultPortOsc;
 
         [JsonProperty(Keys.OSC_TRANSPORT)] 
         public string oscTransport = Keys.OSC_TRANSPORT_UDP;

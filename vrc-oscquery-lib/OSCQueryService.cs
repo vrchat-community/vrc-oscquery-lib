@@ -12,9 +12,21 @@ namespace VRC.OSCQuery
     {
         #region Fluent Pattern Implementation
 
+        public OSCQueryService() {} // Need to have this empty constructor for the Builder
+        
         public int TcpPort { get; set; } = DefaultPortHttp;
-        public int OscPort { get; set; } = DefaultPortOsc;
-        public string ServerName { get; set; } = DefaultServerName;
+
+        public int OscPort
+        {
+            get => HostInfo.oscPort;
+            set => HostInfo.oscPort = value;
+        }
+
+        public string ServerName {
+            get => HostInfo.name;
+            set => HostInfo.name = value;
+        } 
+        
         public IPAddress HostIP { get; set; } = IPAddress.Loopback;
         
         public static ILogger<OSCQueryService> Logger { get; set; } = new NullLogger<OSCQueryService>();
@@ -49,14 +61,12 @@ namespace VRC.OSCQuery
             // Create HostInfo object
             _hostInfo = new HostInfo()
             {
-                name = ServerName,
-                oscPort = OscPort,
+                name = DefaultServerName,
+                oscPort = DefaultPortOsc,
                 oscIP = IPAddress.Loopback.ToString()
             };
         }
-        
-        
-        
+
         public void StartHttpServer()
         {
             // Create and start HTTPListener
@@ -83,6 +93,13 @@ namespace VRC.OSCQuery
         {
             _middleware.Add(middleware);
         }
+        
+        public void SetDiscovery(IDiscovery discovery)
+        {
+            _discovery = discovery;
+            _discovery.OnOscQueryServiceAdded += profile => OnOscQueryServiceAdded?.Invoke(profile);
+            _discovery.OnOscServiceAdded += profile => OnOscServiceAdded?.Invoke(profile);
+        }
 
         #endregion
         // Constants
@@ -98,7 +115,7 @@ namespace VRC.OSCQuery
             _localOscUdpServiceName, _localOscJsonServiceName
         };
 
-        private MeaModDiscovery _discovery;
+        private IDiscovery _discovery;
 
         #region Wrapped Calls for Discovery Service
 
@@ -134,6 +151,9 @@ namespace VRC.OSCQuery
         public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null, params Func<HttpListenerContext, Action, Task>[] middleware)
         {
             if (logger != null) Logger = logger;
+
+            OscPort = oscPort;
+            TcpPort = httpPort;
             
             Initialize(serverName);
             StartOSCQueryService(serverName, httpPort, middleware);
@@ -147,18 +167,10 @@ namespace VRC.OSCQuery
         [Obsolete("Use the Fluent Interface so we can remove this function", false)]
         public void Initialize(string serverName = DefaultServerName)
         {
-            // Create HostInfo object
-            _hostInfo = new HostInfo()
-            {
-                name = serverName,
-            };
-            
-            // Pass along events from Discovery
-            _discovery = new MeaModDiscovery(Logger);
-            _discovery.OnOscQueryServiceAdded += profile => OnOscQueryServiceAdded?.Invoke(profile);
-            _discovery.OnOscServiceAdded += profile => OnOscServiceAdded?.Invoke(profile);
+            ServerName = serverName;
+            SetDiscovery(new MeaModDiscovery(Logger));
         }
-        
+
         [Obsolete("Use the Fluent Interface instead of this combo function", false)]
         public void StartOSCQueryService(string serverName, int httpPort = -1, params Func<HttpListenerContext, Action, Task>[] middleware)
         {
@@ -188,7 +200,6 @@ namespace VRC.OSCQuery
 
         public void AdvertiseOSCService(string serviceName, int port = DefaultPortOsc)
         {
-            _hostInfo.oscPort = port;
             _discovery.Advertise(new OSCQueryServiceProfile(serviceName, HostIP, port, OSCQueryServiceProfile.ServiceType.OSC));
         }
 

@@ -11,10 +11,6 @@ namespace VRC.OSCQuery
         HashSet<OSCQueryServiceProfile> GetOSCQueryServices();
         HashSet<OSCQueryServiceProfile> GetOSCServices();
         
-    }
-
-    public interface IAdvertiser
-    {
         void Advertise(OSCQueryServiceProfile profile);
         void Unadvertise(OSCQueryServiceProfile profile);
     }
