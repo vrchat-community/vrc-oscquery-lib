@@ -30,42 +30,6 @@ namespace VRC.OSCQuery
         
         public static ILogger<OSCQueryService> Logger { get; set; } = new NullLogger<OSCQueryService>();
 
-        public HostInfo HostInfo
-        {
-            get
-            {
-                if (_hostInfo == null)
-                {
-                    BuildHostInfo();
-                }
-                return _hostInfo;
-            }
-        }
-
-        public OSCQueryRootNode RootNode
-        {
-            get
-            {
-                if (_rootNode == null)
-                {
-                    BuildRootNode();
-                }
-
-                return _rootNode;
-            }
-        }
-
-        private void BuildHostInfo()
-        {
-            // Create HostInfo object
-            _hostInfo = new HostInfo()
-            {
-                name = DefaultServerName,
-                oscPort = DefaultPortOsc,
-                oscIP = IPAddress.Loopback.ToString()
-            };
-        }
-
         public void AddMiddleware(Func<HttpListenerContext, Action, Task> middleware)
         {
             _http.AddMiddleware(middleware);
@@ -107,61 +71,39 @@ namespace VRC.OSCQuery
         // HTTP Server
         OSCQueryHttpServer _http;
 
-        // Misc
-        private OSCQueryRootNode _rootNode;
+        // Lazy HostInfo
         private HostInfo _hostInfo;
-        
-        /// <summary>
-        /// Creates an OSCQueryService which can track OSC endpoints in the enclosing program as well as find other OSCQuery-compatible services on the link-local network
-        /// </summary>
-        /// <param name="serverName">Server name to use, default is "OSCQueryService"</param>
-        /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
-        /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
-        /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
-        /// <param name="middleware">Optional set of middleware to be injected into the HTTP server. Middleware will be executed in the order they are passed in.</param>
-        [Obsolete("Use the Fluent Interface so we can remove this constructor", false)]
-        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null, params Func<HttpListenerContext, Action, Task>[] middleware)
+        public HostInfo HostInfo
         {
-            if (logger != null) Logger = logger;
-
-            OscPort = oscPort;
-            TcpPort = httpPort;
-            
-            Initialize(serverName);
-            StartOSCQueryService(serverName, httpPort, middleware);
-            if (oscPort != DefaultPortOsc)
+            get
             {
-                AdvertiseOSCService(serverName, oscPort);
-            }
-            RefreshServices();
-        }
-
-        [Obsolete("Use the Fluent Interface so we can remove this function", false)]
-        public void Initialize(string serverName = DefaultServerName)
-        {
-            ServerName = serverName;
-            SetDiscovery(new MeaModDiscovery(Logger));
-        }
-
-        [Obsolete("Use the Fluent Interface instead of this combo function", false)]
-        public void StartOSCQueryService(string serverName, int httpPort = -1, params Func<HttpListenerContext, Action, Task>[] middleware)
-        {
-            ServerName = serverName;
-            
-            // Use the provided port or grab a new one
-            TcpPort = httpPort == -1 ? Extensions.GetAvailableTcpPort() : httpPort;
-
-            // Add all provided middleware
-            if (middleware != null)
-            {
-                foreach (var newMiddleware in middleware)
+                if (_hostInfo == null)
                 {
-                    AddMiddleware(newMiddleware);
+                    // Create HostInfo object
+                    _hostInfo = new HostInfo()
+                    {
+                        name = DefaultServerName,
+                        oscPort = DefaultPortOsc,
+                        oscIP = IPAddress.Loopback.ToString()
+                    };
                 }
+                return _hostInfo;
             }
-            
-            AdvertiseOSCQueryService(serverName, TcpPort);
-            StartHttpServer();
+        }
+
+        // Lazy RootNode
+        private OSCQueryRootNode _rootNode;
+        public OSCQueryRootNode RootNode
+        {
+            get
+            {
+                if (_rootNode == null)
+                {
+                    BuildRootNode();
+                }
+
+                return _rootNode;
+            }
         }
 
         public void StartHttpServer()
@@ -285,6 +227,63 @@ namespace VRC.OSCQuery
         {
            Dispose();
         }
+
+        #region Obsolete Functions - Remove before Open Beta
+
+        /// <summary>
+        /// Creates an OSCQueryService which can track OSC endpoints in the enclosing program as well as find other OSCQuery-compatible services on the link-local network
+        /// </summary>
+        /// <param name="serverName">Server name to use, default is "OSCQueryService"</param>
+        /// <param name="httpPort">TCP port on which to serve OSCQuery info, default is 8080</param>
+        /// <param name="oscPort">UDP Port at which the OSC Server can be reached, default is 9000</param>
+        /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
+        /// <param name="middleware">Optional set of middleware to be injected into the HTTP server. Middleware will be executed in the order they are passed in.</param>
+        [Obsolete("Use the Fluent Interface so we can remove this constructor", false)]
+        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null, params Func<HttpListenerContext, Action, Task>[] middleware)
+        {
+            if (logger != null) Logger = logger;
+
+            OscPort = oscPort;
+            TcpPort = httpPort;
+            
+            Initialize(serverName);
+            StartOSCQueryService(serverName, httpPort, middleware);
+            if (oscPort != DefaultPortOsc)
+            {
+                AdvertiseOSCService(serverName, oscPort);
+            }
+            RefreshServices();
+        }
+
+        [Obsolete("Use the Fluent Interface so we can remove this function", false)]
+        public void Initialize(string serverName = DefaultServerName)
+        {
+            ServerName = serverName;
+            SetDiscovery(new MeaModDiscovery(Logger));
+        }
+
+        [Obsolete("Use the Fluent Interface instead of this combo function", false)]
+        public void StartOSCQueryService(string serverName, int httpPort = -1, params Func<HttpListenerContext, Action, Task>[] middleware)
+        {
+            ServerName = serverName;
+            
+            // Use the provided port or grab a new one
+            TcpPort = httpPort == -1 ? Extensions.GetAvailableTcpPort() : httpPort;
+
+            // Add all provided middleware
+            if (middleware != null)
+            {
+                foreach (var newMiddleware in middleware)
+                {
+                    AddMiddleware(newMiddleware);
+                }
+            }
+            
+            AdvertiseOSCQueryService(serverName, TcpPort);
+            StartHttpServer();
+        }
+
+        #endregion
     }
 
 }
