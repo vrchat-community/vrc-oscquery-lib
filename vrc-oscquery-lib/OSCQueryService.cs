@@ -102,6 +102,7 @@ namespace VRC.OSCQuery
         }
 
         #endregion
+        
         // Constants
         public const int DefaultPortHttp = 8080;
         public const int DefaultPortOsc = 9000;
@@ -174,7 +175,6 @@ namespace VRC.OSCQuery
         [Obsolete("Use the Fluent Interface instead of this combo function", false)]
         public void StartOSCQueryService(string serverName, int httpPort = -1, params Func<HttpListenerContext, Action, Task>[] middleware)
         {
-            BuildRootNode();
             ServerName = serverName;
             
             // Use the provided port or grab a new one
@@ -216,7 +216,6 @@ namespace VRC.OSCQuery
                 // add this node
                 target = RootNode.AddNode(new OSCQueryNode(address));
             }
-            
             target.Value = value;
         }
 
