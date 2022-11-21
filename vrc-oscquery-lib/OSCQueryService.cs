@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -110,15 +111,27 @@ namespace VRC.OSCQuery
         {
             _http = new OSCQueryHttpServer(this, Logger);
         }
+
+        private IPAddress myIpAddress => GetLocalIP();
         
         public void AdvertiseOSCQueryService(string serviceName, int port = DefaultPortHttp)
         {
-            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, HostIP, port, OSCQueryServiceProfile.ServiceType.OSCQuery));
+            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, myIpAddress, port, OSCQueryServiceProfile.ServiceType.OSCQuery));
         }
 
         public void AdvertiseOSCService(string serviceName, int port = DefaultPortOsc)
         {
-            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, HostIP, port, OSCQueryServiceProfile.ServiceType.OSC));
+            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, myIpAddress, port, OSCQueryServiceProfile.ServiceType.OSC));
+        }
+
+        public IPAddress GetLocalIP()
+        {
+            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+            {
+                socket.Connect("8.8.8.8", 65530);
+                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                return endPoint.Address;
+            }
         }
 
         public void RefreshServices()
