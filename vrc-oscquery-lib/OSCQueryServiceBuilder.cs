@@ -9,6 +9,19 @@ namespace VRC.OSCQuery
     {
         private readonly OSCQueryService _service = new OSCQueryService();
         public OSCQueryService Build() => _service;
+
+        /// <summary>
+        /// Starts HTTP Server, Advertises OSCQuery & OSC, Uses default library for Network Discovery
+        /// </summary>
+        /// <returns>OSCQueryServiceBuilder for Fluent construction</returns>
+        public OSCQueryServiceBuilder WithDefaults()
+        {
+            StartHttpServer();
+            AdvertiseOSCQuery();
+            AdvertiseOSC();
+            WithDiscovery(new MeaModDiscovery());
+            return this;
+        }
         
         public OSCQueryServiceBuilder WithTcpPort(int port)
         {

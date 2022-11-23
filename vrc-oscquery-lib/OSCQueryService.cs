@@ -65,7 +65,7 @@ namespace VRC.OSCQuery
         }
 
         // Constants
-        public const int DefaultPortHttp = 8080;
+        public const int DefaultPortHttp = 8060;
         public const int DefaultPortOsc = 9000;
         public const string DefaultServerName = "OSCQueryService";
 
