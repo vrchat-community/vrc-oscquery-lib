@@ -19,6 +19,8 @@ The format is always `new OSCQueryServiceBuilder()`, followed by all the things 
 ### Fluent Interface Options
 There's a lot of options you _can_ configure if you want more control over what happens. The additional methods are listed below.
 
+* WithDefaults()
+  * Sets up Discovery, Advertising and HTTP serving using default names and ports.
 * WithTcpPort(int port)
   * Set the TCP port you want to use for serving the HTTP endpoints. Defaults to 8060.
 * WithOscPort(int port)
