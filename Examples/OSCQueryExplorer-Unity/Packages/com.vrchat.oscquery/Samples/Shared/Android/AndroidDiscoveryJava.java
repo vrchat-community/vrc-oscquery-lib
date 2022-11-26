@@ -190,7 +190,7 @@ public class AndroidDiscoveryJava {
 
                 String newServiceName = serviceInfo.getServiceName();
 
-                Callback.OnJavaCallback(serviceInfo.toString());
+                Callback.OnJavaServiceInfo(serviceInfo);
 
                 Log.i(TAG, "Resolve Succeeded" + newServiceName);
             }

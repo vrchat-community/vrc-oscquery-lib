@@ -155,12 +155,14 @@ namespace VRC.OSCQuery.Samples.Shared
             }
         }
 
-        public Action<string> JavaCallback;
+        public Action<AndroidJavaObject> JavaCallback;
 
-        private void GotJavaCallback(string obj)
+        private void GotJavaCallback(AndroidJavaObject obj)
         {
             JavaCallback?.Invoke(obj);
             Debug.Log($"Got callback from Java with {obj}");
+            var serviceName = obj.Call<string>("getServiceName");
+            Debug.Log($"Got serviceName from java with {serviceName}");
         }
 
         // Dispose of the two items we created in Start
