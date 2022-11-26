@@ -6,30 +6,68 @@ To use OSCQuery in your project, you first need to integrate the library. This c
 OSCQuery can itself neither receive nor send OSC, its purpose is to allow OSC services to find other services and to communicate to them what they can do. If you are looking to send OSC you can use any OSC library, like **[OscCore](https://github.com/vrchat/OscCore)**  for Unity projects and **[Rug.Osc](https://bitbucket.org/rugcode/rug.osc/src/master/)** for .NET.
 
 ## Starting the OscQueryService
-Before actually starting up the service, you first need two ports: 
-- **UDP Port:** This is where your application will receive OSC messages.
-- **TCP Port:** This port will host all the information about your service, accessible through HTTP requests.
 
-You can specify your own ports or use this Utility method to find free ones:
-```csharp
-var udpPort = Extensions.GetAvailableUdpPort();
-var tcpPort = Extensions.GetAvailableTcpPort();
-```
+The OSCQueryServiceBuilder has a [Fluent Interface](https://en.wikipedia.org/wiki/Fluent_interface) for creating and configuring the OSCQuery service. To start a service that does "all the things" using the typical settings, you can call:
 
-You can start the OSCQuery Service by passing a unique name along with these ports into its constructor:
 ```csharp
-var queryService = new OSCQueryService("MyService", tcpPort, udpPort);
+var oscQuery = new OSCQueryServiceBuilder().WithDefaults().Build();
 ```
-*Creating the Service also allows middleware or a logger as optional parameters if needed.*
+This creates the Service, starts up the HTTP server on "localhost", starts up the Discovery system using the default library ([MeaMod.DNS](https://github.com/meamod/MeaMod.DNS)), and advertises both the OSCQuery and OSC services on the local network.
+
+The format is always `new OSCQueryServiceBuilder()`, followed by all the things you want to add, finished with `Build()`, which returns the OSCQueryService you've just defined.
+
+### Fluent Interface Options
+There's a lot of options you _can_ configure if you want more control over what happens. The additional methods are listed below.
+
+* WithDefaults()
+  * Sets up Discovery, Advertising and HTTP serving using default names and ports.
+* WithTcpPort(int port)
+  * Set the TCP port you want to use for serving the HTTP endpoints. Defaults to 8060.
+* WithOscPort(int port)
+  * Set the UDP port on which you're going to run an OSC Server. Defaults to 9000.
+* WithHostIP(IPAddress address)
+  * Set the address to use for serving HTTP. Defaults to localhost - note that serving to 0.0.0.0 on Windows is not allowed by default without jumping through some security hoops on each installed machine (this works on Android, though that implementation is not yet released).
+* WithServiceName(string name) 
+  * Sets the name that your service will use when advertising. Defaults to "OSCQueryService"
+* WithLogger(ILogger<OSCQueryService> logger) 
+  * Sets the target logger, which you can implement if you want to specifically log to the Console, or to a Unity textfield, or anything else for which you write an ILogger implementation.
+* WithMiddleware(Func<HttpListenerContext, Action, Task> middleware) 
+  * Adds Middleware to your HTTP server if you want to serve up additional pages or content.
+* WithDiscovery(IDiscovery d) 
+  * Sets the class to be used for advertising and discovering your service. Only for advanced users or other platforms - the Android-compatible implementation uses the native [NsdManager](https://developer.android.com/reference/android/net/nsd/NsdManager) class, for example (still in development).
+* StartHttpSever()
+    * Serves the HTTP endpoints required by the OSCQuery spec. You don't _have_ to call this if you're just using this library to find and receive data from other OSCQuery services, and not serving data yourself, but your app will be out-of-spec and may not play well with others.
+* AdvertiseOSC() 
+  * Broadcasts the info of the OSC Service on the local network.
+* AdvertiseOSCQuery() 
+  * Broadcasts the info of the OSCQuery Service on the local network.
+
+You can can add these onto `.WithDefaults()` if you want _almost_ all the defaults. For example, this code will have all the defaults, but find the first available TCP port instead of 8060, and uses the name "MyService" instead of "OSCQueryService".
+
+```csharp
+var oscQuery = new OSCQueryServiceBuilder()
+    .WithDefaults()
+    .WithTcpPort(Extensions.GetAvailableTcpPort())
+    .WithServiceName("MyService")
+    .Build();
+```
+## A Simple Example
 
 A minimal example for a working OSCQuery Service could look like this:
 ```csharp
-var udpPort = Extensions.GetAvailableUdpPort();
+
 var tcpPort = Extensions.GetAvailableTcpPort();
-var queryService = new OSCQueryService("MyService", tcpPort, udpPort);
+var oscPort = Extensions.GetAvailableUdpPort();
+
+var oscQuery = new OSCQueryServiceBuilder()
+    .WithDefaults()
+    .WithTcpPort(tcpPort)
+    .WithOscPort(oscPort))
+    .WithServiceName("MyService")
+    .Build();
 
 // Manually logging the ports to see them without a logger
-Console.WriteLine($"Started QueryService at TCP {tcpPort}, UDP {udpPort}");
+Console.WriteLine($"Started OSCQueryService at TCP {tcpPort}, UDP {oscPort}");
 
 // Stops the program from ending until a key is pressed
 Console.ReadKey();

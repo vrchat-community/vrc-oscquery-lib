@@ -44,9 +44,28 @@ namespace VRC.OSCQuery
         }
 
         #endregion
-        
+
+        private IPAddress _localIp;
+        private IPAddress LocalIp
+        {
+            get
+            {
+                if (_localIp == null)
+                {
+                    using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+                    {
+                        socket.Connect("8.8.8.8", 65530);
+                        IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                        _localIp = endPoint.Address;
+                    }
+                }
+
+                return _localIp;
+            }
+        }
+
         // Constants
-        public const int DefaultPortHttp = 8080;
+        public const int DefaultPortHttp = 8060;
         public const int DefaultPortOsc = 9000;
         public const string DefaultServerName = "OSCQueryService";
 
@@ -116,29 +135,19 @@ namespace VRC.OSCQuery
         
         public void AdvertiseOSCQueryService(string serviceName, int port = DefaultPortHttp)
         {
-            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, myIpAddress, port, OSCQueryServiceProfile.ServiceType.OSCQuery));
+            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, LocalIp, port, OSCQueryServiceProfile.ServiceType.OSCQuery));
         }
 
         public void AdvertiseOSCService(string serviceName, int port = DefaultPortOsc)
         {
-            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, myIpAddress, port, OSCQueryServiceProfile.ServiceType.OSC));
-        }
-
-        public IPAddress GetLocalIP()
-        {
-            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
-            {
-                socket.Connect("8.8.8.8", 65530);
-                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                return endPoint.Address;
-            }
+            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, LocalIp, port, OSCQueryServiceProfile.ServiceType.OSC));
         }
 
         public void RefreshServices()
         {
             _discovery.RefreshServices();
         }
-        
+
         public void SetValue(string address, string value)
         {
             var target = RootNode.GetNodeWithPath(address);
