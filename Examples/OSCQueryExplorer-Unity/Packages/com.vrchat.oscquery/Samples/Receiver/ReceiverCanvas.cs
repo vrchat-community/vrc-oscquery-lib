@@ -31,9 +31,6 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             StartService();
         }
 
-        // Todo: remove this field after we make this work as a non-Monobehaviour
-        public AndroidDiscovery androidDiscovery;
-
         /// <summary>
         /// Creates new OSCQuery and OSC services, advertises itself to receive messages
         /// </summary>
@@ -56,7 +53,9 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             
             
             #if UNITY_ANDROID
-            IDiscovery discovery = androidDiscovery;
+            IDiscovery discovery = new AndroidDiscovery();
+            // discovery.JavaCallback += profile =>
+            //     InfoText.text += $"Found profile from Android: {profile}";
             #else
             IDiscovery discovery = new MeaModDiscovery(logger);
             #endif
@@ -73,11 +72,8 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
                 .Build();
             
             _oscQuery.RefreshServices();
-            
-            androidDiscovery.JavaCallback += profile =>
-                InfoText.text += $"Found profile from Android: {profile}";
 
-                // Show server name and chosen port
+            // Show server name and chosen port
             HeaderText.text = $"{serverName} running at tcp:{port} osc: {udpPort}";
         }
 

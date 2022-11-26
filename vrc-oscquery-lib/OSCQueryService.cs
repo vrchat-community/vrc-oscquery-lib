@@ -131,8 +131,6 @@ namespace VRC.OSCQuery
             _http = new OSCQueryHttpServer(this, Logger);
         }
 
-        private IPAddress myIpAddress => GetLocalIP();
-        
         public void AdvertiseOSCQueryService(string serviceName, int port = DefaultPortHttp)
         {
             _discovery.Advertise(new OSCQueryServiceProfile(serviceName, LocalIp, port, OSCQueryServiceProfile.ServiceType.OSCQuery));

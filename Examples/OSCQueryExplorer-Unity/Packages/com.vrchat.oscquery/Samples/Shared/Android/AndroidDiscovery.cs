@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
 
 namespace VRC.OSCQuery.Samples.Shared
 {
-    public class AndroidDiscovery : MonoBehaviour, IDiscovery
+    public class AndroidDiscovery : IDiscovery
     {
         #region Android Multicast
 
@@ -76,12 +77,12 @@ namespace VRC.OSCQuery.Samples.Shared
             }
         }
 
-        private IEnumerator acquireMultiCastPeriodically()
+        private async UniTask acquireMultiCastPeriodically()
         {
             while (!stopAcquiringLock)
             {
                 MulticastLockStatus = getMulticastLock("debugMulticast");
-                yield return new WaitForSeconds(multicastDelay);
+                await UniTask.Delay(TimeSpan.FromSeconds(multicastDelay));
             }
         }
         
@@ -113,7 +114,7 @@ namespace VRC.OSCQuery.Samples.Shared
 
         #endregion
 
-        private void Start()
+        public AndroidDiscovery()
         {
             foreach (string permission in _requiredPermissions)
             {
@@ -131,7 +132,7 @@ namespace VRC.OSCQuery.Samples.Shared
             }
             
             MulticastLockStatusChanged += OnMulticastLockStatusChanged;
-            StartCoroutine(acquireMultiCastPeriodically());
+            UniTask.Create(acquireMultiCastPeriodically);
         }
 
         private void StartService()
