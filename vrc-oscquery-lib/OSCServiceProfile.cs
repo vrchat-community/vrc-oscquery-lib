@@ -11,7 +11,7 @@ namespace VRC.OSCQuery
 
         public enum ServiceType
         {
-            OSCQuery, OSC
+            Unknown, OSCQuery, OSC
         }
 
         public string GetServiceTypeString()

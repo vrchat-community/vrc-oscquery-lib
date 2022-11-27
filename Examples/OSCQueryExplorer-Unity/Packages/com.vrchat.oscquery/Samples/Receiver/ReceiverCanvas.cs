@@ -54,8 +54,6 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             
             #if UNITY_ANDROID
             IDiscovery discovery = new AndroidDiscovery();
-            // discovery.JavaCallback += profile =>
-            //     InfoText.text += $"Found profile from Android: {profile}";
             #else
             IDiscovery discovery = new MeaModDiscovery(logger);
             #endif
@@ -72,6 +70,9 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
                 .Build();
             
             _oscQuery.RefreshServices();
+
+            _oscQuery.OnOscQueryServiceAdded += profile =>
+                HeaderText.text = $"found service {profile.name} at {profile.port} on {profile.address}";
 
             // Show server name and chosen port
             HeaderText.text = $"{serverName} running at tcp:{port} osc: {udpPort}";

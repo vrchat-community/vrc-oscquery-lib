@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
@@ -18,7 +19,6 @@ namespace VRC.OSCQuery.Samples.Shared
         private AndroidJavaObject discoveryJava = null;
         private AndroidJavaObject activityContext = null;
         private JavaBridge javaBridge = null;
-        int port = 9876;
         private bool advertisingReady;
         
         public bool getMulticastLock(string lockTag)
@@ -142,7 +142,7 @@ namespace VRC.OSCQuery.Samples.Shared
             }
 
             javaBridge = new JavaBridge();
-            javaBridge.GotJavaCallback += GotJavaCallback;
+            javaBridge.OnServiceProfileFound += OnServiceProfileFoundFromJava;
             
             discoveryJava = new AndroidJavaObject("vrc.oscquery.examples.AndroidDiscoveryJava", activityContext, javaBridge);
             // discoveryJava.Call("initializeDiscoveryListener"); // listen for services
@@ -155,14 +155,25 @@ namespace VRC.OSCQuery.Samples.Shared
             }
         }
 
-        public Action<AndroidJavaObject> JavaCallback;
-
-        private void GotJavaCallback(AndroidJavaObject obj)
+        private void OnServiceProfileFoundFromJava(OSCQueryServiceProfile profile)
         {
-            JavaCallback?.Invoke(obj);
-            Debug.Log($"Got callback from Java with {obj}");
-            var serviceName = obj.Call<string>("getServiceName");
-            Debug.Log($"Got serviceName from java with {serviceName}");
+            switch (profile.serviceType)
+            {
+                case OSCQueryServiceProfile.ServiceType.OSCQuery:
+                    if (_oscQueryServices.All(p => p.name != profile.name))
+                    {
+                        _oscQueryServices.Add(profile);
+                        OnOscQueryServiceAdded?.Invoke(profile);
+                    }
+                    break;
+                case OSCQueryServiceProfile.ServiceType.OSC:
+                    if (_oscServices.All(p => p.name != profile.name))
+                    {
+                        _oscServices.Add(profile);
+                        OnOscServiceAdded?.Invoke(profile);
+                    }
+                    break;
+            }
         }
 
         // Dispose of the two items we created in Start
@@ -172,6 +183,13 @@ namespace VRC.OSCQuery.Samples.Shared
         }
 
         #region IDiscovery
+        
+        // Store discovered services
+        private readonly HashSet<OSCQueryServiceProfile> _oscQueryServices = new HashSet<OSCQueryServiceProfile>();
+        private readonly HashSet<OSCQueryServiceProfile> _oscServices = new HashSet<OSCQueryServiceProfile>();
+        
+        public HashSet<OSCQueryServiceProfile> GetOSCQueryServices() => _oscQueryServices;
+        public HashSet<OSCQueryServiceProfile> GetOSCServices() => _oscServices;
 
         public void Dispose()
         {
@@ -179,23 +197,13 @@ namespace VRC.OSCQuery.Samples.Shared
             multicastLock?.Call("release");
             if (javaBridge != null)
             {            
-                javaBridge.GotJavaCallback -= GotJavaCallback;
+                javaBridge.OnServiceProfileFound -= OnServiceProfileFoundFromJava;
             }
         }
 
         public void RefreshServices()
         {
             //throw new NotImplementedException();
-        }
-
-        public HashSet<OSCQueryServiceProfile> GetOSCQueryServices()
-        {
-            throw new NotImplementedException();
-        }
-
-        public HashSet<OSCQueryServiceProfile> GetOSCServices()
-        {
-            throw new NotImplementedException();
         }
 
         private Queue<OSCQueryServiceProfile> _profilesToAdvertise = new Queue<OSCQueryServiceProfile>();
