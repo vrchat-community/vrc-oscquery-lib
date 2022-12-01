@@ -131,13 +131,17 @@ namespace VRC.OSCQuery
             _http = new OSCQueryHttpServer(this, Logger);
         }
         
-        public void AdvertiseOSCQueryService(string serviceName, int port = DefaultPortHttp)
+        public void AdvertiseOSCQueryService(string serviceName, int port = -1)
         {
+            // Get random available port if none was specified
+            port = port < 0 ? Extensions.GetAvailableTcpPort() : port;
             _discovery.Advertise(new OSCQueryServiceProfile(serviceName, LocalIp, port, OSCQueryServiceProfile.ServiceType.OSCQuery));
         }
 
-        public void AdvertiseOSCService(string serviceName, int port = DefaultPortOsc)
+        public void AdvertiseOSCService(string serviceName, int port = -1)
         {
+            // Get random available port if none was specified
+            port = port < 0 ? Extensions.GetAvailableTcpPort() : port;
             _discovery.Advertise(new OSCQueryServiceProfile(serviceName, LocalIp, port, OSCQueryServiceProfile.ServiceType.OSC));
         }
 
