@@ -26,6 +26,7 @@ namespace VRC.OSCQuery
         /// <returns>OSCQueryServiceBuilder for Fluent construction</returns>
         public OSCQueryServiceBuilder WithDefaults()
         {
+            _customStartup = true;
             StartHttpServer();
             AdvertiseOSCQuery();
             AdvertiseOSC();
