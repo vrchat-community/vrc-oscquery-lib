@@ -57,9 +57,7 @@ namespace VRC.OSCQuery.Tests
         [Test]
         public async Task OSCQueryServiceFluent_WithAddedIntProperty_ReturnsValueForThatProperty()
         {
-            var random = new Random();
             int port = Extensions.GetAvailableTcpPort();
-            // var service = new OSCQueryService("TestService", tcpPort);
 
             var service = new OSCQueryServiceBuilder()
                 .WithTcpPort(port)
@@ -120,8 +118,6 @@ namespace VRC.OSCQuery.Tests
         {
             var r = new Random();
             int port = Extensions.GetAvailableTcpPort();
-            // var udpPort = Extensions.GetAvailableUdpPort();
-            // var service = new OSCQueryService("TestService", tcpPort, udpPort);
             var service = new OSCQueryServiceBuilder()
                 .WithTcpPort(port)
                 .StartHttpServer()
@@ -166,12 +162,10 @@ namespace VRC.OSCQuery.Tests
         {
             var r = new Random();
             int tcpPort = Extensions.GetAvailableTcpPort();
-            // var udpPort = Extensions.GetAvailableUdpPort();
             var service = new OSCQueryServiceBuilder()
                 .WithTcpPort(tcpPort)
                 .StartHttpServer()
                 .Build();
-            // var service = new OSCQueryService("TestService", tcpPort, udpPort);
             
             int randomInt1 = r.Next();
             int randomInt2 = r.Next();

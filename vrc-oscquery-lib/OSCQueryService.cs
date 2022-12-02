@@ -141,7 +141,7 @@ namespace VRC.OSCQuery
         public void AdvertiseOSCService(string serviceName, int port = -1)
         {
             // Get random available port if none was specified
-            port = port < 0 ? Extensions.GetAvailableTcpPort() : port;
+            port = port < 0 ? Extensions.GetAvailableUdpPort() : port;
             _discovery.Advertise(new OSCQueryServiceProfile(serviceName, LocalIp, port, OSCQueryServiceProfile.ServiceType.OSC));
         }
 
