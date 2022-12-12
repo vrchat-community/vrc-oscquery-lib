@@ -158,6 +158,18 @@ namespace VRC.OSCQuery
                 // add this node
                 target = RootNode.AddNode(new OSCQueryNode(address));
             }
+
+            target.Value = new[] { value };
+        }
+        
+        public void SetValue(string address, object[] value)
+        {
+            var target = RootNode.GetNodeWithPath(address);
+            if (target == null)
+            {
+                // add this node
+                target = RootNode.AddNode(new OSCQueryNode(address));
+            }
             target.Value = value;
         }
 
@@ -170,7 +182,7 @@ namespace VRC.OSCQuery
         /// <param name="initialValue">Starting value for param in string form</param>
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
         /// <returns></returns>
-        public bool AddEndpoint(string path, string oscTypeString, Attributes.AccessValues accessValues, string initialValue = null,
+        public bool AddEndpoint(string path, string oscTypeString, Attributes.AccessValues accessValues, object[] initialValue = null,
             string description = "")
         {
             // Exit early if path does not start with slash
@@ -197,7 +209,7 @@ namespace VRC.OSCQuery
             return true;
         }
         
-        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, string initialValue = null, string description = "")
+        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, object[] initialValue = null, string description = "")
         {
             var typeExists = Attributes.OSCTypeFor(typeof(T), out string oscType);
 

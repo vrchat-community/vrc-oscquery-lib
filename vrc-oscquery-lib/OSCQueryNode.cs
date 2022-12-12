@@ -142,8 +142,8 @@ namespace VRC.OSCQuery
         [JsonProperty(Attributes.TYPE)]
         public string OscType;
 
-        [JsonProperty(Attributes.VALUE)] 
-        public string Value;
+        [JsonProperty(Attributes.VALUE)]
+        public object[] Value;
 
         [JsonIgnore] 
         public string ParentPath {

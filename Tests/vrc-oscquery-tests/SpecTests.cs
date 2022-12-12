@@ -8,7 +8,7 @@ namespace VRC.OSCQuery.Tests
     public class SpecTests
     {
          [Test]
-        public async Task OSCQueryServiceFluent_FromFluentBuilderWithTcpPort_ReturnsSamePort()
+        public void OSCQueryServiceFluent_FromFluentBuilderWithTcpPort_ReturnsSamePort()
         {
             int port = Extensions.GetAvailableTcpPort();
             var service = new OSCQueryServiceBuilder()
@@ -71,14 +71,14 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path, 
                 Attributes.AccessValues.ReadOnly,
-                randomInt.ToString()
+                new object[]{randomInt}
             );
             var response = await new HttpClient().GetAsync($"http://localhost:{port}{path}");
 
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
-            Assert.That(responseObject[Attributes.VALUE]!.Value<int>(), Is.EqualTo(randomInt));
+            Assert.That(responseObject[Attributes.VALUE][0]!.Value<int>(), Is.EqualTo(randomInt));
             
             service.Dispose();
         }
@@ -99,7 +99,7 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path, 
                 Attributes.AccessValues.ReadOnly,
-                false.ToString()
+                new object[]{false}
             );
             service.SetValue(path, "true");
             
@@ -108,7 +108,7 @@ namespace VRC.OSCQuery.Tests
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
-            Assert.That(responseObject[Attributes.VALUE]!.Value<bool>(), Is.EqualTo(true));
+            Assert.That(responseObject[Attributes.VALUE][0]!.Value<bool>(), Is.EqualTo(true));
             
             service.Dispose();
         }
@@ -135,13 +135,13 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path1, 
                 Attributes.AccessValues.ReadOnly, 
-                randomInt1.ToString()
+                 new object[]{randomInt1}
             );
 
             service.AddEndpoint<int>(
                 path2, 
                 Attributes.AccessValues.ReadOnly,
-                randomInt2.ToString()
+                new object[]{randomInt2}
             );
             
             var response = await new HttpClient().GetAsync($"http://localhost:{port}/");
@@ -151,8 +151,8 @@ namespace VRC.OSCQuery.Tests
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JsonConvert.DeserializeObject<OSCQueryNode>(responseString);
             
-            Assert.That(int.Parse(responseObject.Contents[name1].Value), Is.EqualTo(randomInt1));
-            Assert.That(int.Parse(responseObject.Contents[name2].Value), Is.EqualTo(randomInt2));
+            Assert.That(responseObject.Contents[name1].Value[0], Is.EqualTo(randomInt1));
+            Assert.That(responseObject.Contents[name2].Value[0], Is.EqualTo(randomInt2));
             
             service.Dispose();
         }
@@ -179,13 +179,13 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path1, 
                 Attributes.AccessValues.ReadOnly, 
-                randomInt1.ToString()
+                new object[]{randomInt1}
             );
 
             service.AddEndpoint<int>(
                 path2, 
                 Attributes.AccessValues.ReadOnly,
-                randomInt2.ToString()
+                new object[]{randomInt2}
             );
 
             var tree = Task.Run(() => Extensions.GetOSCTree(IPAddress.Loopback, tcpPort)).GetAwaiter().GetResult();
@@ -195,10 +195,10 @@ namespace VRC.OSCQuery.Tests
             var node2 = tree.GetNodeWithPath(path2);
             
             Assert.That(node1.Name, Is.EqualTo(name1));
-            Assert.That(node1.Value, Is.EqualTo(randomInt1.ToString()));
+            Assert.That(node1.Value[0], Is.EqualTo(randomInt1));
             
             Assert.That(node2.Name, Is.EqualTo(name2));
-            Assert.That(node2.Value, Is.EqualTo(randomInt2.ToString()));
+            Assert.That(node2.Value[0], Is.EqualTo(randomInt2));
             
             service.Dispose();
         }
@@ -259,7 +259,7 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path, 
                 Attributes.AccessValues.ReadOnly,
-                value.ToString()
+                new object[]{value}
             );
 
             var tokenSource = new CancellationTokenSource();
@@ -268,7 +268,7 @@ namespace VRC.OSCQuery.Tests
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
-            Assert.That(responseObject[Attributes.VALUE]!.Value<int>(), Is.EqualTo(value));
+            Assert.That(responseObject[Attributes.VALUE][0]!.Value<int>(), Is.EqualTo(value));
             
             service.Dispose();
         }
