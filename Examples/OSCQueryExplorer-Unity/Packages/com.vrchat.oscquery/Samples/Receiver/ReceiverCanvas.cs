@@ -54,7 +54,7 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             _oscQuery = new OSCQueryServiceBuilder()
                 .WithServiceName(serverName)
                 .WithTcpPort(port)
-                .WithOscPort(udpPort)
+                .WithUdpPort(udpPort)
                 .WithLogger(logger)
                 .WithDiscovery(new MeaModDiscovery(logger))
                 .StartHttpServer()
