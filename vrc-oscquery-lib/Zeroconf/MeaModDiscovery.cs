@@ -106,7 +106,7 @@ namespace VRC.OSCQuery
                     }
                     catch (Exception)
                     {
-                        Logger.LogInformation($"No good SRV Record found in {response.Id}");
+                        // Logger.LogInformation($"No good SRV Record found in {response.Id}");
                     }
                 }
             }
@@ -139,7 +139,6 @@ namespace VRC.OSCQuery
                     var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
                     _oscServices.Add(p);
                     OnOscServiceAdded?.Invoke(p);
-                    Logger.LogInformation($"Found OSC Service match {serviceName} on port {port}");
                 }
             }
             // If this is an OSCQuery service, add it to the OSCQuery collection
@@ -151,7 +150,6 @@ namespace VRC.OSCQuery
                     var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
                     _oscQueryServices.Add(p);
                     OnOscQueryServiceAdded?.Invoke(p);
-                    Logger.LogInformation($"Found OSCQuery Service match {serviceName} on port {port}");
                 }
             }
         }
