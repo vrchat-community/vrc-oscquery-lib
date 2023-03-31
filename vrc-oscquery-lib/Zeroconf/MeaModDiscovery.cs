@@ -94,49 +94,19 @@ namespace VRC.OSCQuery
                 {
                     return;
                 }
-                
-                // Get the name and SRV Record of the service
-                var name = response.Answers.First(r => OSCQueryService.MatchedNames.Contains(r?.CanonicalName)).CanonicalName;
-                var srvRecord = response.AdditionalRecords.OfType<SRVRecord>().FirstOrDefault();
-                if (srvRecord == default)
-                {
-                    Logger.LogWarning($"Found the matching service {name}, but it doesn't have an SRVRecord, can't proceed.");
-                    return;
-                }
-                
-                // Get the rest of the items we need to track this service
-                var port = srvRecord.Port;
-                var domainName = srvRecord.Name.Labels;
-                var instanceName = domainName[0];
 
-                var serviceName = string.Join(".", domainName.Skip(1).SkipLast(1));
-                var ips = response.AdditionalRecords.OfType<ARecord>().Select(r => r.Address);
-                
-                var ipAddressList = ips.ToList();
-                var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ipAddressList);
-
-                // If this is an OSC service, add it to the OSC collection
-                if (string.Compare(name, OSCQueryService._localOscUdpServiceName, StringComparison.Ordinal) == 0 && !_profiles.ContainsValue(profile))
+                foreach (ResourceRecord answer in response.Answers.Where(a=>OSCQueryService.MatchedNames.Contains(a.CanonicalName)))
                 {
-                    // Make sure there's not already a service with the same name
-                    if (_oscServices.All(p => p.name != profile.InstanceName))
+                    try
                     {
-                        var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
-                        _oscServices.Add(p);
-                        OnOscServiceAdded?.Invoke(p);
-                        Logger.LogInformation($"Found match {name} on port {port}");
+                        var srvRecord = response.AdditionalRecords.OfType<SRVRecord>().First();
+                        // Get the name and SRV Record of the service
+                        var name = answer.CanonicalName;
+                        AddMatchedService(response, srvRecord);
                     }
-                }
-                // If this is an OSCQuery service, add it to the OSCQuery collection
-                else if (string.Compare(name, OSCQueryService._localOscJsonServiceName, StringComparison.Ordinal) == 0 && !_profiles.ContainsValue(profile))
-                {
-                    // Make sure there's not already a service with the same name
-                    if (_oscQueryServices.All(p => p.name != profile.InstanceName))
+                    catch (Exception)
                     {
-                        var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
-                        _oscQueryServices.Add(p);
-                        OnOscQueryServiceAdded?.Invoke(p);
-                        Logger.LogInformation($"Found match {name} on port {port}");
+                        // Logger.LogInformation($"No good SRV Record found in {response.Id}");
                     }
                 }
             }
@@ -146,5 +116,44 @@ namespace VRC.OSCQuery
                 Logger.LogInformation($"Could not parse answer from {eventArgs.RemoteEndPoint}: {e.Message}");
             }
         }
+
+        private void AddMatchedService(Message response, SRVRecord srvRecord)
+        {
+            // Get the rest of the items we need to track this service
+            var port = srvRecord.Port;
+            var domainName = srvRecord.Name.Labels;
+            var instanceName = domainName[0];
+
+            var serviceName = string.Join(".", domainName.Skip(1));
+            var ips = response.AdditionalRecords.OfType<ARecord>().Select(r => r.Address);
+                
+            var ipAddressList = ips.ToList();
+            var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ipAddressList);
+
+            // If this is an OSC service, add it to the OSC collection
+            if (string.Compare(serviceName, OSCQueryService._localOscUdpServiceName, StringComparison.Ordinal) == 0 && !_profiles.ContainsValue(profile))
+            {
+                // Make sure there's not already a service with the same name
+                if (_oscServices.All(p => p.name != profile.InstanceName))
+                {
+                    var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
+                    _oscServices.Add(p);
+                    OnOscServiceAdded?.Invoke(p);
+                }
+            }
+            // If this is an OSCQuery service, add it to the OSCQuery collection
+            else if (string.Compare(serviceName, OSCQueryService._localOscJsonServiceName, StringComparison.Ordinal) == 0 && !_profiles.ContainsValue(profile))
+            {
+                // Make sure there's not already a service with the same name
+                if (_oscQueryServices.All(p => !p.name.Equals(profile.InstanceName)))
+                {
+                    var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
+                    _oscQueryServices.Add(p);
+                    OnOscQueryServiceAdded?.Invoke(p);
+                }
+            }
+        }
     }
+    
+    
 }

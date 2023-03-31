@@ -10,21 +10,21 @@ OSCQuery can itself neither receive nor send OSC, its purpose is to allow OSC se
 The OSCQueryServiceBuilder has a [Fluent Interface](https://en.wikipedia.org/wiki/Fluent_interface) for creating and configuring the OSCQuery service. To start a service that does "all the things" using the typical settings, you can call:
 
 ```csharp
-var oscQuery = new OSCQueryServiceBuilder().WithDefaults().Build();
+var oscQuery = new OSCQueryServiceBuilder().Build();
 ```
 This creates the Service, starts up the HTTP server on "localhost", starts up the Discovery system using the default library ([MeaMod.DNS](https://github.com/meamod/MeaMod.DNS)), and advertises both the OSCQuery and OSC services on the local network.
 
 The format is always `new OSCQueryServiceBuilder()`, followed by all the things you want to add, finished with `Build()`, which returns the OSCQueryService you've just defined.
 
 ### Fluent Interface Options
-There's a lot of options you _can_ configure if you want more control over what happens. The additional methods are listed below.
+There's a lot of options you _can_ configure if you want more control over what happens. The additional methods are listed below. Note that if you do not add any fluent options, then `WithDefaults()` is called for you automatically.
 
 * WithDefaults()
   * Sets up Discovery, Advertising and HTTP serving using default names and ports.
 * WithTcpPort(int port)
-  * Set the TCP port you want to use for serving the HTTP endpoints. Defaults to 8060.
-* WithOscPort(int port)
-  * Set the UDP port on which you're going to run an OSC Server. Defaults to 9000.
+  * Set the TCP port you want to use for serving the HTTP endpoints. Defaults to any available open TCP port.
+* WithUdpPort(int port)
+  * Set the UDP port on which you're going to run an OSC Server. Defaults to any available open UDP port.
 * WithHostIP(IPAddress address)
   * Set the address to use for serving HTTP. Defaults to localhost - note that serving to 0.0.0.0 on Windows is not allowed by default without jumping through some security hoops on each installed machine (this works on Android, though that implementation is not yet released).
 * WithServiceName(string name) 
@@ -41,6 +41,8 @@ There's a lot of options you _can_ configure if you want more control over what 
   * Broadcasts the info of the OSC Service on the local network.
 * AdvertiseOSCQuery() 
   * Broadcasts the info of the OSCQuery Service on the local network.
+* AddListenerForServiceType(Action\<OSCQueryServiceProfile\> listener, OSCQueryServiceProfile.ServiceType type)
+  * Adds a listener which will be sent OSCQueryServiceProfiles for newly-discovered OSC or OSCQuery services.
 
 You can can add these onto `.WithDefaults()` if you want _almost_ all the defaults. For example, this code will have all the defaults, but find the first available TCP port instead of 8060, and uses the name "MyService" instead of "OSCQueryService".
 
@@ -57,17 +59,17 @@ A minimal example for a working OSCQuery Service could look like this:
 ```csharp
 
 var tcpPort = Extensions.GetAvailableTcpPort();
-var oscPort = Extensions.GetAvailableUdpPort();
+var udpPort = Extensions.GetAvailableUdpPort();
 
 var oscQuery = new OSCQueryServiceBuilder()
     .WithDefaults()
     .WithTcpPort(tcpPort)
-    .WithOscPort(oscPort))
+    .WithUdpPort(udpPort))
     .WithServiceName("MyService")
     .Build();
 
 // Manually logging the ports to see them without a logger
-Console.WriteLine($"Started OSCQueryService at TCP {tcpPort}, UDP {oscPort}");
+Console.WriteLine($"Started OSCQueryService at TCP {tcpPort}, UDP {udpPort}");
 
 // Stops the program from ending until a key is pressed
 Console.ReadKey();

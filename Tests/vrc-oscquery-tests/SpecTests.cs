@@ -1,52 +1,69 @@
-using System;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework;
 
 namespace VRC.OSCQuery.Tests
 {
     [TestFixture]
     public class SpecTests
     {
-        [SetUp]
-        public void Setup()
+         [Test]
+        public void OSCQueryServiceFluent_FromFluentBuilderWithTcpPort_ReturnsSamePort()
         {
+            int port = Extensions.GetAvailableTcpPort();
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .Build();
+            
+            Assert.That(port, Is.EqualTo(service.TcpPort));
+            
+            service.Dispose();
         }
-
+        
         [Test]
-        public async Task OSCQueryService_OnRandomPort_ReturnsStatusCodeAtRoot()
+        public async Task OSCQueryServiceFluent_OnRandomPort_ReturnsStatusCodeAtRoot()
         {
-            int targetPort = Extensions.GetAvailableTcpPort();
-            var service = new OSCQueryService("test-service", targetPort);
-            var result = await new HttpClient().GetAsync($"http://localhost:{targetPort}");
+            int port = Extensions.GetAvailableTcpPort();
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
+            
+            var result = await new HttpClient().GetAsync($"http://localhost:{port}");
             Assert.True(result.IsSuccessStatusCode);
             
             service.Dispose();
         }
-
+        
         [Test]
-        public async Task Service_WithRandomOSCPort_ReturnsPortInHostInfo()
+        public async Task OSCQueryServiceFluent_WithRandomOSCPort_ReturnsPortInHostInfo()
         {
-            int tcpPort = Extensions.GetAvailableTcpPort();
+            int port = Extensions.GetAvailableTcpPort();
             int oscPort = Extensions.GetAvailableUdpPort();
-            var service = new OSCQueryService("test-service", tcpPort, oscPort);
-            // Get HostInfo Json
-            var hostInfo = await Extensions.GetHostInfo(IPAddress.Loopback, tcpPort);
+            
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .WithUdpPort(oscPort)
+                .StartHttpServer()
+                .Build();
+            
+            // Get HostInfo via HTTP
+            var hostInfo = await Extensions.GetHostInfo(IPAddress.Loopback, port);
             Assert.That(hostInfo.oscPort, Is.EqualTo(oscPort));
 
             service.Dispose();
         }
-
+        
         [Test]
-        public async Task Service_WithAddedIntProperty_ReturnsValueForThatProperty()
+        public async Task OSCQueryServiceFluent_WithAddedIntProperty_ReturnsValueForThatProperty()
         {
-            var random = new Random();
-            int tcpPort = random.Next(9000,9999);
-            var service = new OSCQueryService("TestService", tcpPort);
+            int port = Extensions.GetAvailableTcpPort();
+
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
+
             int randomInt = new Random().Next();
             
             string name = Guid.NewGuid().ToString();
@@ -54,50 +71,57 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path, 
                 Attributes.AccessValues.ReadOnly,
-                randomInt.ToString()
+                new object[]{randomInt}
             );
-            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
+            var response = await new HttpClient().GetAsync($"http://localhost:{port}{path}");
 
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
-            Assert.That(responseObject[Attributes.VALUE]!.Value<int>(), Is.EqualTo(randomInt));
+            Assert.That(responseObject[Attributes.VALUE][0]!.Value<int>(), Is.EqualTo(randomInt));
             
             service.Dispose();
         }
         
         [Test]
-        public async Task Service_WithAddedBoolProperty_ReturnsValueForThatProperty()
+        public async Task OSCQueryServiceFluent_WithAddedBoolProperty_ReturnsValueForThatProperty()
         {
             var random = new Random();
-            int tcpPort = random.Next(9000,9999);
-            var service = new OSCQueryService("TestService", tcpPort);
-            
+            int port = Extensions.GetAvailableTcpPort();
+
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
+
             string name = Guid.NewGuid().ToString();
             string path = $"/{name}";
-            service.AddEndpoint<bool>(
+            service.AddEndpoint<int>(
                 path, 
                 Attributes.AccessValues.ReadOnly,
-                false.ToString()
+                new object[]{false}
             );
             service.SetValue(path, "true");
             
-            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}{path}");
+            var response = await new HttpClient().GetAsync($"http://localhost:{port}{path}");
+
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
-            Assert.That(responseObject[Attributes.VALUE]!.Value<bool>(), Is.EqualTo(true));
+            Assert.That(responseObject[Attributes.VALUE][0]!.Value<bool>(), Is.EqualTo(true));
             
             service.Dispose();
         }
-
+        
         [Test]
-        public async Task Service_WithMultiplePaths_ReturnsValuesForAllChildren()
+        public async Task OSCQueryServiceFluent_WithMultiplePaths_ReturnsValuesForAllChildren()
         {
             var r = new Random();
-            int tcpPort = Extensions.GetAvailableTcpPort();
-            var udpPort = Extensions.GetAvailableUdpPort();
-            var service = new OSCQueryService("TestService", tcpPort, udpPort);
+            int port = Extensions.GetAvailableTcpPort();
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
             
             int randomInt1 = r.Next();
             int randomInt2 = r.Next();
@@ -111,35 +135,37 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path1, 
                 Attributes.AccessValues.ReadOnly, 
-                randomInt1.ToString()
+                 new object[]{randomInt1}
             );
 
             service.AddEndpoint<int>(
                 path2, 
                 Attributes.AccessValues.ReadOnly,
-                randomInt2.ToString()
+                new object[]{randomInt2}
             );
             
-            var response = await new HttpClient().GetAsync($"http://localhost:{tcpPort}/");
+            var response = await new HttpClient().GetAsync($"http://localhost:{port}/");
 
             Assert.True(response.IsSuccessStatusCode);
             
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JsonConvert.DeserializeObject<OSCQueryNode>(responseString);
             
-            Assert.That(int.Parse(responseObject.Contents[name1].Value), Is.EqualTo(randomInt1));
-            Assert.That(int.Parse(responseObject.Contents[name2].Value), Is.EqualTo(randomInt2));
+            Assert.That(responseObject.Contents[name1].Value[0], Is.EqualTo(randomInt1));
+            Assert.That(responseObject.Contents[name2].Value[0], Is.EqualTo(randomInt2));
             
             service.Dispose();
         }
         
         [Test]
-        public void GetOSCTree_ReturnsExpectedValues()
+        public void OSCQueryServiceFluent_GetOSCTree_ReturnsExpectedValues()
         {
             var r = new Random();
             int tcpPort = Extensions.GetAvailableTcpPort();
-            var udpPort = Extensions.GetAvailableUdpPort();
-            var service = new OSCQueryService("TestService", tcpPort, udpPort);
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(tcpPort)
+                .StartHttpServer()
+                .Build();
             
             int randomInt1 = r.Next();
             int randomInt2 = r.Next();
@@ -153,13 +179,13 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path1, 
                 Attributes.AccessValues.ReadOnly, 
-                randomInt1.ToString()
+                new object[]{randomInt1}
             );
 
             service.AddEndpoint<int>(
                 path2, 
                 Attributes.AccessValues.ReadOnly,
-                randomInt2.ToString()
+                new object[]{randomInt2}
             );
 
             var tree = Task.Run(() => Extensions.GetOSCTree(IPAddress.Loopback, tcpPort)).GetAwaiter().GetResult();
@@ -169,20 +195,23 @@ namespace VRC.OSCQuery.Tests
             var node2 = tree.GetNodeWithPath(path2);
             
             Assert.That(node1.Name, Is.EqualTo(name1));
-            Assert.That(node1.Value, Is.EqualTo(randomInt1.ToString()));
+            Assert.That(node1.Value[0], Is.EqualTo(randomInt1));
             
             Assert.That(node2.Name, Is.EqualTo(name2));
-            Assert.That(node2.Value, Is.EqualTo(randomInt2.ToString()));
+            Assert.That(node2.Value[0], Is.EqualTo(randomInt2));
             
             service.Dispose();
         }
-
+        
         [Test]
-        public async Task Service_AfterAddingGrandChildNode_HasNodesForEachAncestor()
+        public async Task OSCQueryServiceFluent_AfterAddingGrandChildNode_HasNodesForEachAncestor()
         {
 
             var port = Extensions.GetAvailableTcpPort();
-            var service = new OSCQueryService(Guid.NewGuid().ToString(), port);
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
 
             string fullPath = "/foo/bar/baz";
 
@@ -196,25 +225,29 @@ namespace VRC.OSCQuery.Tests
             var result = JsonConvert.DeserializeObject<OSCQueryNode>(responseString);
             
             Assert.NotNull(result.Contents["foo"].Contents["bar"].Contents["baz"]);
-            
-            Assert.Pass();
         }
-
+        
         [Test]
-        public async Task Service_WithRequestForFavicon_ReturnsSuccess()
+        public async Task OSCQueryServiceFluent_WithRequestForFavicon_ReturnsSuccess()
         {
             var port = Extensions.GetAvailableTcpPort();
-            var service = new OSCQueryService("TestService", port);
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
             
             var response = await new HttpClient().GetAsync($"http://localhost:{port}/favicon.ico");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
         
         [Test]
-        public async Task Service_After404_CanReturnParameterValue()
+        public async Task OSCQueryServiceFluent_After404_CanReturnParameterValue()
         {
             var port = Extensions.GetAvailableTcpPort();
-            var service = new OSCQueryService("TestService", port);
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
             
             var response = await new HttpClient().GetAsync($"http://localhost:{port}/whatever");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
@@ -226,7 +259,7 @@ namespace VRC.OSCQuery.Tests
             service.AddEndpoint<int>(
                 path, 
                 Attributes.AccessValues.ReadOnly,
-                value.ToString()
+                new object[]{value}
             );
 
             var tokenSource = new CancellationTokenSource();
@@ -235,31 +268,51 @@ namespace VRC.OSCQuery.Tests
             var responseString = await response.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(responseString);
             
-            Assert.That(responseObject[Attributes.VALUE]!.Value<int>(), Is.EqualTo(value));
+            Assert.That(responseObject[Attributes.VALUE][0]!.Value<int>(), Is.EqualTo(value));
             
             service.Dispose();
         }
-
+        
         [Test]
-        public void Service_GivenInvalidPathToAdd_ReturnsFalse()
+        public void OSCQueryServiceFluent_GivenInvalidPathToAdd_ReturnsFalse()
         {
             var port = Extensions.GetAvailableTcpPort();
-            var service = new OSCQueryService("TestService", port);
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
             var result = service.AddEndpoint<bool>("invalid", Attributes.AccessValues.ReadWrite);
             Assert.False(result);
         }
         
         [Test]
-        public void Service_RootNode_HasFullPathWithSlash()
+        public void OSCQueryServiceFluent_RootNode_HasFullPathWithSlash()
         {
             var port = Extensions.GetAvailableTcpPort();
-            var udpPort = Extensions.GetAvailableUdpPort();
-            var service = new OSCQueryService(Guid.NewGuid().ToString(), port, udpPort);
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
+            
             var tree = Task.Run(() => Extensions.GetOSCTree(IPAddress.Loopback, port)).GetAwaiter().GetResult();
             Assert.NotNull(tree);
-
-            var rootNode = tree.GetNodeWithPath("/");
-            Assert.That("/", Is.EqualTo(rootNode.FullPath));
+            string rootPath = "/";
+            var rootNode = tree.GetNodeWithPath(rootPath);
+            Assert.That(rootPath, Is.EqualTo(rootNode.FullPath));
+        }
+        
+        [Test]
+        public void OSCQueryServiceFluent_WithUdpPort_ReturnsSamePort()
+        {
+            var port = Extensions.GetAvailableTcpPort();
+            var oscPort = Extensions.GetAvailableUdpPort();
+            var service = new OSCQueryServiceBuilder()
+                .WithTcpPort(port)
+                .WithUdpPort(oscPort)
+                .StartHttpServer()
+                .Build();
+            
+            Assert.That(oscPort, Is.EqualTo(service.OscPort));
         }
 
     }

@@ -188,8 +188,16 @@ namespace VRC.OSCQuery
                 return;
             }
 
-            var stringResponse = matchedNode.ToString();
-                    
+            string stringResponse = "";
+            try
+            {
+                stringResponse = matchedNode.ToString();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Could not serialize node {matchedNode.Name}: {e.Message}");
+            }
+
             // Send Response
             context.Response.Headers.Add("pragma:no-cache");
                 
