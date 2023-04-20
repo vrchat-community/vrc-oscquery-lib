@@ -142,8 +142,8 @@ namespace VRC.OSCQuery
         [JsonProperty(Attributes.TYPE)]
         public string OscType;
 
-        [JsonProperty(Attributes.VALUE)] 
-        public string Value;
+        [JsonProperty(Attributes.VALUE)]
+        public object[] Value;
 
         [JsonIgnore] 
         public string ParentPath {
@@ -160,11 +160,19 @@ namespace VRC.OSCQuery
 
         public override string ToString()
         {
-            var result = JsonConvert.SerializeObject(this, new JsonSerializerSettings()
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            });
+            var result = JsonConvert.SerializeObject(this, WriteSettings);
             return result;
         }
+
+        public static void AddConverter(JsonConverter c)
+        {
+            WriteSettings.Converters.Add(c);
+        }
+
+        private static JsonSerializerSettings WriteSettings = new JsonSerializerSettings()
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+        };
+        
     }
 }

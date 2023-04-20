@@ -63,7 +63,7 @@ namespace VRC.OSCQuery.Examples.DataReceiver
                     var sb = new StringBuilder();
                     foreach (var pair in result.Contents)
                     {
-                        sb.AppendLine($"{pair.Key}: {pair.Value.Value}");
+                        sb.AppendLine($"{pair.Key}: {pair.Value.Value[0].ToString()}");
                     }
 
                     _textView.Text = sb.ToString();

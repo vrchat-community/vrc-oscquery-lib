@@ -28,9 +28,9 @@ namespace VRC.OSCQuery
         {
             _customStartup = true;
             StartHttpServer();
+            WithDiscovery(new MeaModDiscovery());
             AdvertiseOSCQuery();
             AdvertiseOSC();
-            WithDiscovery(new MeaModDiscovery());
             return this;
         }
         

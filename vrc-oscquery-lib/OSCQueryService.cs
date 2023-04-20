@@ -46,7 +46,7 @@ namespace VRC.OSCQuery
         #endregion
 
         private IPAddress _localIp;
-        private IPAddress LocalIp
+        public IPAddress LocalIp
         {
             get
             {
@@ -79,12 +79,26 @@ namespace VRC.OSCQuery
 
         private IDiscovery _discovery;
 
+        private IDiscovery Discovery
+        {
+            get
+            {
+                if (_discovery == null)
+                {
+                    Logger.LogWarning($"Creating default MeaModDiscovery");
+                    _discovery = new MeaModDiscovery(Logger);
+                }
+
+                return _discovery;
+            }
+        }
+
         #region Wrapped Calls for Discovery Service
 
         public event Action<OSCQueryServiceProfile> OnOscServiceAdded;
         public event Action<OSCQueryServiceProfile> OnOscQueryServiceAdded;
-        public HashSet<OSCQueryServiceProfile> GetOSCQueryServices() => _discovery.GetOSCQueryServices();
-        public HashSet<OSCQueryServiceProfile> GetOSCServices() => _discovery.GetOSCServices();
+        public HashSet<OSCQueryServiceProfile> GetOSCQueryServices() => Discovery.GetOSCQueryServices();
+        public HashSet<OSCQueryServiceProfile> GetOSCServices() => Discovery.GetOSCServices();
 
         #endregion
 
@@ -135,22 +149,34 @@ namespace VRC.OSCQuery
         {
             // Get random available port if none was specified
             port = port < 0 ? Extensions.GetAvailableTcpPort() : port;
-            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, LocalIp, port, OSCQueryServiceProfile.ServiceType.OSCQuery));
+            Discovery.Advertise(new OSCQueryServiceProfile(serviceName, HostIP, port, OSCQueryServiceProfile.ServiceType.OSCQuery));
         }
 
         public void AdvertiseOSCService(string serviceName, int port = -1)
         {
             // Get random available port if none was specified
             port = port < 0 ? Extensions.GetAvailableUdpPort() : port;
-            _discovery.Advertise(new OSCQueryServiceProfile(serviceName, LocalIp, port, OSCQueryServiceProfile.ServiceType.OSC));
+            Discovery.Advertise(new OSCQueryServiceProfile(serviceName, HostIP, port, OSCQueryServiceProfile.ServiceType.OSC));
         }
 
         public void RefreshServices()
         {
-            _discovery.RefreshServices();
+            Discovery.RefreshServices();
         }
 
         public void SetValue(string address, string value)
+        {
+            var target = RootNode.GetNodeWithPath(address);
+            if (target == null)
+            {
+                // add this node
+                target = RootNode.AddNode(new OSCQueryNode(address));
+            }
+
+            target.Value = new[] { value };
+        }
+        
+        public void SetValue(string address, object[] value)
         {
             var target = RootNode.GetNodeWithPath(address);
             if (target == null)
@@ -170,7 +196,7 @@ namespace VRC.OSCQuery
         /// <param name="initialValue">Starting value for param in string form</param>
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
         /// <returns></returns>
-        public bool AddEndpoint(string path, string oscTypeString, Attributes.AccessValues accessValues, string initialValue = null,
+        public bool AddEndpoint(string path, string oscTypeString, Attributes.AccessValues accessValues, object[] initialValue = null,
             string description = "")
         {
             // Exit early if path does not start with slash
@@ -197,7 +223,7 @@ namespace VRC.OSCQuery
             return true;
         }
         
-        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, string initialValue = null, string description = "")
+        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, object[] initialValue = null, string description = "")
         {
             var typeExists = Attributes.OSCTypeFor(typeof(T), out string oscType);
 
