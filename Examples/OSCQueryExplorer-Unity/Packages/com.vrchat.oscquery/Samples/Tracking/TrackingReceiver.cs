@@ -1,25 +1,26 @@
-﻿using OscCore;
+﻿using System.Collections.Generic;
+using OscCore;
 using UnityEngine;
 using UnityEngine.UI;
 using VRC.OSCQuery.Samples.Shared;
 
 #pragma warning disable 4014
 
-namespace VRC.OSCQuery.Samples.Chatbox
+namespace VRC.OSCQuery.Samples.Tracking
 {
-    public class ChatboxReceiver : MonoBehaviour
+    public class TrackingReceiver : MonoBehaviour
     {
         // Scene Objects
         public Text HeaderText;
-        public Text DisplayField;
-        public Image TypingIndicator;
 
         // OSCQuery and OSC members
         private OSCQueryService _oscQuery;
         private OscServer _receiver;
         
-        private int _typing = -1;
-        private string _lastMessage;
+        List<Vector3> positions = new List<Vector3>();
+        List<Vector3> rotations = new List<Vector3>();
+
+        public List<Transform> trackers;
 
         void Start()
         {
@@ -34,7 +35,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
             // Construct unique server name
             var w = new Bogus.DataSets.Hacker();
             var w2 = new Bogus.DataSets.Lorem();
-            var serverName = $"Chatbox-{w2.Word().UpperCaseFirstChar()}-{w.Abbreviation()}";
+            var serverName = $"Tracking-{w2.Word().UpperCaseFirstChar()}-{w.Abbreviation()}";
 
             // Create OSC Server on available port
             var port = Extensions.GetAvailableTcpPort();
@@ -49,7 +50,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
 #else
             IDiscovery discovery = new MeaModDiscovery(logger);
 #endif
-
+            
             _oscQuery = new OSCQueryServiceBuilder()
                 .WithServiceName(serverName)
                 .WithHostIP(VRC.OSCQuery.Samples.Shared.Extensions.GetLocalIPAddress())
@@ -67,32 +68,43 @@ namespace VRC.OSCQuery.Samples.Chatbox
             // Show server name and chosen port
             HeaderText.text = $"{serverName} running at {_oscQuery.HostIP} tcp:{port} osc: {udpPort}";
 
-            _oscQuery.AddEndpoint<bool>(ChatboxSender.OSC_PATH_CHATBOX_TYPING, Attributes.AccessValues.WriteOnly, new object[]{false},
-                "Whether to show the typing indicator");
-            _receiver.TryAddMethod(ChatboxSender.OSC_PATH_CHATBOX_TYPING,
+            for (int i = 0; i < trackers.Count; i++)
+            {
+                positions.Add(Vector3.zero);
+                rotations.Add(Vector3.zero);
+                SetupTracker(i);
+            }
+        }
+        
+        private void SetupTracker(int index)
+        {
+            string trackerName = index == 0 ? "head" : index.ToString();
+            _oscQuery.AddEndpoint($"{TrackingCanvas.TRACKERS_ROOT}/{trackerName}/{TrackingCanvas.TRACKERS_POSITION}","fff", Attributes.AccessValues.WriteOnly);
+            _oscQuery.AddEndpoint($"{TrackingCanvas.TRACKERS_ROOT}/{trackerName}/{TrackingCanvas.TRACKERS_ROTATION}","fff", Attributes.AccessValues.WriteOnly);
+            
+            _receiver.TryAddMethod($"{TrackingCanvas.TRACKERS_ROOT}/{trackerName}/{TrackingCanvas.TRACKERS_POSITION}",
                 (message) =>
                 {
-                    _typing = message.ReadBooleanElement(0) ? 1 : 0;
+                    positions[index] = new Vector3(message.ReadFloatElement(0), message.ReadFloatElement(1), message.ReadFloatElement(2));
                 }
             );
             
-            _oscQuery.AddEndpoint(ChatboxSender.OSC_PATH_CHATBOX_INPUT, "sT", Attributes.AccessValues.WriteOnly);
-            _receiver.TryAddMethod(ChatboxSender.OSC_PATH_CHATBOX_INPUT,
-                values => _lastMessage = values.ReadStringElement(0));
+            _receiver.TryAddMethod($"{TrackingCanvas.TRACKERS_ROOT}/{trackerName}/{TrackingCanvas.TRACKERS_ROTATION}",
+                (message) =>
+                {
+                    rotations[index] = new Vector3(message.ReadFloatElement(0), message.ReadFloatElement(1), message.ReadFloatElement(2));
+                }
+            );
         }
-
+        
         private void Update()
         {
-            if (_lastMessage != null && _lastMessage.Length > 0)
+            for(int i = 0; i < trackers.Count; i++)
             {
-                DisplayField.text = _lastMessage;
-                _lastMessage = null;
-            }
-
-            if (_typing > -1)
-            {
-                TypingIndicator.enabled = _typing == 1;
-                _typing = -1;
+                if (trackers.Count > i)
+                {
+                    trackers[i].SetPositionAndRotation(positions[i], Quaternion.Euler(rotations[i]));
+                }
             }
         }
 

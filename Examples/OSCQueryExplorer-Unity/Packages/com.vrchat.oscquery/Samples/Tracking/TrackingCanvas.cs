@@ -26,9 +26,9 @@ namespace VRC.OSCQuery.Samples.Tracking
         private const int RefreshServicesInterval = 10;
 
         // Constant strings
-        private const string TRACKERS_ROOT = "/tracking/trackers";
-        private const string TRACKERS_POSITION = "position";
-        private const string TRACKERS_ROTATION = "rotation";
+        public const string TRACKERS_ROOT = "/tracking/trackers";
+        public const string TRACKERS_POSITION = "position";
+        public const string TRACKERS_ROTATION = "rotation";
 
         public float userHeight = 1.7f; // Default height, change for your real-world height in meters
         private float _avatarHeight = 1.89f; // Measured by hand for now, the world-space position of the top of the Avatar's head
@@ -38,7 +38,7 @@ namespace VRC.OSCQuery.Samples.Tracking
 
         void Start()
         {
-            // Starts an OSCQuery Server, listens for Chatbox Services
+            // Starts an OSCQuery Server, looks for Tracking Services
             StartService();
             
             // Connects to default local VRC client for direct testing
