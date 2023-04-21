@@ -93,14 +93,6 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
-    "com.vrchat.oscquery": {
-      "version": "file:com.vrchat.oscquery",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {
-        "com.unity.nuget.newtonsoft-json": "2.0.2"
-      }
-    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,
