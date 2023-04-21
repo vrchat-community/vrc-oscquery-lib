@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -10,7 +11,7 @@ using VRC.OSCQuery.Samples.Shared;
 
 namespace VRC.OSCQuery.Samples.Chatbox
 {
-    public class ChatboxCanvas : MonoBehaviour
+    public class ChatboxSender : MonoBehaviour
     {
         // Scene Objects
         public Text HeaderText;
@@ -24,16 +25,16 @@ namespace VRC.OSCQuery.Samples.Chatbox
         // List of receivers to send to
         private List<OscClientPlus> _receivers = new List<OscClientPlus>();
         private string _serverName = "ChatboxServer";
-        private const int RefreshServicesInterval = 10;
+        private const int RefreshServicesInterval = 5;
+        private const int TypingIndicatorTimeout = 2;
 
         // Constant strings
-        private const string OSC_PATH_CHATBOX = "/chatbox";
-        private const string OSC_PATH_CHATBOX_TYPING = "/chatbox/typing";
-        private const string OSC_PATH_CHATBOX_INPUT = "/chatbox/input";
+        public const string OSC_PATH_CHATBOX = "/chatbox";
+        public const string OSC_PATH_CHATBOX_TYPING = "/chatbox/typing";
+        public const string OSC_PATH_CHATBOX_INPUT = "/chatbox/input";
 
         void Start()
         {
-
             InputField.enabled = false;
             
             // Starts an OSCQuery Server with Bogus Name, listens for Chatbox Services
@@ -50,29 +51,41 @@ namespace VRC.OSCQuery.Samples.Chatbox
             {
                 AddChatboxReceiver(IPAddress.Loopback, 9000);
             }
-            
-            InvokeRepeating(nameof(RefreshServices), 1, RefreshServicesInterval);
         }
 
         private void RefreshServices()
         {
+            Debug.Log($"Calling RefreshServices");
             _oscQueryService.RefreshServices();
         }
 
         // Creates a new OSCClient for each new Chatbox-capable receiver found
         private async void OnOscQueryServiceFound(OSCQueryServiceProfile profile)
         {
+            Debug.Log($"Found profile {profile.name}");
+            if(_profiles.Contains(profile))
+                return;
+            
             await UniTask.SwitchToMainThread();
             
+            Debug.Log($"Checking for Chatbox compatibility in {profile.name}");
             if (await ServiceSupportsChatbox(profile))
             {
+                Debug.Log($"{profile.name} compatible!");
                 var hostInfo = await OSCQuery.Extensions.GetHostInfo(profile.address, profile.port);
                 HeaderText.text =
                     $"Sending to {profile.name} at {profile.address}:{hostInfo.oscPort}";
                 AddChatboxReceiver(profile.address, hostInfo.oscPort);
+                _profiles.Add(profile);
+            }
+            else
+            {
+                Debug.Log($"{profile.name} NOT compatible!");
             }
         }
 
+        List<OSCQueryServiceProfile> _profiles = new List<OSCQueryServiceProfile>();
+        
         // Does the actual construction of the OSC Client, and advertises this service
         private void AddChatboxReceiver(IPAddress address, int port)
         {
@@ -98,6 +111,17 @@ namespace VRC.OSCQuery.Samples.Chatbox
             {
                 receiver.Send(OSC_PATH_CHATBOX_TYPING, true);
             }
+            
+            CancelInvoke(nameof(ClearTypingIndicator));
+            Invoke(nameof(ClearTypingIndicator), TypingIndicatorTimeout);
+        }
+
+        public void ClearTypingIndicator()
+        {
+            foreach (var receiver in _receivers)
+            {
+                receiver.Send(OSC_PATH_CHATBOX_TYPING, false);
+            }
         }
 
 
@@ -106,8 +130,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
         {
             foreach (var receiver in _receivers)
             {
-                string address = OSC_PATH_CHATBOX_INPUT;
-                receiver.Send(address, value, true);
+                receiver.Send(OSC_PATH_CHATBOX_INPUT, value, true);
             }
 
             InputField.text = "";
@@ -115,13 +138,22 @@ namespace VRC.OSCQuery.Samples.Chatbox
 
         private void StartService()
         {
-            // Create a new OSCQueryService, advertise
+            var logger = new UnityMSLogger();
+            
+#if UNITY_ANDROID
+            IDiscovery discovery = new AndroidDiscovery();
+#else
+            IDiscovery discovery = new MeaModDiscovery(logger);
+#endif
+            
+            // Create a new OSCQueryService for the discovery
             _oscQueryService = new OSCQueryServiceBuilder()
-                .WithServiceName(_serverName)
-                .WithTcpPort(VRC.OSCQuery.Extensions.GetAvailableTcpPort())
-                .WithLogger(new UnityMSLogger())
-                .WithDiscovery(new MeaModDiscovery())
-                .Build();
+                .WithDefaults().Build();
+            
+            // // Create a new OSCQueryService, advertise
+            // var port = OSCQuery.Extensions.GetAvailableTcpPort();
+            // _oscQueryService = new OSCQueryService(_serverName);
+            // _oscQueryService.StartOSCQueryService(_serverName, port);
             
             // Listen for other services
             _oscQueryService.OnOscQueryServiceAdded += OnOscQueryServiceFound;
@@ -135,7 +167,9 @@ namespace VRC.OSCQuery.Samples.Chatbox
             }
             
             // Query network for services
-            _oscQueryService.RefreshServices();
+            
+            InvokeRepeating(nameof(RefreshServices), 1, RefreshServicesInterval);
+            
         }
 
         private void OnDestroy()
@@ -144,7 +178,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
             InputField.onValueChanged.RemoveAllListeners();
             InputField.onEndEdit.RemoveAllListeners();
             
-            _oscQueryService.Dispose();
+            _oscQueryService?.Dispose();
         }
     }
 
