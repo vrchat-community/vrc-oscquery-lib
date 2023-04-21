@@ -22,7 +22,6 @@ namespace VRC.OSCQuery.Samples.Tracking
         private OSCQueryService _oscQueryService;
         // List of receivers to send to
         private List<OscClientPlus> _receivers = new List<OscClientPlus>();
-        private string _serverName = "TrackingServer";
         private const int RefreshServicesInterval = 10;
 
         // Constant strings

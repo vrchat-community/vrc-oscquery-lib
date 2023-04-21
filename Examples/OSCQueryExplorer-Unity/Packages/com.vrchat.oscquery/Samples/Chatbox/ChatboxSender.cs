@@ -54,7 +54,6 @@ namespace VRC.OSCQuery.Samples.Chatbox
 
         private void RefreshServices()
         {
-            Debug.Log($"Calling RefreshServices");
             _oscQueryService.RefreshServices();
         }
 
