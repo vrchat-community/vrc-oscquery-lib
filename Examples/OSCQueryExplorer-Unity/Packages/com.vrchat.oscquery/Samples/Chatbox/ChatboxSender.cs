@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -91,8 +90,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
         {
             var receiver = new OscClientPlus(address.ToString(), port);
             _receivers.Add(receiver);
-            _oscQueryService.AdvertiseOSCService(_serverName, port);
-            
+
             // Enable inputfield to communicate with client
             InputField.enabled = true;
         }
@@ -148,13 +146,11 @@ namespace VRC.OSCQuery.Samples.Chatbox
             
             // Create a new OSCQueryService for the discovery
             _oscQueryService = new OSCQueryServiceBuilder()
-                .WithDefaults().Build();
-            
-            // // Create a new OSCQueryService, advertise
-            // var port = OSCQuery.Extensions.GetAvailableTcpPort();
-            // _oscQueryService = new OSCQueryService(_serverName);
-            // _oscQueryService.StartOSCQueryService(_serverName, port);
-            
+                .WithServiceName(_serverName)
+                .WithLogger(logger)
+                .WithDiscovery(discovery)
+                .Build();
+
             // Listen for other services
             _oscQueryService.OnOscQueryServiceAdded += OnOscQueryServiceFound;
 
@@ -167,9 +163,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
             }
             
             // Query network for services
-            
             InvokeRepeating(nameof(RefreshServices), 1, RefreshServicesInterval);
-            
         }
 
         private void OnDestroy()

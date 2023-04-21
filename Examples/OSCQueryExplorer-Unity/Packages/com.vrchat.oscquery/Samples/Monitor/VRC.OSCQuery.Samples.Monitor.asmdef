@@ -1,5 +1,5 @@
 {
-    "name": "VRC.OSCQuery.Samples.Receiver",
+    "name": "VRC.OSCQuery.Samples.Monitor",
     "references": [
         "OscCore.Runtime",
         "BlobHandles.Runtime",

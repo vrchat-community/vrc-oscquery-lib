@@ -10,7 +10,7 @@ using VRC.OSCQuery.Samples.Shared;
 
 namespace VRC.OSCQuery.Samples.Tracking
 {
-    public class TrackingCanvas : MonoBehaviour
+    public class TrackingSender : MonoBehaviour
     {
         // Scene Objects
         public Text HeaderText;
@@ -68,10 +68,6 @@ namespace VRC.OSCQuery.Samples.Tracking
                     $"Sending to {profile.name} at {profile.address}:{hostInfo.oscPort}";
                 AddTrackingReceiver(profile.address, hostInfo.oscPort);
             }
-            else
-            {
-                Debug.Log($"Could not find required endpoint on {profile.name}");
-            }
         }
         
         // Does the actual construction of the OSC Client, and advertises this service
@@ -79,7 +75,6 @@ namespace VRC.OSCQuery.Samples.Tracking
         {
             var receiver = new OscClientPlus(address.ToString(), port);
             _receivers.Add(receiver);
-            _oscQueryService.AdvertiseOSCService(_serverName, port);
         }
         
         // Checks for compatibility by looking for matching Chatbox root node
@@ -91,10 +86,17 @@ namespace VRC.OSCQuery.Samples.Tracking
         
         private void StartService()
         {
-            // Create a new OSCQueryService, advertise
-            var port = VRC.OSCQuery.Extensions.GetAvailableTcpPort();
-            _oscQueryService = new OSCQueryService(_serverName,  port, 0, new UnityMSLogger());
-            Debug.Log($"Starting OSCQueryService {_serverName} on {port}");
+            var logger = new UnityMSLogger();
+            
+#if UNITY_ANDROID
+            IDiscovery discovery = new AndroidDiscovery();
+#else
+            IDiscovery discovery = new MeaModDiscovery(logger);
+#endif
+            
+            // Create a new OSCQueryService for the discovery
+            _oscQueryService = new OSCQueryServiceBuilder()
+                .WithDefaults().Build();
             
             // Listen for other services
             _oscQueryService.OnOscQueryServiceAdded += OnOscQueryServiceFound;

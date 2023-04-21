@@ -79,17 +79,17 @@ namespace VRC.OSCQuery.Samples.Tracking
         private void SetupTracker(int index)
         {
             string trackerName = index == 0 ? "head" : index.ToString();
-            _oscQuery.AddEndpoint($"{TrackingCanvas.TRACKERS_ROOT}/{trackerName}/{TrackingCanvas.TRACKERS_POSITION}","fff", Attributes.AccessValues.WriteOnly);
-            _oscQuery.AddEndpoint($"{TrackingCanvas.TRACKERS_ROOT}/{trackerName}/{TrackingCanvas.TRACKERS_ROTATION}","fff", Attributes.AccessValues.WriteOnly);
+            _oscQuery.AddEndpoint($"{TrackingSender.TRACKERS_ROOT}/{trackerName}/{TrackingSender.TRACKERS_POSITION}","fff", Attributes.AccessValues.WriteOnly);
+            _oscQuery.AddEndpoint($"{TrackingSender.TRACKERS_ROOT}/{trackerName}/{TrackingSender.TRACKERS_ROTATION}","fff", Attributes.AccessValues.WriteOnly);
             
-            _receiver.TryAddMethod($"{TrackingCanvas.TRACKERS_ROOT}/{trackerName}/{TrackingCanvas.TRACKERS_POSITION}",
+            _receiver.TryAddMethod($"{TrackingSender.TRACKERS_ROOT}/{trackerName}/{TrackingSender.TRACKERS_POSITION}",
                 (message) =>
                 {
                     positions[index] = new Vector3(message.ReadFloatElement(0), message.ReadFloatElement(1), message.ReadFloatElement(2));
                 }
             );
             
-            _receiver.TryAddMethod($"{TrackingCanvas.TRACKERS_ROOT}/{trackerName}/{TrackingCanvas.TRACKERS_ROTATION}",
+            _receiver.TryAddMethod($"{TrackingSender.TRACKERS_ROOT}/{trackerName}/{TrackingSender.TRACKERS_ROTATION}",
                 (message) =>
                 {
                     rotations[index] = new Vector3(message.ReadFloatElement(0), message.ReadFloatElement(1), message.ReadFloatElement(2));

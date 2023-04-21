@@ -57,25 +57,30 @@ You can find a Unity Project in `Exampless/OSCQueryExplorer-Unity` - you can ope
 
 Latest Release: [OSCQueryExplorer-Unity 0.0.4 for Windows](https://github.com/vrchat-community/vrc-oscquery-lib/releases/download/0.0.4/OSCQueryExplorer-Unity-Win.zip)
 
-This app has two scenes: [VRC-Chatbox](#vrc-chatbox) and [OSCQueryReceiver](#oscqueryreceiver). 
+This app has five active scenes, and a "SceneChanger" to switch between them:
+* [Chatbox-Sender](#chatbox-sender)
+* [Chatbox-Receiver](#chatbox-receiver)
+* [Tracking-Sender](#tracking-sender)
+* [Tracking-Receiver](#tracking-receiver)
+* [Monitor](#monitor) 
 
-#### VRC-Chatbox
+#### Chatbox-Sender
 
-This scene demonstrates how to find an OSC receiver compatible with your data and send it. It is similar to how VRChat implements its find-and-send logic. All of the code is in a single MonoBehaviour - [ChatboxCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Chatbox/ChatboxCanvas.cs).
+This scene demonstrates how to find an OSC receiver compatible with your data and send it. It is similar to how VRChat implements its find-and-send logic. All of the code is in a single MonoBehaviour - [ChatboxSender.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Chatbox/ChatboxSender.cs).
 
 https://user-images.githubusercontent.com/737888/196586397-31c4d862-f119-4dce-97a2-375b212f27ca.mp4
 
-#### OSCQueryReceiver
+#### Chatbox-Receiver
 
-This scene advertises itself as a receiver of OSC data, which VRChat will find and connect to. All of the code is in a single MonoBehaviour - [ReceiverCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Receiver/ReceiverCanvas.cs)
+This scene implements receving ChatBox messages in the same way that VRChat does for easy testing.
 
-https://user-images.githubusercontent.com/737888/196583859-6616b260-87c7-43a9-b6cc-26cfc110fbfe.mov
-
-### OSC-Trackers
+### Tracking-Sender
 
 This scene uses the same logic to find an OSC receiver compatible with Tracking data and send it.
 
 https://user-images.githubusercontent.com/737888/198946626-033c8192-9b55-4b37-ac33-115e9dcd0ceb.mp4
+
+You can test it using a second window or device, which is running the [Tracking-Receiver](#tracking-receiver) scene.
 
 To use it with VRChat:
 1. Start VRChat in VR mode.
@@ -92,11 +97,31 @@ Known Issues:
 
 Read more: [OSC Trackers for VRChat](osc-trackers.md).
 
+### Tracking-Receiver
+
+This scene implements receving Tracking messages in the same way that VRChat does for easy testing.
+
+#### Monitor
+
+This scene advertises itself as a receiver of OSC data, which VRChat will find and connect to. All of the code is in a single MonoBehaviour - [MonitorCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Monitor/MonitorCanvas.cs)
+
+https://user-images.githubusercontent.com/737888/196583859-6616b260-87c7-43a9-b6cc-26cfc110fbfe.mov
+
 ### Console Apps
-The solution includes two simple examples to demonstrate and test functionality. They are both .NET 6 Console apps and should work on Windows, Mac and Linux, but have only been tested on Windows 10 so far.
+The solution includes three simple examples to demonstrate and test functionality. They are both .NET 6 Console apps and should work on Windows, Mac and Linux, but have only been tested on Windows 10 so far.
 
 https://user-images.githubusercontent.com/737888/186757165-e47f766f-3bc2-46b2-8580-8fd99c6ce6b9.mp4
 
+<details>
+<summary>
+
+#### LogAdvertisers
+
+</summary>
+
+This program simply listens for OSCQuery and OSC Service advertisements on the local network and prints them to the console. For OSCQuery services, it will also print the node tree of the service.
+
+</details>
 
 <details>
 <summary>

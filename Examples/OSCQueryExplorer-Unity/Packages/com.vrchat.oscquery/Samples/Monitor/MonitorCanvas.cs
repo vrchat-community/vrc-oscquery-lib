@@ -11,7 +11,7 @@ using VRC.OSCQuery.Samples.Shared;
 
 namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
 {
-    public class ReceiverCanvas : MonoBehaviour
+    public class MonitorCanvas : MonoBehaviour
     {
         // Scnene references
         public Text HeaderText;
@@ -50,8 +50,7 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             _receiver.AddMonitorCallback(OnMessageReceived);
 
             var logger = new UnityMSLogger();
-            
-            
+
             #if UNITY_ANDROID
             IDiscovery discovery = new AndroidDiscovery();
             #else
