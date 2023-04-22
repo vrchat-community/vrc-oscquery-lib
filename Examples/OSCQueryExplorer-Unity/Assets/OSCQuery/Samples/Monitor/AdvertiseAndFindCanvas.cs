@@ -72,6 +72,7 @@ namespace VRC.OSCQuery.Examples.Monitor
             _oscQuery.RefreshServices();
 
             _oscQuery.OnOscQueryServiceAdded += LogDiscoveredService;
+            _oscQuery.OnOscServiceAdded += LogDiscoveredService;
 
             // Show server name and chosen port
             HeaderText.text = $"{serverName} running at tcp:{port} osc: {udpPort}";

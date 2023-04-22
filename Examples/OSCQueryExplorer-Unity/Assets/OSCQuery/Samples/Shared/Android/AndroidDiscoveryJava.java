@@ -17,7 +17,6 @@ public class AndroidDiscoveryJava {
     private Hashtable<NsdServiceInfo, NsdManager.RegistrationListener> registrationListeners;
     
     // Advertising
-//     private RegistrationListener registrationListener;
     private String serviceName;
 
     public AndroidPluginCallback Callback;
@@ -51,7 +50,7 @@ public class AndroidDiscoveryJava {
         
         if(!startedDiscovery){
             startedDiscovery = true;
-            initializeDiscoveryListener();
+            initializeDiscoveryListeners();
         }
     }
     
@@ -91,32 +90,34 @@ public class AndroidDiscoveryJava {
     }
     
     // Discovery
-    private DiscoveryListener discoveryListener;
+    private DiscoveryListener discoveryListenerOSCQuery;
+    private DiscoveryListener discoveryListenerOSC;
     private String SERVICE_TYPE_OSCJSON = "_oscjson._tcp."; // Note: had to add dot at end
     private String SERVICE_TYPE_OSC = "_osc._udp."; // Note: had to add dot at end
     private String TAG = "Unity OSCQuery";
     
-    public void initializeDiscoveryListener() {
+    public void initializeDiscoveryListeners() {
     
         NsdManager.ResolveListener resolveListener = initializeResolveListener();
+        NsdManager.ResolveListener resolveListenerOSC = initializeResolveListener();
         
-        // Instantiate a new DiscoveryListener
-        discoveryListener = new NsdManager.DiscoveryListener() {
+        // Instantiate a new DiscoveryListener for SERVICE_TYPE_OSCJSON
+        discoveryListenerOSCQuery = new NsdManager.DiscoveryListener() {
     
             // Called as soon as service discovery begins.
             @Override
             public void onDiscoveryStarted(String regType) {
-                Log.d(TAG, "Service discovery started");
+                Log.d(TAG, "OSCQuery Service discovery started");
             }
     
             @Override
             public void onServiceFound(NsdServiceInfo service) {
                 // A service was found! Do something with it.
-                Log.d(TAG, "Service discovery success " + service.toString());
+                Log.d(TAG, "OSCQuery Service discovery success " + service.toString());
                 
                 String discoveredName = service.getServiceName();
                 if(discoveredName.equals(serviceName)){
-                    Log.d(TAG, "Service is Self, Skipping.");
+                    Log.d(TAG, "OSCQuery Service is Self, Skipping.");
                     return;
                 }
                 
@@ -127,11 +128,6 @@ public class AndroidDiscoveryJava {
                     Log.d(TAG, "Found OSCQuery Service: " + discoveredName);
                     nsdManager.resolveService(service, resolveListener);
                 }
-//                 else if (serviceType.equals(SERVICE_TYPE_OSC)) {
-//                     // found OSC Service
-//                     Log.d(TAG, "Found OSC Service: " + discoveredName);
-//                     nsdManager.resolveService(service, resolveListener);
-//                 }
                 else {
                     // not a recognized service
                     Log.d(TAG, "Unknown Service Type: " + serviceType);
@@ -147,26 +143,85 @@ public class AndroidDiscoveryJava {
     
             @Override
             public void onDiscoveryStopped(String serviceType) {
-                Log.i(TAG, "Discovery stopped: " + serviceType);
+                Log.i(TAG, "OSCQuery Discovery stopped: " + serviceType);
             }
     
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+                Log.e(TAG, "OSCQuery Discovery failed: Error code:" + errorCode);
                 nsdManager.stopServiceDiscovery(this);
             }
     
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-                Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+                Log.e(TAG, "OSCQuery Discovery failed: Error code:" + errorCode);
+                nsdManager.stopServiceDiscovery(this);
+            }
+        };
+
+        // Instantiate a new DiscoveryListener for SERVICE_TYPE_OSC
+        discoveryListenerOSC = new NsdManager.DiscoveryListener() {
+
+            // Called as soon as service discovery begins.
+            @Override
+            public void onDiscoveryStarted(String regType) {
+                Log.d(TAG, "OSC Service discovery started");
+            }
+
+            @Override
+            public void onServiceFound(NsdServiceInfo service) {
+                // A service was found! Do something with it.
+                Log.d(TAG, "OSC Service discovery success " + service.toString());
+
+                String discoveredName = service.getServiceName();
+                if(discoveredName.equals(serviceName)){
+                    Log.d(TAG, "OSC Service is Self, Skipping.");
+                    return;
+                }
+
+                String serviceType = service.getServiceType();
+
+                if (serviceType.equals(SERVICE_TYPE_OSC)) {
+                    // found OSC Service
+                    Log.d(TAG, "Found OSC Service: " + discoveredName);
+                    nsdManager.resolveService(service, resolveListenerOSC);
+                }
+                else {
+                    // not a recognized service
+                    Log.d(TAG, "Unknown Service Type: " + serviceType);
+                }
+            }
+
+            @Override
+            public void onServiceLost(NsdServiceInfo service) {
+                // When the network service is no longer available.
+                // Internal bookkeeping code goes here.
+                Log.e(TAG, "service lost: " + service);
+            }
+
+            @Override
+            public void onDiscoveryStopped(String serviceType) {
+                Log.i(TAG, "OSC Discovery stopped: " + serviceType);
+            }
+
+            @Override
+            public void onStartDiscoveryFailed(String serviceType, int errorCode) {
+                Log.e(TAG, "OSC Discovery failed: Error code:" + errorCode);
+                nsdManager.stopServiceDiscovery(this);
+            }
+
+            @Override
+            public void onStopDiscoveryFailed(String serviceType, int errorCode) {
+                Log.e(TAG, "OSC Discovery failed: Error code:" + errorCode);
                 nsdManager.stopServiceDiscovery(this);
             }
         };
         
         nsdManager.discoverServices(
-                SERVICE_TYPE_OSCJSON, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
-//         nsdManager.discoverServices(
-//                 SERVICE_TYPE_OSC, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+                SERVICE_TYPE_OSCJSON, NsdManager.PROTOCOL_DNS_SD, discoveryListenerOSCQuery);
+                
+        nsdManager.discoverServices(
+                SERVICE_TYPE_OSC, NsdManager.PROTOCOL_DNS_SD, discoveryListenerOSC);
     }
 
     public NsdManager.ResolveListener initializeResolveListener(){
@@ -226,7 +281,7 @@ public class AndroidDiscoveryJava {
     // NsdHelper's tearDown method
     public void tearDown() {
         nsdManager.unregisterService(registrationListener);
-        nsdManager.stopServiceDiscovery(discoveryListener);
+        nsdManager.stopServiceDiscovery(discoveryListenerOSCQuery);
     }
 */
 }
