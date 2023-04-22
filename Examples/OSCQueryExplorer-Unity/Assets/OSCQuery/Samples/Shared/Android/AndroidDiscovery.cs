@@ -110,6 +110,8 @@ namespace VRC.OSCQuery.Samples.Shared
             "android.permission.READ_EXTERNAL_STORAGE",
             "android.permission.WRITE_EXTERNAL_STORAGE",
             "android.permission.MANAGE_EXTERNAL_STORAGE",
+            "android.permission.ACCESS_SYSFS",
+
         };
 
         #endregion

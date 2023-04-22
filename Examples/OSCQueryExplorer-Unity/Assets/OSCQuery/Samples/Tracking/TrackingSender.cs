@@ -69,7 +69,7 @@ namespace VRC.OSCQuery.Samples.Tracking
             }
         }
         
-        // Does the actual construction of the OSC Client, and advertises this service
+        // Does the actual construction of the OSC Client
         private void AddTrackingReceiver(IPAddress address, int port)
         {
             var receiver = new OscClientPlus(address.ToString(), port);
@@ -85,6 +85,11 @@ namespace VRC.OSCQuery.Samples.Tracking
         
         private void StartService()
         {
+            // Construct unique server name
+            var w = new Bogus.DataSets.Hacker();
+            var w2 = new Bogus.DataSets.Lorem();
+            var serverName = $"TrackingSender-{w2.Word().UpperCaseFirstChar()}-{w.Abbreviation()}";
+
             var logger = new UnityMSLogger();
             
 #if UNITY_ANDROID
@@ -95,7 +100,13 @@ namespace VRC.OSCQuery.Samples.Tracking
             
             // Create a new OSCQueryService for the discovery
             _oscQueryService = new OSCQueryServiceBuilder()
-                .WithDefaults().Build();
+                .WithServiceName(serverName)
+                .WithHostIP(Samples.Shared.Extensions.GetLocalIPAddress())
+                .WithLogger(logger)
+                .WithDiscovery(discovery)
+                .StartHttpServer()
+                .AdvertiseOSCQuery()
+                .Build();
             
             // Listen for other services
             _oscQueryService.OnOscQueryServiceAdded += OnOscQueryServiceFound;

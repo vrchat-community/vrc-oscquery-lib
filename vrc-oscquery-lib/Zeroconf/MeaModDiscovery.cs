@@ -106,7 +106,7 @@ namespace VRC.OSCQuery
                     }
                     catch (Exception)
                     {
-                        Logger.LogInformation($"No good SRV Record found in {response.Id}");
+                        Logger.LogInformation($"no SRV Records found in not parse answer from {eventArgs.RemoteEndPoint}");
                     }
                 }
             }

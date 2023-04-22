@@ -53,7 +53,7 @@ namespace VRC.OSCQuery.Samples.Tracking
             
             _oscQuery = new OSCQueryServiceBuilder()
                 .WithServiceName(serverName)
-                .WithHostIP(VRC.OSCQuery.Samples.Shared.Extensions.GetLocalIPAddress())
+                .WithHostIP(Samples.Shared.Extensions.GetLocalIPAddress())
                 .WithTcpPort(port)
                 .WithUdpPort(udpPort)
                 .WithLogger(logger)
