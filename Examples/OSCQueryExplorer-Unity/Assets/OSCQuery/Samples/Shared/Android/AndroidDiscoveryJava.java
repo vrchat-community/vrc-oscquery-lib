@@ -145,8 +145,27 @@ public class AndroidDiscoveryJava {
 
     }
 
-    public void unregisterService(){
+    // Pause discovery process and unregister services
+    public void pause() {
+        for (NsdServiceInfo serviceInfo : registrationListeners.keySet()) {
+            nsdManager.unregisterService(registrationListeners.get(serviceInfo));
+        }
+        nsdManager.stopServiceDiscovery(createDiscoveryListener(SERVICE_TYPE_OSCJSON));
+        nsdManager.stopServiceDiscovery(createDiscoveryListener(SERVICE_TYPE_OSC));
+    }
 
+    // Resume discovery process and register services
+    public void resume(int localPort) {
+        for (NsdServiceInfo serviceInfo : registrationListeners.keySet()) {
+            registerService(serviceInfo.getServiceName(), serviceInfo.getServiceType(), localPort);
+        }
+        discoverServices();
+    }
+
+    // Tear down the helper, stopping discovery and unregistering services
+    public void tearDown() {
+        pause();
+        registrationListeners.clear();
     }
 
 }

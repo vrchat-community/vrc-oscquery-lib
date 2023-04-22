@@ -193,7 +193,7 @@ namespace VRC.OSCQuery.Samples.Shared
 
         public void Dispose()
         {
-            discoveryJava.Call("unregisterService");
+            discoveryJava.Call("tearDown");
             multicastLock?.Call("release");
             if (javaBridge != null)
             {            
