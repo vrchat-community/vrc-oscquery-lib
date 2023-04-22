@@ -57,12 +57,13 @@ You can find a Unity Project in `Exampless/OSCQueryExplorer-Unity` - you can ope
 
 Latest Release: [OSCQueryExplorer-Unity 0.0.4 for Windows](https://github.com/vrchat-community/vrc-oscquery-lib/releases/download/0.0.4/OSCQueryExplorer-Unity-Win.zip)
 
-This app has five active scenes, and a "SceneChanger" to switch between them:
+This app has six active scenes, and a "SceneChanger" to switch between them:
 * [Chatbox-Sender](#chatbox-sender)
 * [Chatbox-Receiver](#chatbox-receiver)
-* [Tracking-Sender](#tracking-sender)
-* [Tracking-Receiver](#tracking-receiver)
+* [Tracker-Sender](#tracker-sender)
+* [Tracker-Receiver](#tracker-receiver)
 * [Monitor](#monitor) 
+* [Advertise-&-Find](#advertise--find)
 
 #### Chatbox-Sender
 
