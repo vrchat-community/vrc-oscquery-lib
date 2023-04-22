@@ -107,9 +107,6 @@ namespace VRC.OSCQuery.Samples.Shared
             "android.permission.CHANGE_WIFI_MULTICAST_STATE",
             "android.permission.ACCESS_NETWORK_STATE",
             "android.permission.ACCESS_WIFI_STATE",
-            "android.permission.READ_EXTERNAL_STORAGE",
-            "android.permission.WRITE_EXTERNAL_STORAGE",
-            "android.permission.MANAGE_EXTERNAL_STORAGE",
         };
 
         #endregion
