@@ -10,6 +10,7 @@ public class SceneChanger : MonoBehaviour
     public Button ButtonTrackerSender;
     public Button ButtonTrackerReceiver;
     public Button ButtonAdvertiseAndFind;
+    public Button ButtonHeadAndWristReceiver;
 
     private void Start()
     {
@@ -19,6 +20,7 @@ public class SceneChanger : MonoBehaviour
         ButtonTrackerReceiver.onClick.AddListener(()=>SceneManager.LoadScene(4));
         ButtonReceiver.onClick.AddListener(()=>SceneManager.LoadScene(5));
         ButtonAdvertiseAndFind.onClick.AddListener(()=>SceneManager.LoadScene(6));
+        ButtonHeadAndWristReceiver.onClick.AddListener(() => SceneManager.LoadScene(7));
     }
 
     private void OnDestroy()
@@ -29,5 +31,6 @@ public class SceneChanger : MonoBehaviour
         ButtonTrackerReceiver.onClick.RemoveAllListeners();
         ButtonReceiver.onClick.RemoveAllListeners();
         ButtonAdvertiseAndFind.onClick.RemoveAllListeners();
+        ButtonHeadAndWristReceiver.onClick.RemoveAllListeners();
     }
 }
