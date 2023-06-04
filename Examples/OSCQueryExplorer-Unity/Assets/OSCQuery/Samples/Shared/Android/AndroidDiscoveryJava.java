@@ -6,6 +6,7 @@ import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
 import java.util.Hashtable;
+import java.util.HashSet;
 
 public class AndroidDiscoveryJava {
     private final String TAG = "Unity OSCQuery";
@@ -15,6 +16,7 @@ public class AndroidDiscoveryJava {
     private Context context;
     private NsdManager nsdManager;
     private Hashtable<NsdServiceInfo, NsdManager.RegistrationListener> registrationListeners;
+    private HashSet<String> registeredServices;
 
     public AndroidPluginCallback Callback;
 
@@ -25,10 +27,12 @@ public class AndroidDiscoveryJava {
         this.Callback = callback;
         nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
         registrationListeners = new Hashtable<>();
+        registeredServices = new HashSet<>();
     }
 
     // Register a new OSC/OSCJSON service with a given name, type, and port
     public void registerService(String name, String type, int port) {
+       
         NsdServiceInfo serviceInfo = new NsdServiceInfo();
         serviceInfo.setServiceName(name);
         serviceInfo.setServiceType(type);
@@ -36,7 +40,7 @@ public class AndroidDiscoveryJava {
 
         NsdManager.RegistrationListener listener = initializeRegistrationListener();
         registrationListeners.put(serviceInfo, listener);
-        nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, listener);
+        nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, listener);        
 
         if(!startedDiscovery){
             startedDiscovery = true;
@@ -50,6 +54,7 @@ public class AndroidDiscoveryJava {
             @Override
             public void onServiceRegistered(NsdServiceInfo serviceInfo) {
                 Log.i(TAG, "Service registered: " + serviceInfo);
+                registeredServices.add(serviceInfo.getServiceName());
             }
 
             @Override
@@ -60,6 +65,9 @@ public class AndroidDiscoveryJava {
             @Override
             public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
                 Log.i(TAG, "Service unregistered: " + serviceInfo);
+                
+                // Search for the service in the hashmap and remove it
+                registeredServices.remove(serviceInfo.getServiceName());
             }
 
             @Override
@@ -103,7 +111,17 @@ public class AndroidDiscoveryJava {
             @Override
             public void onServiceFound(NsdServiceInfo service) {
                 Log.d(TAG, "Service found: " + service);
+
+                String serviceName = service.getServiceName();
+                // Search for the service in the hashmap, return early if found.
+                if (registeredServices.contains(serviceName)) {
+                    // This service is already registered
+                    Log.d(TAG, "Not resolving registered service " + serviceName);
+                    return;
+                }
+                
                 if (service.getServiceType().equals(serviceType)) {
+                    Log.d(TAG, "Trying to resolve service " + serviceName);
                     nsdManager.resolveService(service, initializeResolveListener());
                 }
             }

@@ -59,6 +59,7 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             
             _oscQuery = new OSCQueryServiceBuilder()
                 .WithServiceName(serverName)
+                .WithHostIP(Samples.Shared.Extensions.GetLocalIPAddress())
                 .WithTcpPort(port)
                 .WithUdpPort(udpPort)
                 .WithLogger(logger)
@@ -71,10 +72,12 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             _oscQuery.RefreshServices();
 
             _oscQuery.OnOscQueryServiceAdded += profile =>
-                HeaderText.text = $"found service {profile.name} at {profile.port} on {profile.address}";
+                HeaderText.text += $"\nfound service {profile.name} at {profile.port} on {profile.address}";
 
             // Show server name and chosen port
             HeaderText.text = $"{serverName} running at tcp:{port} osc: {udpPort}";
+
+            _oscQuery.AddEndpoint<string>("/avatar/change", Attributes.AccessValues.WriteOnly);
         }
 
         // Process incoming messages, add to message queue
