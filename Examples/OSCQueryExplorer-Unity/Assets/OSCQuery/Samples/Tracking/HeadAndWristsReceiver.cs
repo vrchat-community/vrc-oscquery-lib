@@ -3,6 +3,7 @@ using OscCore;
 using UnityEngine;
 using UnityEngine.UI;
 using VRC.OSCQuery.Samples.Shared;
+using MiniNtp;
 
 #pragma warning disable 4014
 
@@ -12,6 +13,7 @@ namespace VRC.OSCQuery.Samples.Tracking
     {
         // Scene Objects
         public Text HeaderText;
+        public Text TimestampText;
 
         // OSCQuery and OSC members
         private OSCQueryService _oscQuery;
@@ -85,6 +87,7 @@ namespace VRC.OSCQuery.Samples.Tracking
             _receiver.TryAddMethod("/tracking/vrsystem/head/pose",
                 (message) =>
                 {
+                    TimestampText.text = $"Timestamp: {_receiver.LastBundleTimestamp.ToDateTime().ToString("HH:mm:ss.fff")}";
                     incomingHeadPosition = new Vector3(message.ReadFloatElement(0), message.ReadFloatElement(1), message.ReadFloatElement(2));
                     incomingHeadRotation = new Vector3(message.ReadFloatElement(3), message.ReadFloatElement(4), message.ReadFloatElement(5));
                 }

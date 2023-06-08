@@ -7,11 +7,11 @@
       "dependencies": {}
     },
     "com.stella3d.osccore": {
-      "version": "https://github.com/vrchat/OscCore.git#feature/make-client-extendable",
+      "version": "https://github.com/vrchat/OscCore.git#bundle-compatibility-testing-extendable",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "089b6a3fbee8e64061a31a1005f6d7ae3375eac1"
+      "hash": "a2ab28cc890c5bb01051bb79597e194e805c5dfb"
     },
     "com.unity.ext.nunit": {
       "version": "1.0.6",
