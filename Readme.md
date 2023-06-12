@@ -62,6 +62,7 @@ This app has six active scenes, and a "SceneChanger" to switch between them:
 * [Chatbox-Receiver](#chatbox-receiver)
 * [Tracker-Sender](#tracker-sender)
 * [Tracker-Receiver](#tracker-receiver)
+* [Head-&-Wrist-Receiver](#head--wrist-receiver)
 * [Monitor](#monitor) 
 * [Advertise-&-Find](#advertise--find)
 
@@ -100,7 +101,13 @@ Read more: [OSC Trackers for VRChat](osc-trackers.md).
 
 ### Tracker-Receiver
 
-This scene implements receving Tracking messages in the same way that VRChat does for easy testing.
+This scene implements receiving Tracking messages in the same way that VRChat does for easy testing.
+
+### Head & Wrist Receiver
+
+This scene implements receiving VR system tracking data for the head and wrists that VRChat sends out to aid in things such as pose solving or drift correction in OSC Tracker apps. This scene also implements receiving the OSC bundle timestamp that is made available with the tracking data.
+
+![image](https://github.com/vrchat-community/vrc-oscquery-lib/assets/38249782/6ad25453-abc5-4c7c-bcad-f52e48c28c0c)
 
 ### Monitor
 
