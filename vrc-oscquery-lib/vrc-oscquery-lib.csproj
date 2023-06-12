@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <Target Name="CopyUnityDLL" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net462'">
-        <Copy SourceFiles="$(TargetDir)$(ProjectName).dll;" DestinationFolder="$(SolutionDir)/Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Runtime/Plugins" />
+        <Copy SourceFiles="$(TargetDir)$(ProjectName).dll;" DestinationFolder="$(SolutionDir)/Examples/OSCQueryExplorer-Unity/Assets/OSCQuery/Runtime/Plugins" />
         <Message Text="Copied vrc-oscquery-lib.dll to Unity" Importance="High" />
     </Target>
 

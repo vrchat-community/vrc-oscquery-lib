@@ -99,14 +99,14 @@ namespace VRC.OSCQuery
                 {
                     try
                     {
-                        var srvRecord = response.AdditionalRecords.OfType<SRVRecord>().First();
-                        // Get the name and SRV Record of the service
-                        var name = answer.CanonicalName;
-                        AddMatchedService(response, srvRecord);
+                        foreach (SRVRecord record in response.AdditionalRecords.OfType<SRVRecord>())
+                        {
+                            AddMatchedService(response, record);
+                        }
                     }
                     catch (Exception)
                     {
-                        // Logger.LogInformation($"No good SRV Record found in {response.Id}");
+                        Logger.LogInformation($"no SRV Records found in not parse answer from {eventArgs.RemoteEndPoint}");
                     }
                 }
             }

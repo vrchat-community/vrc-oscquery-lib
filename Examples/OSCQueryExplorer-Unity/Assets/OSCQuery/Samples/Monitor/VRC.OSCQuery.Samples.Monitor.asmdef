@@ -1,0 +1,19 @@
+{
+    "name": "VRC.OSCQuery.Samples.Monitor",
+    "references": [
+        "OscCore.Runtime",
+        "BlobHandles.Runtime",
+        "NtpTimestamp",
+        "OSCQuery.Samples.Shared",
+        "VRC.OSCQuery"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
