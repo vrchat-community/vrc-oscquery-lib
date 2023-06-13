@@ -32,6 +32,8 @@ namespace VRC.OSCQuery.Samples.Tracking
         private Vector3 incomingRightWristPosition;
         private Vector3 incomingRightWristRotation;
 
+        private string incomingTimestamp = ".";
+
         void Start()
         {
             StartService();
@@ -87,7 +89,7 @@ namespace VRC.OSCQuery.Samples.Tracking
             _receiver.TryAddMethod("/tracking/vrsystem/head/pose",
                 (message) =>
                 {
-                    TimestampText.text = $"Timestamp: {_receiver.LastBundleTimestamp.ToDateTime().ToString("HH:mm:ss.fff")}";
+                    incomingTimestamp = $"Timestamp: {_receiver.LastBundleTimestamp.ToDateTime().ToString("HH:mm:ss.fff")}";
                     incomingHeadPosition = new Vector3(message.ReadFloatElement(0), message.ReadFloatElement(1), message.ReadFloatElement(2));
                     incomingHeadRotation = new Vector3(message.ReadFloatElement(3), message.ReadFloatElement(4), message.ReadFloatElement(5));
                 }
@@ -117,6 +119,7 @@ namespace VRC.OSCQuery.Samples.Tracking
             HeadTransform.SetPositionAndRotation(incomingHeadPosition, Quaternion.Euler(incomingHeadRotation));
             LeftWristTransform.SetPositionAndRotation(incomingLeftWristPosition, Quaternion.Euler(incomingLeftWristRotation));
             RightWristTransform.SetPositionAndRotation(incomingRightWristPosition, Quaternion.Euler(incomingRightWristRotation));
+            TimestampText.text = incomingTimestamp;
         }
 
         private void OnDestroy()
