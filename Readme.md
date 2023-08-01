@@ -55,7 +55,7 @@ Try opening up two instances of the app to see VRChat send to both automatically
 
 You can find a Unity Project in `Exampless/OSCQueryExplorer-Unity` - you can open this up in Unity 2019.4.31f1. 
 
-Latest Release: [OSCQueryExplorer-Unity 0.0.4 for Windows](https://github.com/vrchat-community/vrc-oscquery-lib/releases/download/0.0.4/OSCQueryExplorer-Unity-Win.zip)
+Latest Release: [OSCQueryExplorer-Unity 0.0.5 for Windows](https://github.com/vrchat-community/vrc-oscquery-lib/releases/download/0.0.5/OSCQueryExplorer-0.0.5-beta.1.zip)
 
 This app has six active scenes, and a "SceneChanger" to switch between them:
 * [Chatbox-Sender](#chatbox-sender)
