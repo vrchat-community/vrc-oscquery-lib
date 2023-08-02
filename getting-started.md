@@ -2,8 +2,46 @@
 ## Installation into your project
 To use OSCQuery in your project, you first need to integrate the library. This can be done by either installing it via NuGet *(not yet available)* or by building the .dll file yourself after pulling this repository.
 
+### Local build and installation the NuGet Package
+
+If you have not created local NuGet source, do
+
+```
+dotnet nuget add <Path to store local sources> -n local_store
+```
+
+In the directory you want to build, run
+
+```
+git pull https://github.com/vrchat-community/vrc-oscquery-lib.git
+cd vrc-oscquery-lib
+dotnet pack -c Release .\
+```
+
+Then, push the package to your local NuGet source
+
+```
+dotnet nuget push .\vrc-oscquery-lib\vrc-oscquery-lib\bin\Release\vrc-oscquery-lib.1.0.0.nupkg
+```
+
+### Using NuGet package in your project
+
+In your project directory (same as .csproj file), run
+
+```
+dotnet add package vrc-oscquery-lib
+```
+
 **Disclaimer:**
 OSCQuery can itself neither receive nor send OSC, its purpose is to allow OSC services to find other services and to communicate to them what they can do. If you are looking to send OSC you can use any OSC library, like **[OscCore](https://github.com/vrchat/OscCore)**  for Unity projects and **[Rug.Osc](https://bitbucket.org/rugcode/rug.osc/src/master/)** for .NET.
+
+## The namespace
+
+Do not forget to declare the namespace!!
+
+```csharp
+using VRC.OSCQuery
+```
 
 ## Starting the OscQueryService
 
