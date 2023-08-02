@@ -52,6 +52,18 @@ namespace VRC.OSCQuery
         {
             _customStartup = true;
             _service.HostIP = address;
+            
+            // Set the OSC IP to the host IP if it's not already set
+            if(Equals(_service.OscIP, IPAddress.Loopback))
+                _service.OscIP = address;
+            
+            return this;
+        }
+        
+        public OSCQueryServiceBuilder WithOscIP(IPAddress address)
+        {
+            _customStartup = true;
+            _service.OscIP = address;
             return this;
         }
 

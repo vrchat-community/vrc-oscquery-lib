@@ -28,6 +28,7 @@ namespace VRC.OSCQuery
         } 
         
         public IPAddress HostIP { get; set; } = IPAddress.Loopback;
+        public IPAddress OscIP { get; set; } = IPAddress.Loopback;
         
         public static ILogger<OSCQueryService> Logger { get; set; } = new NullLogger<OSCQueryService>();
 
@@ -156,7 +157,7 @@ namespace VRC.OSCQuery
         {
             // Get random available port if none was specified
             port = port < 0 ? Extensions.GetAvailableUdpPort() : port;
-            Discovery.Advertise(new OSCQueryServiceProfile(serviceName, HostIP, port, OSCQueryServiceProfile.ServiceType.OSC));
+            Discovery.Advertise(new OSCQueryServiceProfile(serviceName, OscIP, port, OSCQueryServiceProfile.ServiceType.OSC));
         }
 
         public void RefreshServices()

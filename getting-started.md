@@ -26,7 +26,9 @@ There's a lot of options you _can_ configure if you want more control over what 
 * WithUdpPort(int port)
   * Set the UDP port on which you're going to run an OSC Server. Defaults to any available open UDP port.
 * WithHostIP(IPAddress address)
-  * Set the address to use for serving HTTP. Defaults to localhost - note that serving to 0.0.0.0 on Windows is not allowed by default without jumping through some security hoops on each installed machine (this works on Android, though that implementation is not yet released).
+  * Set the address to use for serving HTTP. Defaults to localhost - note that serving to 0.0.0.0 on Windows is not allowed by default without jumping through some security hoops on each installed machine (this works on Android).
+* WithOscIP(IPAddress address)
+  * Set the address to use for receiving OSC. Defaults to localhost. Set by "WithHostIP", so set this after you call that if you want to advertise your computer's IP address instead of localhost (works on Windows and Android).
 * WithServiceName(string name) 
   * Sets the name that your service will use when advertising. Defaults to "OSCQueryService"
 * WithLogger(ILogger<OSCQueryService> logger) 

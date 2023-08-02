@@ -12,7 +12,17 @@ namespace VRC.OSCQuery.Samples.Shared
         
         public static IPAddress GetLocalIPAddress()
         {
+            // Android can always serve on the non-loopback address
 #if UNITY_ANDROID
+            return GetLocalIPAddressNonLoopback();
+#else
+            // Windows can only serve TCP on the loopback address, but can serve UDP on the non-loopback address
+            return IPAddress.Loopback;
+#endif
+        }
+        
+        public static IPAddress GetLocalIPAddressNonLoopback()
+        {
             // Get the host name of the local machine
             string hostName = Dns.GetHostName();
 
@@ -25,9 +35,6 @@ namespace VRC.OSCQuery.Samples.Shared
                 }
             }
             return null;
-#else
-            return IPAddress.Loopback;
-#endif
         }
 
     }
