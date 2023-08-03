@@ -64,7 +64,7 @@ var udpPort = Extensions.GetAvailableUdpPort();
 var oscQuery = new OSCQueryServiceBuilder()
     .WithDefaults()
     .WithTcpPort(tcpPort)
-    .WithUdpPort(udpPort))
+    .WithUdpPort(udpPort)
     .WithServiceName("MyService")
     .Build();
 
