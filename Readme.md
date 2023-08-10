@@ -103,7 +103,7 @@ This scene implements receiving Tracking messages in the same way that VRChat do
 
 This scene implements receiving VR system tracking data for the head and wrists that VRChat sends out to aid in things such as pose solving or drift correction in OSC Tracker apps. This scene also implements receiving the OSC bundle timestamp that is made available with the tracking data.
 
-![image](https://github.com/vrchat-community/vrc-oscquery-lib/assets/38249782/6ad25453-abc5-4c7c-bcad-f52e48c28c0c)
+![image](https://github.com/vrchat-community/vrc-oscquery-lib/assets/737888/a5a4f32a-f10e-4ed6-bafe-14827e70d815)
 
 ### Monitor
 
