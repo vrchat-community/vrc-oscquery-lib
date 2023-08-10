@@ -64,7 +64,7 @@ This app has six active scenes, and a "SceneChanger" to switch between them:
 
 #### Chatbox-Sender
 
-This scene demonstrates how to find an OSC receiver compatible with your data and send it. It is similar to how VRChat implements its find-and-send logic. All of the code is in a single MonoBehaviour - [ChatboxSender.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Chatbox/ChatboxSender.cs).
+This scene demonstrates how to find an OSC receiver compatible with your data and send it. It is similar to how VRChat implements its find-and-send logic. All of the code is in a single MonoBehaviour - [ChatboxSender.cs](Examples/OSCQueryExplorer-Unity/Assets/OSCQuery/Samples/Chatbox/ChatboxSender.cs).
 
 https://user-images.githubusercontent.com/737888/196586397-31c4d862-f119-4dce-97a2-375b212f27ca.mp4
 
