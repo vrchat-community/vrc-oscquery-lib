@@ -107,7 +107,7 @@ This scene implements receiving VR system tracking data for the head and wrists 
 
 ### Monitor
 
-This scene advertises itself as a receiver of OSC data, which VRChat will find and connect to. All of the code is in a single MonoBehaviour - [MonitorCanvas.cs](Examples/OSCQueryExplorer-Unity/Packages/com.vrchat.oscquery/Samples/Monitor/MonitorCanvas.cs)
+This scene advertises itself as a receiver of OSC data, which VRChat will find and connect to. All of the code is in a single MonoBehaviour - [MonitorCanvas.cs](Examples/OSCQueryExplorer-Unity/Assets/OSCQuery/Samples/Monitor/MonitorCanvas.cs)
 
 https://user-images.githubusercontent.com/737888/196583859-6616b260-87c7-43a9-b6cc-26cfc110fbfe.mov
 
