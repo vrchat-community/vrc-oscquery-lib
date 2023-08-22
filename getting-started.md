@@ -4,14 +4,12 @@ To use OSCQuery in your project, you first need to integrate the library. This c
 **Disclaimer:**
 OSCQuery can itself neither receive nor send OSC, its purpose is to allow OSC services to find other services and to communicate to them what they can do. If you are looking to send OSC you can use any OSC library, like **[OscCore](https://github.com/vrchat/OscCore)**  for Unity projects and **[Rug.Osc](https://bitbucket.org/rugcode/rug.osc/src/master/)** for .NET.
 
-## The namespace
+## Import the Namespace into your Class
 
-Do not forget to declare the namespace!!
+Make sure to import the namespace so you can use the example code below:
 
 ```csharp
 using VRC.OSCQuery
-```
-
 ## Starting the OscQueryService
 
 The OSCQueryServiceBuilder has a [Fluent Interface](https://en.wikipedia.org/wiki/Fluent_interface) for creating and configuring the OSCQuery service. To start a service that does "all the things" using the typical settings, you can call:
