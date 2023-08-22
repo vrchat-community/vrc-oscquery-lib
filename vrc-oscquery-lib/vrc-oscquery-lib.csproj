@@ -3,7 +3,30 @@
     <PropertyGroup>
         <TargetFrameworks>net462;net6.0</TargetFrameworks>
         <RootNamespace>vrc_oscquery_lib</RootNamespace>
+        <SkipUnityDLL>false</SkipUnityDLL>
     </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackageId>VRChat.OSCQuery</PackageId>
+        <PackageVersion>0.0.6</PackageVersion>
+        <Authors>VRChat Developers</Authors>
+        <Company>VRChat Inc.</Company>
+        <Description>We're developing this implementation of the protocol for OSC app creators integrate into their own projects as we integrate it into VRChat. We're building it in C# targeting .NET 6 and Framework 4.6 so it will work in Unity as well as cross-platform .NET projects.</Description>
+        <PackageOutputPath>./nupkg</PackageOutputPath>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+        <RepositoryUrl>https://github.com/vrchat-community/vrc-oscquery-lib</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageLicenseFile>License.md</PackageLicenseFile>
+        <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../License.md" Pack="true" PackagePath="" />
+        <None Include="../Readme.md" Pack="true" PackagePath="" />
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="MeaMod.DNS" Version="1.0.70" />
@@ -18,7 +41,7 @@
         </Content>
     </ItemGroup>
 
-    <Target Name="CopyUnityDLL" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net462'">
+    <Target Name="CopyUnityDLL" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net462' AND '$(SkipUnityDLL)' != 'true'">
         <Copy SourceFiles="$(TargetDir)$(ProjectName).dll;" DestinationFolder="$(SolutionDir)/Examples/OSCQueryExplorer-Unity/Assets/OSCQuery/Runtime/Plugins" />
         <Message Text="Copied vrc-oscquery-lib.dll to Unity" Importance="High" />
     </Target>
