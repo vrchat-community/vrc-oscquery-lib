@@ -10,6 +10,8 @@ Make sure to import the namespace so you can use the example code below:
 
 ```csharp
 using VRC.OSCQuery
+```
+
 ## Starting the OscQueryService
 
 The OSCQueryServiceBuilder has a [Fluent Interface](https://en.wikipedia.org/wiki/Fluent_interface) for creating and configuring the OSCQuery service. To start a service that does "all the things" using the typical settings, you can call:
