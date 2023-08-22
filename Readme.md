@@ -4,8 +4,8 @@
 
 ![VRC OSCQuery Routing](https://user-images.githubusercontent.com/737888/186757739-9ceb0334-f512-414b-8c5d-2aaec6d7d451.png)
 
-We're developing this implementation of the protocol for OSC app creators integrate into their own projects as we integrate it into [VRChat](https://vrchat.com).
-We're building it in C# targeting .NET 6 and Framework 4.6 so it will work in Unity as well as cross-platform .NET projects.
+This implementation of the protocol is made for OSC app creators integrate into their own projects as we have integrated it into [VRChat](https://vrchat.com).
+We've built it in C# targeting .NET 6 and Framework 4.6 so it will work in Unity as well as cross-platform .NET projects.
 
 ## 🔨 Functionality
 

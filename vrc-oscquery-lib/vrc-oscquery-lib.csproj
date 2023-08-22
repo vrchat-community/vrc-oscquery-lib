@@ -8,10 +8,10 @@
     
     <PropertyGroup>
         <PackageId>VRChat.OSCQuery</PackageId>
-        <PackageVersion>0.0.6</PackageVersion>
+        <PackageVersion>0.0.7</PackageVersion>
         <Authors>VRChat Developers</Authors>
         <Company>VRChat Inc.</Company>
-        <Description>We're developing this implementation of the protocol for OSC app creators integrate into their own projects as we integrate it into VRChat. We're building it in C# targeting .NET 6 and Framework 4.6 so it will work in Unity as well as cross-platform .NET projects.</Description>
+        <Description>We're developing this implementation of the protocol for OSC app creators integrate into their own projects as we have integrated it into VRChat. We're building it in C# targeting .NET 6 and Framework 4.6 so it will work in Unity as well as cross-platform .NET projects.</Description>
         <PackageOutputPath>./nupkg</PackageOutputPath>
         <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
         <RepositoryUrl>https://github.com/vrchat-community/vrc-oscquery-lib</RepositoryUrl>
@@ -20,12 +20,12 @@
 
     <PropertyGroup>
         <PackageLicenseFile>License.md</PackageLicenseFile>
-        <PackageReadmeFile>Readme.md</PackageReadmeFile>
+        <PackageReadmeFile>NuGetReadme.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="../License.md" Pack="true" PackagePath="" />
-        <None Include="../Readme.md" Pack="true" PackagePath="" />
+        <None Include="NuGetReadme.md" Pack="true" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup>
