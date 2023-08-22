@@ -60,6 +60,7 @@ namespace VRC.OSCQuery.Examples.OSCQueryExplorerUnity
             _oscQuery = new OSCQueryServiceBuilder()
                 .WithServiceName(serverName)
                 .WithHostIP(Samples.Shared.Extensions.GetLocalIPAddress())
+                .WithOscIP(VRC.OSCQuery.Samples.Shared.Extensions.GetLocalIPAddressNonLoopback())
                 .WithTcpPort(port)
                 .WithUdpPort(udpPort)
                 .WithLogger(logger)

@@ -53,6 +53,7 @@ namespace VRC.OSCQuery.Samples.Chatbox
             _oscQuery = new OSCQueryServiceBuilder()
                 .WithServiceName(serverName)
                 .WithHostIP(VRC.OSCQuery.Samples.Shared.Extensions.GetLocalIPAddress())
+                .WithOscIP(VRC.OSCQuery.Samples.Shared.Extensions.GetLocalIPAddressNonLoopback())
                 .WithTcpPort(port)
                 .WithUdpPort(udpPort)
                 .WithLogger(logger)
