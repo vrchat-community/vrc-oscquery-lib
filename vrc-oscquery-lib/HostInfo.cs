@@ -12,9 +12,9 @@ namespace VRC.OSCQuery
         {
             { Attributes.ACCESS, true },
             { Attributes.CLIPMODE, false },
-            { Attributes.RANGE, true },
-            { Attributes.TYPE, true },
-            { Attributes.VALUE, true },
+            { Attributes.RANGE, false },
+            { Attributes.TYPE, false },
+            { Attributes.VALUE, false },
         };
         
         [JsonProperty(Keys.OSC_IP)]
