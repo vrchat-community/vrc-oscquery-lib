@@ -67,6 +67,20 @@ namespace VRC.OSCQuery
             return this;
         }
 
+        public OSCQueryServiceBuilder WithWsPort(int port)
+        {
+            _customStartup = true;
+            _service.WsPort = port;
+            return this;
+        }
+
+        public OSCQueryServiceBuilder WithWsIP(IPAddress address)
+        {
+            _customStartup = true;
+            _service.WsIP = address;
+            return this;
+        }
+
         public OSCQueryServiceBuilder StartHttpServer()
         {
             _customStartup = true;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using Newtonsoft.Json;
 
 namespace VRC.OSCQuery
@@ -26,6 +27,12 @@ namespace VRC.OSCQuery
         [JsonProperty(Keys.OSC_TRANSPORT)] 
         public string oscTransport = Keys.OSC_TRANSPORT_UDP;
 
+        [JsonProperty(Keys.WS_IP)]
+        public string wsIP = IPAddress.Loopback.ToString();
+
+        [JsonProperty(Keys.WS_PORT)]
+        public int wsPort = OSCQueryService.DefaultPortHttp;
+
         /// <summary>
         /// Empty Constructor required for JSON Serialization
         /// </summary>
@@ -48,6 +55,8 @@ namespace VRC.OSCQuery
             public const string OSC_PORT = "OSC_PORT";
             public const string OSC_TRANSPORT = "OSC_TRANSPORT";
             public const string OSC_TRANSPORT_UDP = "UDP";
+            public const string WS_IP = "WS_IP";
+            public const string WS_PORT = "WS_PORT";
         }
     }
 }
