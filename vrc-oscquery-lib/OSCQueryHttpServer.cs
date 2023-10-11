@@ -141,7 +141,7 @@ namespace VRC.OSCQuery
                 else
                 {
                     context.Response.ContentType = "application/json";
-                    returnString = $"{{ \"VALUE\": {JsonConvert.SerializeObject(node.Value)} }}";
+                    returnString = $"{{ \"VALUE\": {JsonConvert.SerializeObject(node.Value, OSCQueryNode.WriteSettings)} }}";
                 }
 
                 // Send Response

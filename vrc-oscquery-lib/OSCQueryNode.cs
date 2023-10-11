@@ -169,7 +169,7 @@ namespace VRC.OSCQuery
             WriteSettings.Converters.Add(c);
         }
 
-        private static JsonSerializerSettings WriteSettings = new JsonSerializerSettings()
+        internal static JsonSerializerSettings WriteSettings = new JsonSerializerSettings()
         {
             NullValueHandling = NullValueHandling.Ignore,
         };
