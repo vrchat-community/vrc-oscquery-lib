@@ -23,7 +23,13 @@ namespace VRC.OSCQuery
 
         public void Dispose()
         {
-            _discovery?.Dispose();
+            if (_discovery != null)
+            {
+                foreach (var profile in _profiles.Keys.ToArray())
+                    Unadvertise(profile);
+
+                _discovery.Dispose();
+            }
             _mdns?.Stop();
         }
 
