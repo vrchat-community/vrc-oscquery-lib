@@ -56,7 +56,9 @@ namespace VRC.OSCQuery
         
         public event Action<OSCQueryServiceProfile> OnOscServiceAdded;
         public event Action<OSCQueryServiceProfile> OnOscQueryServiceAdded;
-        
+        public event Action<string> OnOscServiceRemoved;
+        public event Action<string> OnOscQueryServiceRemoved;
+
         private Dictionary<OSCQueryServiceProfile, ServiceProfile> _profiles = new Dictionary<OSCQueryServiceProfile, ServiceProfile>();
         public void Advertise(OSCQueryServiceProfile profile)
         {
@@ -95,13 +97,16 @@ namespace VRC.OSCQuery
                     return;
                 }
 
-                foreach (ResourceRecord answer in response.Answers.Where(a=>OSCQueryService.MatchedNames.Contains(a.CanonicalName)))
+                if (response.Answers.Any(a => OSCQueryService.MatchedNames.Contains(a.CanonicalName)))
                 {
                     try
                     {
                         foreach (SRVRecord record in response.AdditionalRecords.OfType<SRVRecord>())
                         {
-                            AddMatchedService(response, record);
+                            if (record.TTL == TimeSpan.Zero)
+                                RemoveMatchedService(record);
+                            else
+                                AddMatchedService(response, record);
                         }
                     }
                     catch (Exception)
@@ -153,7 +158,25 @@ namespace VRC.OSCQuery
                 }
             }
         }
+
+        private void RemoveMatchedService(SRVRecord srvRecord)
+        {
+            var domainName = srvRecord.Name.Labels;
+            var instanceName = domainName[0];
+            var serviceName = string.Join(".", domainName.Skip(1));
+
+            // If this is an OSC service, remove it from the OSC collection
+            if (string.Compare(serviceName, OSCQueryService._localOscUdpServiceName, StringComparison.Ordinal) == 0)
+            {
+                _oscServices.RemoveWhere(p => p.name == instanceName);
+                OnOscServiceRemoved?.Invoke(instanceName);
+            }
+            // If this is an OSCQuery service, remove it from the OSCQuery collection
+            else if (string.Compare(serviceName, OSCQueryService._localOscJsonServiceName, StringComparison.Ordinal) == 0)
+            {
+                _oscQueryServices.RemoveWhere(p => p.name == instanceName);
+                OnOscQueryServiceRemoved?.Invoke(instanceName);
+            }
+        }
     }
-    
-    
 }
