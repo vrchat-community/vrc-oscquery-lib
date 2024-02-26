@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace VRC.OSCQuery
 {
@@ -33,7 +34,8 @@ namespace VRC.OSCQuery
             _listener.Prefixes.Add(prefix);
             _preMiddleware = new List<Func<HttpListenerContext, Action, Task>>
             {
-                HostInfoMiddleware
+                HostInfoMiddleware,
+                ValueMiddleware
             };
             _postMiddleware = new List<Func<HttpListenerContext, Action, Task>>
             {
@@ -115,6 +117,45 @@ namespace VRC.OSCQuery
             catch (Exception e)
             {
                 Logger.LogError($"Could not construct and send Host Info: {e.Message}");
+            }
+        }
+
+        private async Task ValueMiddleware(HttpListenerContext context, Action next)
+        {
+            if (!context.Request.RawUrl.Contains(Attributes.VALUE))
+            {
+                next();
+                return;
+            }
+
+            try
+            {
+                var node = _oscQuery.RootNode.GetNodeWithPath(context.Request.Url.LocalPath);
+                var returnString = "";
+                if (node.Access == Attributes.AccessValues.WriteOnly) 
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                    context.Response.ContentType = "text/plain";
+                    returnString = "Inappropriate Request";
+                }
+                else
+                {
+                    context.Response.ContentType = "application/json";
+                    returnString = $"{{ \"VALUE\": {JsonConvert.SerializeObject(node.Value, OSCQueryNode.WriteSettings)} }}";
+                }
+
+                // Send Response
+                context.Response.Headers.Add("pragma:no-cache");
+                context.Response.ContentLength64 = returnString.Length;
+                using (var sw = new StreamWriter(context.Response.OutputStream))
+                {
+                    await sw.WriteAsync(returnString);
+                    await sw.FlushAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Could not construct and send Value: {e.Message}");
             }
         }
 
