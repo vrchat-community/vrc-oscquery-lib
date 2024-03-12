@@ -107,7 +107,7 @@ namespace VRC.OSCQuery
                 {
                     try
                     {
-                        foreach (SRVRecord record in response.AdditionalRecords.OfType<SRVRecord>())
+                        foreach (SRVRecord record in response.AdditionalRecords.OfType<SRVRecord>().Concat(response.Answers.OfType<SRVRecord>()))
                         {
                             if (record.TTL == TimeSpan.Zero)
                                 RemoveMatchedService(record);
@@ -136,7 +136,7 @@ namespace VRC.OSCQuery
             var instanceName = domainName[0];
 
             var serviceName = string.Join(".", domainName.Skip(1));
-            var ips = response.AdditionalRecords.OfType<ARecord>().Select(r => r.Address);
+            var ips = response.AdditionalRecords.OfType<ARecord>().Concat(response.Answers.OfType<ARecord>()).Select(r => r.Address);
                 
             var ipAddressList = ips.ToList();
             var profile = new ServiceProfile(instanceName, serviceName, srvRecord.Port, ipAddressList);
