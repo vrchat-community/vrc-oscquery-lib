@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MeaMod.DNS.Model;
@@ -156,7 +156,7 @@ namespace VRC.OSCQuery
             else if (string.Compare(serviceName, OSCQueryService._localOscJsonServiceName, StringComparison.Ordinal) == 0 && !_profiles.ContainsValue(profile))
             {
                 // Make sure there's not already a service with the same name
-                if (_oscQueryServices.All(p => !p.name.Equals(profile.InstanceName)))
+                if (_oscQueryServices.All(p => p.name != profile.InstanceName))
                 {
                     var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
                     _oscQueryServices.Add(p);
