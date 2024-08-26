@@ -18,8 +18,22 @@ namespace VRC.OSCQuery
         private readonly HashSet<OSCQueryServiceProfile> _oscQueryServices = new HashSet<OSCQueryServiceProfile>();
         private readonly HashSet<OSCQueryServiceProfile> _oscServices = new HashSet<OSCQueryServiceProfile>();
         
-        public HashSet<OSCQueryServiceProfile> GetOSCQueryServices() => _oscQueryServices;
-        public HashSet<OSCQueryServiceProfile> GetOSCServices() => _oscServices;
+        public HashSet<OSCQueryServiceProfile> GetOSCQueryServices()
+        {
+            lock (_oscQueryServices)
+            {
+                var clone = new HashSet<OSCQueryServiceProfile>(_oscQueryServices);
+                return clone;
+            }
+        }
+        public HashSet<OSCQueryServiceProfile> GetOSCServices()
+        {
+            lock (_oscServices)
+            {
+                var clone = new HashSet<OSCQueryServiceProfile>(_oscServices);
+                return clone;
+            }
+        }
 
         public void Dispose()
         {
@@ -145,10 +159,17 @@ namespace VRC.OSCQuery
             if (string.Compare(serviceName, OSCQueryService._localOscUdpServiceName, StringComparison.Ordinal) == 0 && !_profiles.ContainsValue(profile))
             {
                 // Make sure there's not already a service with the same name
-                if (_oscServices.All(p => p.name != profile.InstanceName))
+                OSCQueryServiceProfile p = null;
+                lock (_oscServices)
                 {
-                    var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
-                    _oscServices.Add(p);
+                    if (_oscServices.All(p => p.name != profile.InstanceName))
+                    {
+                        p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
+                        _oscServices.Add(p);
+                    }
+                }
+                if (p != null)
+                {
                     OnOscServiceAdded?.Invoke(p);
                 }
             }
@@ -156,10 +177,17 @@ namespace VRC.OSCQuery
             else if (string.Compare(serviceName, OSCQueryService._localOscJsonServiceName, StringComparison.Ordinal) == 0 && !_profiles.ContainsValue(profile))
             {
                 // Make sure there's not already a service with the same name
-                if (_oscQueryServices.All(p => !p.name.Equals(profile.InstanceName)))
+                OSCQueryServiceProfile p = null;
+                lock (_oscQueryServices)
                 {
-                    var p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
-                    _oscQueryServices.Add(p);
+                    if (_oscQueryServices.All(p => !p.name.Equals(profile.InstanceName)))
+                    {
+                        p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
+                        _oscQueryServices.Add(p);
+                    }
+                }
+                if (p != null)
+                {
                     OnOscQueryServiceAdded?.Invoke(p);
                 }
             }
@@ -174,13 +202,19 @@ namespace VRC.OSCQuery
             // If this is an OSC service, remove it from the OSC collection
             if (string.Compare(serviceName, OSCQueryService._localOscUdpServiceName, StringComparison.Ordinal) == 0)
             {
-                _oscServices.RemoveWhere(p => p.name == instanceName);
+                lock (_oscServices)
+                {
+                    _oscServices.RemoveWhere(p => p.name == instanceName);
+                }
                 OnOscServiceRemoved?.Invoke(instanceName);
             }
             // If this is an OSCQuery service, remove it from the OSCQuery collection
             else if (string.Compare(serviceName, OSCQueryService._localOscJsonServiceName, StringComparison.Ordinal) == 0)
             {
-                _oscQueryServices.RemoveWhere(p => p.name == instanceName);
+                lock (_oscQueryServices)
+                {
+                    _oscQueryServices.RemoveWhere(p => p.name == instanceName);
+                }
                 OnOscQueryServiceRemoved?.Invoke(instanceName);
             }
         }
