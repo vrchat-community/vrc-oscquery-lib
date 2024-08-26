@@ -22,6 +22,12 @@ namespace VRC.OSCQuery
             set => HostInfo.oscPort = value;
         }
 
+        public int WsPort
+        {
+            get => HostInfo.wsPort;
+            set => HostInfo.wsPort = value;
+        }
+
         public string ServerName {
             get => HostInfo.name;
             set => HostInfo.name = value;
@@ -29,7 +35,8 @@ namespace VRC.OSCQuery
         
         public IPAddress HostIP { get; set; } = IPAddress.Loopback;
         public IPAddress OscIP { get; set; } = IPAddress.Loopback;
-        
+        public IPAddress WsIP { get; set; } = IPAddress.Loopback;
+
         public static ILogger<OSCQueryService> Logger { get; set; } = new NullLogger<OSCQueryService>();
 
         public void AddMiddleware(Func<HttpListenerContext, Action, Task> middleware)
