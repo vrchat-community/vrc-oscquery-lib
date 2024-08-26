@@ -396,3 +396,4 @@ FodyWeavers.xsd
 *.sln.iml
 .idea
 Build*/
+Examples/OSCQueryExplorer-Unity/UserSettings
