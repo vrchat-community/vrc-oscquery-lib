@@ -197,7 +197,7 @@ namespace VRC.OSCQuery
         /// <param name="initialValue">Starting value for param in string form</param>
         /// <param name="description">Optional longer string to use when displaying a label for the entry</param>
         /// <returns></returns>
-        public bool AddEndpoint(string path, string oscTypeString, Attributes.AccessValues accessValues, object[] initialValue = null,
+        public bool AddEndpoint(string path, string oscTypeString, Attributes.AccessValues accessValues, object[] initialValue = null, Range[] range = null,
             string description = "")
         {
             // Exit early if path does not start with slash
@@ -212,23 +212,24 @@ namespace VRC.OSCQuery
                 Logger.LogWarning($"Path already exists, skipping: {path}");
                 return false;
             }
-            
+
             RootNode.AddNode(new OSCQueryNode(path)
             {
                 Access = accessValues,
                 Description = description,
                 OscType = oscTypeString,
-                Value = initialValue
-            });
+                Value = initialValue,
+                Range = range
+            }); ;
             
             return true;
         }
         
-        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, object[] initialValue = null, string description = "")
+        public bool AddEndpoint<T>(string path, Attributes.AccessValues accessValues, object[] initialValue = null, Range[] range = null, string description = "")
         {
             var typeExists = Attributes.OSCTypeFor(typeof(T), out string oscType);
 
-            if (typeExists) return AddEndpoint(path, oscType, accessValues, initialValue, description);
+            if (typeExists) return AddEndpoint(path, oscType, accessValues, initialValue, range, description);
             
             Logger.LogError($"Could not add {path} to OSCQueryService because type {typeof(T)} is not supported.");
             return false;

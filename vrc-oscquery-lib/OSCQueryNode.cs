@@ -145,6 +145,9 @@ namespace VRC.OSCQuery
         [JsonProperty(Attributes.VALUE)]
         public object[] Value;
 
+        [JsonProperty(Attributes.RANGE)]
+        public Range[] Range;
+
         [JsonIgnore] 
         public string ParentPath {
             get
@@ -173,6 +176,12 @@ namespace VRC.OSCQuery
         {
             NullValueHandling = NullValueHandling.Ignore,
         };
-        
+    }
+
+    public struct Range
+    {
+        public string MIN;
+        public string MAX;
+        public string[] VALS;
     }
 }
