@@ -27,6 +27,7 @@ The format is always `new OSCQueryServiceBuilder()`, followed by all the things 
 There's a lot of options you _can_ configure if you want more control over what happens. The additional methods are listed below. Note that if you do not add any fluent options, then `WithDefaults()` is called for you automatically.
 
 * WithDefaults()
+  * **Important**: This immediately starts the HTTP server and advertising. Configure all settings (ports, names, etc.) **before** calling this method.
   * Sets up Discovery, Advertising and HTTP serving using default names and ports.
 * WithTcpPort(int port)
   * Set the TCP port you want to use for serving the HTTP endpoints. Defaults to any available open TCP port.
@@ -53,15 +54,16 @@ There's a lot of options you _can_ configure if you want more control over what 
 * AddListenerForServiceType(Action\<OSCQueryServiceProfile\> listener, OSCQueryServiceProfile.ServiceType type)
   * Adds a listener which will be sent OSCQueryServiceProfiles for newly-discovered OSC or OSCQuery services.
 
-You can can add these onto `.WithDefaults()` if you want _almost_ all the defaults. For example, this code will have all the defaults, but find the first available TCP port instead of 8060, and uses the name "MyService" instead of "OSCQueryService".
+**Important**: You must configure settings **before** calling `.WithDefaults()`, as `WithDefaults()` immediately starts the HTTP server and advertising. Settings configured after `WithDefaults()` will not be applied.
 
 ```csharp
 var oscQuery = new OSCQueryServiceBuilder()
-    .WithDefaults()
     .WithTcpPort(Extensions.GetAvailableTcpPort())
     .WithServiceName("MyService")
+    .WithDefaults()
     .Build();
 ```
+
 ## A Simple Example
 
 A minimal example for a working OSCQuery Service could look like this:
@@ -71,10 +73,10 @@ var tcpPort = Extensions.GetAvailableTcpPort();
 var udpPort = Extensions.GetAvailableUdpPort();
 
 var oscQuery = new OSCQueryServiceBuilder()
-    .WithDefaults()
     .WithTcpPort(tcpPort)
     .WithUdpPort(udpPort)
     .WithServiceName("MyService")
+    .WithDefaults()  // Configure settings BEFORE calling WithDefaults()
     .Build();
 
 // Manually logging the ports to see them without a logger
