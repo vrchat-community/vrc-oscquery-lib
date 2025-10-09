@@ -22,7 +22,17 @@ This library does not yet return limited attributes based on query strings, like
 ## ⚡️ Basic Use
 
 1. Build vrc-oscquery-lib into vrc-oscquery-lib.dll and add it to your project (will make this a NuGet package once it's ready for wider use).
-2. Construct a new OSCQuery service with `new OSCQueryServiceBuilder().WithDefaults().Build()`. T optionally passing in the name, TCP port to use for serving HTTP, UDP port that you're using for OSC, and an ILogger if you want logs.
+2. Construct a new OSCQuery service. 
+    - **Important**: If you want to customize settings (name, ports, etc.), configure them **before** calling `WithDefaults()`, as `WithDefaults()` immediately starts the HTTP server and advertising.
+   ```csharp
+   var service = new OSCQueryServiceBuilder()
+       .WithTcpPort(Extensions.GetAvailableTcpPort())
+       .WithUdpPort(Extensions.GetAvailableUdpPort())
+       .WithServiceName("MyService")
+       .WithDefaults()
+       .Build();
+   ```
+
 3. You should now be able to visit `http://localhost:tcpPort` in a browser and see raw JSON describing an empty root node.
     - You can also visit `http://localhost:tcpPort?explorer` to see an OSCQuery Explorer UI for the OSCQuery service, which should be easier to navigate than the raw JSON.
 4. You can also visit `http://localhost:tcpPort?HOST_INFO` to get information about the supported attributes of this OSCQuery Server.
