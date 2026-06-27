@@ -77,13 +77,12 @@ namespace VRC.OSCQuery
             return JsonConvert.DeserializeObject<HostInfo>(hostInfoString);
         }
         
-        public static async Task ServeStaticFile(string path, string mimeType, HttpListenerContext context)
+        public static async Task ServeStaticFile(string path, string mimeType, OSCQueryHttpContext context)
         {
             using (var targetFile = File.OpenRead(path))
             {
-                context.Response.ContentType =mimeType;
+                context.Response.ContentType = mimeType;
                 context.Response.StatusCode = 200;
-                context.Response.ContentLength64 = targetFile.Length;
                 await targetFile.CopyToAsync(context.Response.OutputStream);
                 await context.Response.OutputStream.FlushAsync();
             }

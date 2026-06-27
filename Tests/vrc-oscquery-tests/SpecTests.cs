@@ -302,6 +302,23 @@ namespace VRC.OSCQuery.Tests
         }
         
         [Test]
+        public async Task OSCQueryServiceFluent_WithHostIPAny_ServesOverLoopback()
+        {
+            int port = Extensions.GetAvailableTcpPort();
+            var service = new OSCQueryServiceBuilder()
+                .WithHostIP(IPAddress.Any)
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
+
+            // Binding to 0.0.0.0 should listen on all interfaces, so a loopback request succeeds.
+            var result = await new HttpClient().GetAsync($"http://localhost:{port}");
+            Assert.True(result.IsSuccessStatusCode);
+
+            service.Dispose();
+        }
+
+        [Test]
         public void OSCQueryServiceFluent_WithUdpPort_ReturnsSamePort()
         {
             var port = Extensions.GetAvailableTcpPort();

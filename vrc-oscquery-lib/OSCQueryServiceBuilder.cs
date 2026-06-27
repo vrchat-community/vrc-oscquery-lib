@@ -88,7 +88,7 @@ namespace VRC.OSCQuery
             return this;
         }
 
-        public OSCQueryServiceBuilder WithMiddleware(Func<HttpListenerContext, Action, Task> middleware)
+        public OSCQueryServiceBuilder WithMiddleware(Func<OSCQueryHttpContext, Action, Task> middleware)
         {
             _customStartup = true;
             _service.AddMiddleware(middleware);

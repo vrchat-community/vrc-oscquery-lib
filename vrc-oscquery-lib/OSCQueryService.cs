@@ -32,7 +32,7 @@ namespace VRC.OSCQuery
         
         public static ILogger<OSCQueryService> Logger { get; set; } = new NullLogger<OSCQueryService>();
 
-        public void AddMiddleware(Func<HttpListenerContext, Action, Task> middleware)
+        public void AddMiddleware(Func<OSCQueryHttpContext, Action, Task> middleware)
         {
             _http.AddMiddleware(middleware);
         }
@@ -150,14 +150,24 @@ namespace VRC.OSCQuery
         {
             // Get random available port if none was specified
             port = port < 0 ? Extensions.GetAvailableTcpPort() : port;
-            Discovery.Advertise(new OSCQueryServiceProfile(serviceName, HostIP, port, OSCQueryServiceProfile.ServiceType.OSCQuery));
+            Discovery.Advertise(new OSCQueryServiceProfile(serviceName, GetAdvertisableIP(HostIP), port, OSCQueryServiceProfile.ServiceType.OSCQuery));
         }
 
         public void AdvertiseOSCService(string serviceName, int port = -1)
         {
             // Get random available port if none was specified
             port = port < 0 ? Extensions.GetAvailableUdpPort() : port;
-            Discovery.Advertise(new OSCQueryServiceProfile(serviceName, OscIP, port, OSCQueryServiceProfile.ServiceType.OSC));
+            Discovery.Advertise(new OSCQueryServiceProfile(serviceName, GetAdvertisableIP(OscIP), port, OSCQueryServiceProfile.ServiceType.OSC));
+        }
+
+        /// <summary>
+        /// Resolves the address to advertise over the network. Binding to 0.0.0.0 listens on all
+        /// interfaces, but that address is not routable for remote clients, so we advertise the
+        /// machine's actual LAN IP instead.
+        /// </summary>
+        private IPAddress GetAdvertisableIP(IPAddress configured)
+        {
+            return Equals(configured, IPAddress.Any) ? LocalIp : configured;
         }
 
         public void RefreshServices()
@@ -290,7 +300,7 @@ namespace VRC.OSCQuery
         /// <param name="logger">Optional logger which will be used for logs generated within this class. Will log to Null if not set.</param>
         /// <param name="middleware">Optional set of middleware to be injected into the HTTP server. Middleware will be executed in the order they are passed in.</param>
         [Obsolete("Use the Fluent Interface so we can remove this constructor", false)]
-        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null, params Func<HttpListenerContext, Action, Task>[] middleware)
+        public OSCQueryService(string serverName = DefaultServerName, int httpPort = DefaultPortHttp, int oscPort = DefaultPortOsc, ILogger<OSCQueryService> logger = null, params Func<OSCQueryHttpContext, Action, Task>[] middleware)
         {
             if (logger != null) Logger = logger;
 
@@ -314,7 +324,7 @@ namespace VRC.OSCQuery
         }
 
         [Obsolete("Use the Fluent Interface instead of this combo function", false)]
-        public void StartOSCQueryService(string serverName, int httpPort = -1, params Func<HttpListenerContext, Action, Task>[] middleware)
+        public void StartOSCQueryService(string serverName, int httpPort = -1, params Func<OSCQueryHttpContext, Action, Task>[] middleware)
         {
             ServerName = serverName;
             
