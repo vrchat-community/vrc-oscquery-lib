@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using Microsoft.Extensions.Logging;
 using Terminal.Gui;
 
@@ -11,7 +12,15 @@ namespace VRC.OSCQuery.Examples
 
             public OSCQueryServiceWindow(string name, int tcpPort, int oscPort, ILogger<OSCQueryService> logger)
             {
-                _service = new OSCQueryService(name, tcpPort, oscPort, logger);
+                // Bind to all interfaces so devices elsewhere on the network can reach this service.
+                _service = new OSCQueryServiceBuilder()
+                    .WithServiceName(name)
+                    .WithHostIP(IPAddress.Any)
+                    .WithTcpPort(tcpPort)
+                    .WithUdpPort(oscPort)
+                    .WithLogger(logger)
+                    .WithDefaults()
+                    .Build();
                 Title = $"{name} TCP: {tcpPort} OSC: {oscPort}";
                 Add(MakeIntParams(10));
             }
