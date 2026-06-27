@@ -162,7 +162,7 @@ namespace VRC.OSCQuery
                 OSCQueryServiceProfile p = null;
                 lock (_oscServices)
                 {
-                    if (_oscServices.All(p => p.name != profile.InstanceName))
+                    if (_oscServices.All(sp => sp.name != profile.InstanceName))
                     {
                         p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSC);
                         _oscServices.Add(p);
@@ -180,7 +180,7 @@ namespace VRC.OSCQuery
                 OSCQueryServiceProfile p = null;
                 lock (_oscQueryServices)
                 {
-                    if (_oscQueryServices.All(p => !p.name.Equals(profile.InstanceName)))
+                    if (_oscQueryServices.All(sp => !sp.name.Equals(profile.InstanceName)))
                     {
                         p = new OSCQueryServiceProfile(instanceName, ipAddressList.First(), port, OSCQueryServiceProfile.ServiceType.OSCQuery);
                         _oscQueryServices.Add(p);
