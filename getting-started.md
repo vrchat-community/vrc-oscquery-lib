@@ -34,14 +34,14 @@ There's a lot of options you _can_ configure if you want more control over what 
 * WithUdpPort(int port)
   * Set the UDP port on which you're going to run an OSC Server. Defaults to any available open UDP port.
 * WithHostIP(IPAddress address)
-  * Set the address to use for serving HTTP. Defaults to localhost - note that serving to 0.0.0.0 on Windows is not allowed by default without jumping through some security hoops on each installed machine (this works on Android).
+  * Set the address to use for serving HTTP. Defaults to localhost. Pass `IPAddress.Any` (0.0.0.0) to serve on all interfaces so external devices on your network (phones, Quest, etc.) can reach the server. The HTTP server runs on a raw socket rather than HttpListener, so this works without administrator privileges or URL ACL registration on Windows. When bound to `IPAddress.Any`, the service advertises your machine's actual LAN IP over mDNS rather than the non-routable 0.0.0.0.
 * WithOscIP(IPAddress address)
   * Set the address to use for receiving OSC. Defaults to localhost. Set by "WithHostIP", so set this after you call that if you want to advertise your computer's IP address instead of localhost (works on Windows and Android).
 * WithServiceName(string name) 
   * Sets the name that your service will use when advertising. Defaults to "OSCQueryService"
 * WithLogger(ILogger<OSCQueryService> logger) 
   * Sets the target logger, which you can implement if you want to specifically log to the Console, or to a Unity textfield, or anything else for which you write an ILogger implementation.
-* WithMiddleware(Func<HttpListenerContext, Action, Task> middleware) 
+* WithMiddleware(Func<OSCQueryHttpContext, Action, Task> middleware) 
   * Adds Middleware to your HTTP server if you want to serve up additional pages or content.
 * WithDiscovery(IDiscovery d) 
   * Sets the class to be used for advertising and discovering your service. Only for advanced users or other platforms - the Android-compatible implementation uses the native [NsdManager](https://developer.android.com/reference/android/net/nsd/NsdManager) class, for example (still in development).
