@@ -319,6 +319,28 @@ namespace VRC.OSCQuery.Tests
         }
 
         [Test]
+        [Category("RequiresNetwork")]
+        public async Task OSCQueryServiceFluent_WithHostIPAny_ReachableViaLanIP()
+        {
+            int port = Extensions.GetAvailableTcpPort();
+            var service = new OSCQueryServiceBuilder()
+                .WithHostIP(IPAddress.Any)
+                .WithTcpPort(port)
+                .StartHttpServer()
+                .Build();
+
+            // Connect via the machine's routable LAN IP, not loopback. This is the path a remote
+            // device uses, and the one HttpListener refused without a URL ACL on Windows.
+            // Requires an active non-loopback adapter, so it is excluded from offline CI runs.
+            var lanIp = service.LocalIp;
+            var result = await new HttpClient().GetAsync($"http://{lanIp}:{port}?{Attributes.HOST_INFO}");
+
+            Assert.True(result.IsSuccessStatusCode);
+
+            service.Dispose();
+        }
+
+        [Test]
         public void OSCQueryServiceFluent_WithUdpPort_ReturnsSamePort()
         {
             var port = Extensions.GetAvailableTcpPort();
