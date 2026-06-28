@@ -76,7 +76,7 @@ namespace VRC.OSCQuery
         public const string TAGS = "TAGS";
         public const string UNIT = "UNIT";
         public const string VALUE = "VALUE";
-
+        public const string LISTEN = "LISTEN";
         #endregion
         
         #region Service Types
