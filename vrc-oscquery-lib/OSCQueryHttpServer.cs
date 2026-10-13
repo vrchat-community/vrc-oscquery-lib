@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -105,7 +106,7 @@ namespace VRC.OSCQuery
                 context.Response.Headers.Add("pragma:no-cache");
                 
                 context.Response.ContentType = "application/json";
-                context.Response.ContentLength64 = hostInfoString.Length;
+                context.Response.ContentLength64 = Encoding.UTF8.GetByteCount(hostInfoString);
                 using (var sw = new StreamWriter(context.Response.OutputStream))
                 {
                     await sw.WriteAsync(hostInfoString);
@@ -202,7 +203,7 @@ namespace VRC.OSCQuery
             context.Response.Headers.Add("pragma:no-cache");
                 
             context.Response.ContentType = "application/json";
-            context.Response.ContentLength64 = stringResponse.Length;
+            context.Response.ContentLength64 = Encoding.UTF8.GetByteCount(stringResponse);
             using (var sw = new StreamWriter(context.Response.OutputStream))
             {
                 await sw.WriteAsync(stringResponse);
